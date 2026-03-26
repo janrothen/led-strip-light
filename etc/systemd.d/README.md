@@ -14,7 +14,7 @@ These systemd services run your LED Strip Light HTTP server (and optional Homebr
 - Raspberry Pi with Raspberry Pi OS
 - Python 3.x installed
 - pigpio daemon installed and running
-- LED strip light application files in `/home/pi/raspberry/ledstriplight/`
+- LED strip light application files in `/home/pi/raspberry/led-strip-light/`
 
 ## Installation steps
 
@@ -82,7 +82,7 @@ sudo journalctl -u ledstriplight-http-server.service --no-pager
 
 ## Configuration notes
 
-- **Working directory**: The service runs from `/home/pi/raspberry/ledstriplight/src`
+- **Working directory**: The service runs from `/home/pi/raspberry/led-strip-light/src`
 - **User**: Runs as the `pi` user (not root for security)
 - **Auto-restart**: The service will automatically restart if it crashes
 - **Dependencies**: Waits for network and pigpio daemon to be ready
@@ -91,13 +91,13 @@ sudo journalctl -u ledstriplight-http-server.service --no-pager
 ## Troubleshooting
 
 ### Service won't start
-1. Check if the working directory exists: `ls -la /home/pi/raspberry/ledstriplight/`
+1. Check if the working directory exists: `ls -la /home/pi/raspberry/led-strip-light/`
 2. Verify pigpiod is running: `sudo systemctl status pigpiod`
 3. Check for Python errors: `sudo journalctl -u ledstriplight-http-server.service`
 
 ### Permission issues
 If you get permission errors, ensure:
-- The `pi` user owns the application files: `sudo chown -R pi:pi /home/pi/raspberry/ledstriplight/`
+- The `pi` user owns the application files: `sudo chown -R pi:pi /home/pi/raspberry/led-strip-light/`
 - The `pi` user is in the `gpio` group: `sudo usermod -a -G gpio pi`
 
 ### Service keeps restarting
