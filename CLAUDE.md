@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Setup (from repo root)
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[test]"
+pip install -e ".[dev]"
 
 # Run tests (from repo root — pytest config is in pyproject.toml)
 pytest

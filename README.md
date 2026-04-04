@@ -45,7 +45,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 
 # Install dependencies + test extras
-pip install -e ".[test]"
+pip install -e ".[dev]"
 ```
 
 ### Running the Application
