@@ -3,8 +3,9 @@
 from unittest.mock import Mock
 
 import werkzeug
-from led.color import Color
+
 from http_server import create_app
+from led.color import Color
 
 
 def _build_client():
@@ -41,10 +42,14 @@ def test_list_effects_defaults():
 
 def test_start_breathing_effect():
     client, _, effect_runner = _build_client()
-    response = client.post("/effects/breathing", json={"color": "00FF00", "duration": 1500})
+    response = client.post(
+        "/effects/breathing", json={"color": "00FF00", "duration": 1500}
+    )
 
     assert response.status_code == 200
-    effect_runner.run_breathing_effect.assert_called_once_with(color=Color.GREEN, duration=1500)
+    effect_runner.run_breathing_effect.assert_called_once_with(
+        color=Color.GREEN, duration=1500
+    )
 
 
 def test_active_effect_clears_when_sequence_finishes():

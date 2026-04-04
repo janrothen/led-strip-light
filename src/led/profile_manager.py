@@ -3,16 +3,17 @@
 import datetime
 
 from config.config_manager import ConfigManager
+
 from .color import Color
 
-PROFILE_MORNING: str = 'profile.morning'
-PROFILE_EVENING: str = 'profile.evening'
+PROFILE_MORNING: str = "profile.morning"
+PROFILE_EVENING: str = "profile.evening"
 
 
 class ProfileManager:
     """
     Manages color profiles for different times of day.
-    
+
     Handles the logic for determining which profile is the active
     one based on the current time and retrieving color
     configurations from the configuration manager.
@@ -25,7 +26,7 @@ class ProfileManager:
         """Get Color object for the currently active profile."""
         active_profile = self._get_active_profile()
         return self._config.get_color_profile(active_profile).to_color()
-    
+
     def get_profile_color(self, profile_name: str) -> Color:
         """Get Color object for a specific profile."""
         color_profile = self._config.get_color_profile(profile_name)
@@ -35,7 +36,7 @@ class ProfileManager:
         """Get the currently active profile based on time of day."""
         now: datetime.datetime = datetime.datetime.now()
         return PROFILE_MORNING if self._is_morning(now) else PROFILE_EVENING
-    
+
     def _is_morning(self, now: datetime.datetime) -> bool:
         """Check if the given time is considered morning (before 12:00)."""
         return now.time() < datetime.time(12)

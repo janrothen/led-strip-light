@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
 import logging
+from collections.abc import Callable
 from threading import Thread
-from typing import Any, Callable
+from typing import Any
 
 from .color import Color
 from .gpio_service import GPIOService
 
 
-class LEDStripLightController(object):
+class LEDStripLightController:
     def __init__(self, gpio_service: GPIOService) -> None:
         self._gpio_service = gpio_service
         self._interrupt = False
@@ -44,7 +45,7 @@ class LEDStripLightController(object):
         if not color.is_black():
             self._last_color = color
         self._gpio_service.set_color(color)
-    
+
     def get_brightness_percentage(self) -> int:
         """Get brightness percentage (0–100%) based on the maximum RGB channel value."""
         current_color = self.get_color()
@@ -79,7 +80,7 @@ class LEDStripLightController(object):
         new_color = Color(r_new, g_new, b_new)
         self.set_color(new_color)
 
-    #region Sequence control
+    # region Sequence control
     def run_sequence(self, func: Callable, *args: Any, **kwargs: Any) -> None:
         self.stop_current_sequence()
         self.start_sequence(func, *args, **kwargs)
@@ -94,7 +95,7 @@ class LEDStripLightController(object):
         if not self.is_sequence_running():
             logging.debug("No sequence to stop.")
             return
-        
+
         logging.debug(f"Stopping sequence: {self._sequence.name}")
         self.interrupt()
         try:
@@ -121,4 +122,5 @@ class LEDStripLightController(object):
             func(*args, **kwargs)
         finally:
             self._reset_sequence()
-    #endregion    
+
+    # endregion

@@ -32,50 +32,66 @@ Notes:
     - Effects return early if strip.is_interrupted() becomes True.
 """
 
-import logging
-from time import sleep, monotonic
-from typing import Protocol, Iterable, Optional, Callable
-from .color import Color
-
-import random
 import colorsys
+import logging
 import math
+import random
+from collections.abc import Callable, Iterable
+from time import monotonic, sleep
+from typing import Protocol
+
+from .color import Color
 
 FADE_STEP_MS: float = 10.0  # 10 ms per step ≈ 100 Hz
 DEFAULT_EFFECT_DURATION_MS: int = 2000  # Default duration in milliseconds
 SRGB_GAMMA: float = 2.2  # Perceptual gamma used for sRGB-like fades (approximate)
 CHANNEL_MAX: float = 255.0  # 8-bit channel scale factor
 
+
 # ── Easing functions ───────────────────────────────────────────────────────
 def ease_linear(t: float) -> float:
     return t
 
+
 def ease_in_out_sine(t: float) -> float:
     # Smooth start and end
     from math import cos, pi
+
     return 0.5 * (1 - cos(pi * t))
+
 
 def ease_in_quad(t: float) -> float:
     return t * t
 
+
 def ease_out_quad(t: float) -> float:
     return t * (2 - t)
 
+
 EASE_DEFAULT = ease_in_out_sine
 
-FADE_PRESET_SMOOTH = {"ease": ease_in_out_sine, "gamma": SRGB_GAMMA}  # natural breath-like
-FADE_PRESET_SNAPPY = {"ease": ease_out_quad,    "gamma": SRGB_GAMMA}  # quick-in, gentle-out
-FADE_PRESET_LINEAR = {"ease": ease_linear,      "gamma": None} # straight linear
+FADE_PRESET_SMOOTH = {
+    "ease": ease_in_out_sine,
+    "gamma": SRGB_GAMMA,
+}  # natural breath-like
+FADE_PRESET_SNAPPY = {
+    "ease": ease_out_quad,
+    "gamma": SRGB_GAMMA,
+}  # quick-in, gentle-out
+FADE_PRESET_LINEAR = {"ease": ease_linear, "gamma": None}  # straight linear
 
 # Example usage:
 # fade_effect(strip, Color.BLACK, Color.WHITE, 2000, **FADE_PRESET_SMOOTH)
 # breathing_effect(strip, Color.RED, 2000, hold_ms=200, **FADE_PRESET_SMOOTH)
 # color_cycle_effect(strip, [Color.RED, Color.GREEN, Color.BLUE], 1500, **FADE_PRESET_LINEAR)
 
+
 class StripLike(Protocol):
     """Minimal interface needed by the effects in this module."""
+
     def set_color(self, color: Color) -> None: ...
     def is_interrupted(self) -> bool: ...
+
 
 def breathing_effect(
     strip: StripLike,
@@ -83,7 +99,7 @@ def breathing_effect(
     duration: int = DEFAULT_EFFECT_DURATION_MS,
     *,
     ease: Callable[[float], float] = ease_in_out_sine,
-    gamma: Optional[float] = None,
+    gamma: float | None = None,
     hold_ms: int = 0,
 ) -> None:
     """Creates a breathing effect by fading in and out.
@@ -99,14 +115,17 @@ def breathing_effect(
     while not strip.is_interrupted():
         fade_in_colors = [Color.BLACK, color]
         fade_out_colors = [color, Color.BLACK]
-        for (c_from, c_to) in zip(fade_in_colors, fade_out_colors):
+        for c_from, c_to in zip(fade_in_colors, fade_out_colors, strict=True):
             fade_effect(strip, c_from, c_to, duration, ease=ease, gamma=gamma)
             if strip.is_interrupted():
                 return
             if hold_ms:
                 sleep(hold_ms / 1000.0)
 
-def random_color_effect(strip: StripLike, duration: int = DEFAULT_EFFECT_DURATION_MS) -> None:
+
+def random_color_effect(
+    strip: StripLike, duration: int = DEFAULT_EFFECT_DURATION_MS
+) -> None:
     """Changes colors randomly at specified intervals.
 
     Args:
@@ -119,13 +138,14 @@ def random_color_effect(strip: StripLike, duration: int = DEFAULT_EFFECT_DURATIO
             return
         sleep(duration / 1000.0)
 
+
 def color_cycle_effect(
     strip: StripLike,
-    colors: Optional[Iterable[Color]] = None,
+    colors: Iterable[Color] | None = None,
     duration: int = DEFAULT_EFFECT_DURATION_MS,
     *,
     ease: Callable[[float], float] = ease_in_out_sine,
-    gamma: Optional[float] = None,
+    gamma: float | None = None,
     hold_ms: int = 500,
 ) -> None:
     """Cycle through `colors` with smooth transitions.
@@ -138,7 +158,9 @@ def color_cycle_effect(
         gamma: Optional gamma value (e.g., 2.2) for perceptual fades.
         hold_ms: Hold time (ms) after each fade before the next transition.
     """
-    palette = list(colors) if colors is not None else [Color.RED, Color.GREEN, Color.BLUE]
+    palette = (
+        list(colors) if colors is not None else [Color.RED, Color.GREEN, Color.BLUE]
+    )
     if not palette:
         return
 
@@ -153,12 +175,15 @@ def color_cycle_effect(
             current_color = palette[i]
             next_color = palette[(i + 1) % len(palette)]
 
-            fade_effect(strip, current_color, next_color, duration, ease=ease, gamma=gamma)
+            fade_effect(
+                strip, current_color, next_color, duration, ease=ease, gamma=gamma
+            )
 
             if strip.is_interrupted():
                 return
             if hold_ms:
                 sleep(hold_ms / 1000.0)
+
 
 def fade_effect(
     strip: StripLike,
@@ -167,7 +192,7 @@ def fade_effect(
     duration: int = DEFAULT_EFFECT_DURATION_MS,
     *,
     ease: Callable[[float], float] = ease_in_out_sine,
-    gamma: Optional[float] = None,
+    gamma: float | None = None,
 ) -> None:
     """Fade from color_start to color_end over duration (ms).
     Options:
@@ -182,7 +207,13 @@ def fade_effect(
 
     logging.debug(
         "Fading from R=%3d G=%3d B=%3d to R=%3d G=%3d B=%3d in %d steps",
-        r_start, g_start, b_start, r_end, g_end, b_end, steps,
+        r_start,
+        g_start,
+        b_start,
+        r_end,
+        g_end,
+        b_end,
+        steps,
     )
 
     start_time = monotonic()
@@ -210,7 +241,8 @@ def fade_effect(
     strip.set_color(color_end)
     logging.debug("Fade completed to %s", color_end)
 
-def _interp_channel(v0: int, v1: int, t: float, gamma: Optional[float]) -> int:
+
+def _interp_channel(v0: int, v1: int, t: float, gamma: float | None) -> int:
     """Interpolate one 8-bit channel from v0→v1 at progress t in [0,1].
     If gamma is provided, interpolate in linear light then encode back.
     """
@@ -222,25 +254,28 @@ def _interp_channel(v0: int, v1: int, t: float, gamma: Optional[float]) -> int:
         return int(round(enc * CHANNEL_MAX))
     return int(round(v0 + (v1 - v0) * t))
 
+
 def flickering_effect(
     strip: StripLike,
     *,
-    duration_ms: Optional[int] = None,
+    duration_ms: int | None = None,
     base_color: Color = Color.FLAME,
     update_hz: int = 60,
     min_brightness: float = 0.15,
     max_brightness: float = 1.00,
     hue_jitter: float = 0.02,
-    saturation: Optional[float] = None,
+    saturation: float | None = None,
     spark_chance: float = 0.02,
     spark_gain: float = 1.35,
     tau_ms: int = 120,
-    gamma: Optional[float] = SRGB_GAMMA,
+    gamma: float | None = SRGB_GAMMA,
 ) -> None:
     """Generic smoothed random walk + occasional spark flicker generator."""
     # Convert base color to HSV in 0..1
     r0, g0, b0 = base_color.rgb
-    h0, s0, v0 = colorsys.rgb_to_hsv(r0 / CHANNEL_MAX, g0 / CHANNEL_MAX, b0 / CHANNEL_MAX)
+    h0, s0, v0 = colorsys.rgb_to_hsv(
+        r0 / CHANNEL_MAX, g0 / CHANNEL_MAX, b0 / CHANNEL_MAX
+    )
     if saturation is not None:
         s0 = max(0.0, min(1.0, float(saturation)))
 
@@ -278,9 +313,9 @@ def flickering_effect(
         r_f, g_f, b_f = colorsys.hsv_to_rgb(current_h % 1.0, s0, current_v)
 
         if gamma and gamma > 0:
-            r = int(round((r_f ** gamma) * CHANNEL_MAX))
-            g = int(round((g_f ** gamma) * CHANNEL_MAX))
-            b = int(round((b_f ** gamma) * CHANNEL_MAX))
+            r = int(round((r_f**gamma) * CHANNEL_MAX))
+            g = int(round((g_f**gamma) * CHANNEL_MAX))
+            b = int(round((b_f**gamma) * CHANNEL_MAX))
         else:
             r = int(round(r_f * CHANNEL_MAX))
             g = int(round(g_f * CHANNEL_MAX))
@@ -296,20 +331,21 @@ def flickering_effect(
         next_due = now + period
         sleep(max(0.0, next_due - monotonic()))
 
+
 def campfire_effect(
     strip: StripLike,
     *,
-    duration_ms: Optional[int] = None,
+    duration_ms: int | None = None,
     base_color: Color = Color.FLAME,
     update_hz: int = 60,
     min_brightness: float = 0.15,
     max_brightness: float = 1.00,
     hue_jitter: float = 0.02,
-    saturation: Optional[float] = None,
+    saturation: float | None = None,
     spark_chance: float = 0.02,
     spark_gain: float = 1.35,
     tau_ms: int = 120,
-    gamma: Optional[float] = SRGB_GAMMA,
+    gamma: float | None = SRGB_GAMMA,
 ) -> None:
     """Warm, natural campfire style flicker preset."""
     flickering_effect(
@@ -327,20 +363,21 @@ def campfire_effect(
         gamma=gamma,
     )
 
+
 def candle_effect(
     strip: StripLike,
     *,
-    duration_ms: Optional[int] = None,
+    duration_ms: int | None = None,
     base_color: Color = Color.FLAME,
     update_hz: int = 40,
     min_brightness: float = 0.35,
     max_brightness: float = 0.85,
     hue_jitter: float = 0.008,
-    saturation: Optional[float] = None,
+    saturation: float | None = None,
     spark_chance: float = 0.005,
     spark_gain: float = 1.10,
     tau_ms: int = 300,
-    gamma: Optional[float] = SRGB_GAMMA,
+    gamma: float | None = SRGB_GAMMA,
 ) -> None:
     """Softer, slower candle flame variant preset."""
     flickering_effect(
@@ -357,6 +394,7 @@ def candle_effect(
         tau_ms=tau_ms,
         gamma=gamma,
     )
+
 
 __all__ = [
     "FADE_STEP_MS",
