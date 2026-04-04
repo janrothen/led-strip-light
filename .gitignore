@@ -10,6 +10,7 @@ venv/
 .vscode/*
 .coverage
 coverage.xml
+htmlcov/
 *.log
 
 .claude/settings.local.json

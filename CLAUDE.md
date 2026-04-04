@@ -4,32 +4,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-All commands run from the `src/` directory.
-
 ```bash
-# Setup
+# Setup (run from src/)
 cd src
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 pip install -r requirements-test.txt
 
-# Run tests
+# Run tests (from repo root — pytest config is in pyproject.toml)
 pytest
 
 # Run a single test file
-pytest tests/test_color.py
+pytest src/tests/test_color.py
 
 # Run tests with HTML coverage report
-pytest --cov=led --cov=config --cov=cli --cov=utils --cov-report=html
+pytest --cov-report=html
 
-# Start the HTTP server
-./http_server.py
+# Start the HTTP server (from src/)
+cd src && ./http_server.py
 
-# Run an effect via CLI
-./run.py profile
-./run.py breathing --color red --duration 3000
-./run.py campfire --duration 60000
+# Run an effect via CLI (from src/)
+cd src && ./run.py profile
+cd src && ./run.py breathing --color red --duration 3000
+cd src && ./run.py campfire --duration 60000
 ```
 
 ## Architecture

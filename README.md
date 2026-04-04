@@ -41,11 +41,13 @@ sudo systemctl start pigpiod
 Create and activate a virtual environment for development in the src directory:
 
 ```bash
+cd src
+
 # Create virtual environment
-python3 -m venv venv
+python3 -m venv .venv
 
 # Activate virtual environment
-source venv/bin/activate
+source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -87,17 +89,17 @@ The application supports multiple effects via command-line arguments:
 ```
 
 ### Running Tests
-The project includes comprehensive unit tests with hardware mocking:
+The project includes comprehensive unit tests with hardware mocking. Tests can be run from the repo root (pytest configuration is in `pyproject.toml`):
 
 ```bash
-# Run all tests
+# Run all tests (from repo root)
 pytest
 
-# Run specific test file
-pytest tests/test_color.py
+# Run a specific test file
+pytest src/tests/test_color.py
 
-# Run tests with detailed coverage report (generates HTML)
-pytest --cov=led --cov=config --cov=cli --cov=utils --cov-report=html
+# Run tests with HTML coverage report
+pytest --cov-report=html
 ```
 
 ### Project Structure
