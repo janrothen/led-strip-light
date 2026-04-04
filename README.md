@@ -29,10 +29,24 @@ Configure the scripts: [config.conf](src/config.conf)
 This project uses the [pigpio](https://abyz.me.uk/rpi/pigpio/download.html) library for PWM control of the GPIO pins. To install it on your Raspberry Pi:
 ```bash
 sudo apt-get install pigpio
-```
-then start the service
-```bash
+sudo systemctl enable pigpiod
 sudo systemctl start pigpiod
+```
+
+### Pi deployment
+
+```bash
+cd ~/raspberry/led-strip-light
+
+# Create venv and install runtime dependencies
+python3 -m venv .venv
+.venv/bin/pip install .
+
+# Install and start the systemd service
+sudo cp etc/systemd.d/ledstriplight-http-server.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable ledstriplight-http-server.service
+sudo systemctl start ledstriplight-http-server.service
 ```
 
 ## Development Setup
