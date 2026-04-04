@@ -50,9 +50,10 @@ minversion = "8.2"
 # -v: verbose output
 # --cov=<module>: measure coverage of project modules
 # --cov-report=term-missing: show lines that need coverage
-addopts = "-ra -v --cov=cli --cov=config --cov=led --cov=http_server --cov-report=term-missing"
+addopts = "-ra -v --cov=cli --cov=config --cov=led --cov=http_server --cov-report=term-missing --cov-report=xml --cov-config=pyproject.toml"
 testpaths = ["tests"]
 pythonpath = ["src"]
 
 [tool.coverage.run]
 source = ["src"]
+relative_files = true
