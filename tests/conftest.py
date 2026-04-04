@@ -7,13 +7,9 @@ Provides common test utilities, fixtures, and mocked dependencies
 for testing the LED strip light application without requiring actual hardware.
 """
 
-import sys
-from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
-
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from config.pin_assignment import PinAssignment
 from led.color import Color
