@@ -1,0 +1,31 @@
+[project]
+name = "led-strip-light"
+version = "1.0.0"
+description = "RGB LED strip controller for Raspberry Pi with HTTP API, CLI, and HomeKit integration"
+requires-python = ">=3.8"
+dependencies = [
+    "configparser>=7.1.0",
+    "flask>=2.3.2",
+    "pigpio>=1.78",
+    "python-dateutil>=2.8.2",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.3.3",
+    "pytest-mock>=3.12.0",
+    "pytest-cov>=4.0.0",
+]
+
+[tool.pytest.ini_options]
+minversion = "8.2"
+# -ra: show extra test summary info
+# -v: verbose output
+# --cov=<module>: measure coverage of project modules
+# --cov-report=term-missing: show lines that need coverage
+addopts = "-ra -v --cov=cli --cov=config --cov=led --cov=http_server --cov-report=term-missing"
+testpaths = ["src/tests"]
+pythonpath = ["src"]
+
+[tool.coverage.run]
+source = ["src"]
