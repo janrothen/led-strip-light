@@ -96,7 +96,7 @@ The project includes comprehensive unit tests with hardware mocking. Tests can b
 pytest
 
 # Run a specific test file
-pytest src/tests/test_color.py
+pytest tests/test_color.py
 
 # Run tests with HTML coverage report
 pytest --cov-report=html
