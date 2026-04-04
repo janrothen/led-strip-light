@@ -25,7 +25,7 @@ flowchart TD
     end
 
     SHUT["src/utils/graceful_shutdown.py"]
-    TESTS["src/tests/*"]
+    TESTS["tests/*"]
     PIGPIO[("pigpio daemon")]
 
     RUN --> CLI
