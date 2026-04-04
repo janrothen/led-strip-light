@@ -47,7 +47,7 @@ sudo systemctl start pigpiod
 cd ~/raspberry/led-strip-light
 
 # Create venv and install runtime dependencies
-python3 -m venv .venv
+python3 -m venv --upgrade-deps .venv
 .venv/bin/pip install .
 
 # Install and start the systemd service
@@ -63,7 +63,7 @@ sudo systemctl start ledstriplight-http-server.service
 
 ```bash
 # Create and activate virtual environment (from repo root)
-python3 -m venv .venv
+python3 -m venv --upgrade-deps .venv
 source .venv/bin/activate
 
 # Install dependencies + test extras

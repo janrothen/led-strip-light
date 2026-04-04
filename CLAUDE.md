@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # Setup (from repo root)
-python3 -m venv .venv
+python3 -m venv --upgrade-deps .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 
