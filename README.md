@@ -104,26 +104,26 @@ pytest --cov-report=html
 
 ### Project Structure
 ```
-ledstriplight/
+led-strip-light/
 ├── etc/
 │   ├── systemd.d/               # Systemd service files and installation guide
 │   ├── cron.d/                  # Cron job files for scheduled automation
 │   └── homebridge/              # Homebridge integration
-└── src/                         # Application source code
-    ├── run.py                   # Main application entry point
-    ├── http_server.py           # Flask REST API server
-    ├── led/                     # Core LED control modules
-    │   ├── effects.py           # LED effects (breathing, fade, etc.)
-    │   ├── effect_runner.py     # Effect runner
-    │   ├── gpio_service.py      # Hardware GPIO interface
-    │   ├── led_strip_light_controller.py # Main LED controller
-    │   └── profile_manager.py   # Time-based color profiles
-    ├── cli/
-    │   └── cli_handler.py       # Command-line interface handler
-    ├── config/
-        └── config_manager.py    # Configuration manager 
-    ├── utils/                   # Utilities (logging, shutdown handling)
-    └── tests/                   # Unit tests with mocked hardware
+├── src/                         # Application source code
+│   ├── run.py                   # Main application entry point
+│   ├── http_server.py           # Flask REST API server
+│   ├── led/                     # Core LED control modules
+│   │   ├── effects.py           # LED effects (breathing, fade, etc.)
+│   │   ├── effect_runner.py     # Effect runner
+│   │   ├── gpio_service.py      # Hardware GPIO interface
+│   │   ├── led_strip_light_controller.py # Main LED controller
+│   │   └── profile_manager.py   # Time-based color profiles
+│   ├── cli/
+│   │   └── cli_handler.py       # Command-line interface handler
+│   ├── config/
+│   │   └── config_manager.py    # Configuration manager
+│   └── utils/                   # Utilities (shutdown handling)
+└── tests/                       # Unit tests with mocked hardware
 ```
 
 ## REST API (Flask Server)
