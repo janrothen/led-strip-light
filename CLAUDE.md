@@ -5,12 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-# Setup (run from src/)
-cd src
+# Setup (from repo root)
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-pip install -r requirements-test.txt
+pip install -e ".[test]"
 
 # Run tests (from repo root — pytest config is in pyproject.toml)
 pytest
