@@ -2,7 +2,7 @@
 # Activation script for LED strip light project
 
 echo "🔧 Activating LED Strip Light Controller environment..."
-source .venv/bin/activate
+source "$(dirname "$0")/../.venv/bin/activate"
 echo "✅ Virtual environment activated"
 echo "📁 Project: LED Strip Light Controller"
 echo "🐍 Python: $(python --version)"
