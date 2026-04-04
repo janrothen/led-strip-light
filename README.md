@@ -17,7 +17,7 @@ Easily automate, script, or integrate your LED strip with smart home platforms a
 
 - LED strip light connected to a Raspberry Pi Zero W
 - Python 3
-- Python packages listed in [requirements.txt](src/requirements.txt)
+- Python 3.8+ with pip
 - pigpio daemon (for GPIO control)
 
 The guide [How to control a RGB LED Strip Light with a Raspberry Pi Zero W](https://janrothen.github.io/led-strip-light/pi-zero-w-rgb-led-strip-control.html) shows how to physically connect a 12 V RGB strip to a Raspberry Pi Zero W.
@@ -38,22 +38,14 @@ sudo systemctl start pigpiod
 ## Development Setup
 
 ### Virtual Environment
-Create and activate a virtual environment for development in the src directory:
 
 ```bash
-cd src
-
-# Create virtual environment
+# Create and activate virtual environment (from repo root)
 python3 -m venv .venv
-
-# Activate virtual environment
 source .venv/bin/activate
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Install test dependencies
-pip install -r requirements-test.txt
+# Install dependencies + test extras
+pip install -e ".[test]"
 ```
 
 ### Running the Application
