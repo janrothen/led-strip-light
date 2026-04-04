@@ -16,7 +16,7 @@ pip install -r requirements-test.txt
 pytest
 
 # Run a single test file
-pytest src/tests/test_color.py
+pytest tests/test_color.py
 
 # Run tests with HTML coverage report
 pytest --cov-report=html
