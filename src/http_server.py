@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-from flask import Flask, Response, send_from_directory, request, jsonify
+from flask import Flask, Response, jsonify, request, send_from_directory
 
 from config.config_manager import ConfigManager
+from led.color import Color
+from led.effect_runner import EffectRunner
 from led.gpio_service import GPIOService
 from led.led_strip_light_controller import LEDStripLightController
-from led.effect_runner import EffectRunner
 from led.profile_manager import ProfileManager
-from led.color import Color
 
 
 def create_app(
@@ -18,7 +18,7 @@ def create_app(
     profile_manager: ProfileManager = None,
     effect_runner: EffectRunner = None,
 ) -> Flask:
-    app = Flask(__name__, static_folder='static', static_url_path='')
+    app = Flask(__name__, static_folder="static", static_url_path="")
 
     if config_manager is None:
         config_manager = ConfigManager()
@@ -42,7 +42,7 @@ def create_app(
     active_effect = {"name": None}
 
     def _parse_color(value: str) -> Color:
-        return Color.from_hex(value.lstrip('#'))
+        return Color.from_hex(value.lstrip("#"))
 
     def _stop_active_effect() -> None:
         """Interrupt any running effect thread and clear active effect state."""
@@ -67,7 +67,7 @@ def create_app(
     # --- Static controller file serving --------------------------------------
     @app.route("/")
     def index():
-        return send_from_directory('static', 'index.html')
+        return send_from_directory("static", "index.html")
 
     # --- Basic LED control endpoints -----------------------------------------
     @app.route("/on", methods=["POST"])
@@ -112,18 +112,20 @@ def create_app(
     # --- Effect management ----------------------------------------------------
     @app.route("/effects", methods=["GET"])
     def list_effects():
-        return jsonify({
-            "active": _get_active_effect_name(),
-            "available": [
-                "breathing",
-                "campfire",
-                "candle",
-                "random",
-                "cycle",
-                "fade",
-                "profile"
-            ]
-        })
+        return jsonify(
+            {
+                "active": _get_active_effect_name(),
+                "available": [
+                    "breathing",
+                    "campfire",
+                    "candle",
+                    "random",
+                    "cycle",
+                    "fade",
+                    "profile",
+                ],
+            }
+        )
 
     @app.route("/effects/stop", methods=["POST"])
     def stop_effect():
@@ -138,20 +140,46 @@ def create_app(
             if effect_name == "breathing":
                 color_hex = data.get("color", "FF0000")
                 duration = int(data.get("duration", 2000))
-                effect_runner.run_breathing_effect(color=_parse_color(color_hex), duration=duration)
+                effect_runner.run_breathing_effect(
+                    color=_parse_color(color_hex), duration=duration
+                )
             elif effect_name == "campfire":
-                kwargs = {k: data[k] for k in [
-                    "duration", "update_hz", "min_brightness", "max_brightness", "hue_jitter",
-                    "saturation", "spark_chance", "spark_gain", "tau_ms", "gamma"
-                ] if k in data}
+                kwargs = {
+                    k: data[k]
+                    for k in [
+                        "duration",
+                        "update_hz",
+                        "min_brightness",
+                        "max_brightness",
+                        "hue_jitter",
+                        "saturation",
+                        "spark_chance",
+                        "spark_gain",
+                        "tau_ms",
+                        "gamma",
+                    ]
+                    if k in data
+                }
                 if "duration" in kwargs:
                     kwargs["duration"] = int(kwargs["duration"])
                 effect_runner.run_campfire_effect(**kwargs)
             elif effect_name == "candle":
-                kwargs = {k: data[k] for k in [
-                    "duration", "update_hz", "min_brightness", "max_brightness", "hue_jitter",
-                    "saturation", "spark_chance", "spark_gain", "tau_ms", "gamma"
-                ] if k in data}
+                kwargs = {
+                    k: data[k]
+                    for k in [
+                        "duration",
+                        "update_hz",
+                        "min_brightness",
+                        "max_brightness",
+                        "hue_jitter",
+                        "saturation",
+                        "spark_chance",
+                        "spark_gain",
+                        "tau_ms",
+                        "gamma",
+                    ]
+                    if k in data
+                }
                 if "duration" in kwargs:
                     kwargs["duration"] = int(kwargs["duration"])
                 effect_runner.run_candle_effect(**kwargs)

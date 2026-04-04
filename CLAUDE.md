@@ -10,6 +10,10 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 
+# Lint and format
+ruff check src/ tests/
+ruff format src/ tests/
+
 # Run tests (from repo root — pytest config is in pyproject.toml)
 pytest
 
