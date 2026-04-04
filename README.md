@@ -1,6 +1,14 @@
 
 # LED Strip Light
 
+![License](https://img.shields.io/badge/license-MIT-green)
+![Platform](https://img.shields.io/badge/platform-Raspberry%20Pi%20%7C%20Linux-lightgrey.svg)
+![Python](https://img.shields.io/badge/python-3.9%2B-blue)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=janrothen_led-strip-light&metric=alert_status)](https://sonarcloud.io/project/overview?id=janrothen_led-strip-light)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=janrothen_led-strip-light&metric=bugs)](https://sonarcloud.io/project/overview?id=janrothen_led-strip-light)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=janrothen_led-strip-light&metric=coverage)](https://sonarcloud.io/project/overview?id=janrothen_led-strip-light)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=janrothen_led-strip-light&metric=security_rating)](https://sonarcloud.io/project/overview?id=janrothen_led-strip-light)
+
 Feature-rich Raspberry Pi project for controlling an RGB LED strip light. Includes:
 
 - Web-based REST API (Flask) for remote control (on/off, color, brightness, effects)
