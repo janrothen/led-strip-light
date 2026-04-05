@@ -42,12 +42,12 @@ The application has two entry points that share the same core:
 Both entry points wire the same dependency chain:
 
 ```
-ConfigManager (reads config.conf)
+ConfigManager (reads config.toml)
     └─> PinAssignment (GPIO pin numbers)
 GPIOService (pigpio daemon, hardware abstraction)
     └─> LEDStripLightController (color/brightness logic + sequence threading)
         └─> EffectRunner (effect methods that delegate to effects.py functions)
-ProfileManager (time-based color selection from config.conf)
+ProfileManager (time-based color selection from config.toml)
 ```
 
 ### Key design points
@@ -56,7 +56,7 @@ ProfileManager (time-based color selection from config.conf)
 
 **Hardware is abstracted behind `GPIOService`.** Tests mock `pigpio` at the module level via the `patch_pigpio` fixture in `tests/conftest.py` — no real GPIO hardware needed for tests.
 
-**Configuration is read from `src/config.conf`** (INI format). It contains GPIO pin assignments (`[pins]`) and time-based color profiles (`[profile.morning]`, `[profile.evening]`). `ConfigManager` must be instantiated from the `src/` directory because it defaults to `config.conf` relative path.
+**Configuration is read from `src/config.toml`** (TOML format). It contains GPIO pin assignments (`[pins]`) and time-based color profiles (`[profile.morning]`, `[profile.evening]`). `ConfigManager` resolves the path automatically: CWD-first (production runs from `src/`), falling back to the `src/` directory relative to the module.
 
 **Color** is represented by `led/color.py`'s `Color` class (R, G, B 0–255). Named colors (`Color.RED`, `Color.BLACK`, etc.) are class attributes.
 
@@ -87,7 +87,7 @@ led-strip-light/
 │   │   └── index.html           # Web UI
 │   ├── utils/
 │   │   └── graceful_shutdown.py
-│   ├── config.conf              # GPIO pins and color profiles
+│   ├── config.toml              # GPIO pins and color profiles
 │   ├── http_server.py           # Flask REST API entry point
 │   └── run.py                   # CLI entry point
 └── tests/                       # Unit tests with mocked hardware
@@ -102,7 +102,7 @@ led-strip-light/
 | `led/led_strip_light_controller.py` | Color/brightness control + sequence thread management |
 | `led/gpio_service.py` | pigpio PWM interface |
 | `led/profile_manager.py` | Selects color profile by time of day |
-| `config/config_manager.py` | Reads `config.conf` via `configparser` |
+| `config/config_manager.py` | Reads `config.toml` via `tomllib`/`tomli` |
 | `cli/cli_handler.py` | argparse setup and effect dispatch |
 | `utils/graceful_shutdown.py` | SIGTERM/SIGINT handler |
 | `tests/conftest.py` | Shared fixtures; `patch_pigpio` mocks hardware |
