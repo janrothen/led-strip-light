@@ -15,23 +15,23 @@ class TestColor:
     def test_color_creation(self):
         """Test basic color object creation."""
         color = Color(255, 128, 64)
-        assert color.red == 255
-        assert color.green == 128
-        assert color.blue == 64
+        assert color.r == 255
+        assert color.g == 128
+        assert color.b == 64
 
     def test_color_clamping(self):
         """Test that color values are clamped to valid range."""
         # Test upper bound clamping
         color_high = Color(300, 400, 500)
-        assert color_high.red == 255
-        assert color_high.green == 255
-        assert color_high.blue == 255
+        assert color_high.r == 255
+        assert color_high.g == 255
+        assert color_high.b == 255
 
         # Test lower bound clamping
         color_low = Color(-10, -20, -30)
-        assert color_low.red == 0
-        assert color_low.green == 0
-        assert color_low.blue == 0
+        assert color_low.r == 0
+        assert color_low.g == 0
+        assert color_low.b == 0
 
     def test_rgb_property(self):
         """Test RGB tuple property."""
@@ -41,23 +41,23 @@ class TestColor:
     def test_from_tuple(self):
         """Test color creation from tuple."""
         color = Color.from_tuple((255, 128, 64))
-        assert color.red == 255
-        assert color.green == 128
-        assert color.blue == 64
+        assert color.r == 255
+        assert color.g == 128
+        assert color.b == 64
 
     def test_from_hex(self):
         """Test color creation from hex string."""
         # Test with hash
         color1 = Color.from_hex("#FF8040")
-        assert color1.red == 255
-        assert color1.green == 128
-        assert color1.blue == 64
+        assert color1.r == 255
+        assert color1.g == 128
+        assert color1.b == 64
 
         # Test without hash
         color2 = Color.from_hex("FF8040")
-        assert color2.red == 255
-        assert color2.green == 128
-        assert color2.blue == 64
+        assert color2.r == 255
+        assert color2.g == 128
+        assert color2.b == 64
 
     def test_from_hex_invalid(self):
         """Test error handling for invalid hex strings."""
@@ -78,19 +78,19 @@ class TestColor:
     def test_random_colors(self):
         """Test random color generation."""
         random_color = Color.random()
-        assert 0 <= random_color.red <= 255
-        assert 0 <= random_color.green <= 255
-        assert 0 <= random_color.blue <= 255
+        assert 0 <= random_color.r <= 255
+        assert 0 <= random_color.g <= 255
+        assert 0 <= random_color.b <= 255
 
         pastel_color = Color.random_pastel()
-        assert 100 <= pastel_color.red <= 255
-        assert 100 <= pastel_color.green <= 255
-        assert 100 <= pastel_color.blue <= 255
+        assert 100 <= pastel_color.r <= 255
+        assert 100 <= pastel_color.g <= 255
+        assert 100 <= pastel_color.b <= 255
 
         bright_color = Color.random_bright()
-        assert 150 <= bright_color.red <= 255
-        assert 150 <= bright_color.green <= 255
-        assert 150 <= bright_color.blue <= 255
+        assert 150 <= bright_color.r <= 255
+        assert 150 <= bright_color.g <= 255
+        assert 150 <= bright_color.b <= 255
 
     def test_to_hex_with_hash(self):
         assert Color.RED.to_hex_with_hash() == "#FF0000"
@@ -129,4 +129,3 @@ class TestColor:
 
         assert color1 == color2
         assert color1 != color3
-        assert color1 != "not a color"

@@ -37,6 +37,6 @@ class TestColorProfile:
         color = profile.to_color()
 
         assert isinstance(color, Color)
-        assert color.red == profile.red
-        assert color.green == profile.green
-        assert color.blue == profile.blue
+        assert color.r == profile.red
+        assert color.g == profile.green
+        assert color.b == profile.blue

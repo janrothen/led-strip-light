@@ -114,9 +114,9 @@ class TestLEDStripLightController:
                         f"Values differ by {difference_percent}% (actual={actual}, expected={expected})"
                     )
 
-        assert_close(actual_color.red, expected.red)
-        assert_close(actual_color.green, expected.green)
-        assert_close(actual_color.blue, expected.blue)
+        assert_close(actual_color.r, expected.r)
+        assert_close(actual_color.g, expected.g)
+        assert_close(actual_color.b, expected.b)
 
     @pytest.mark.parametrize(
         "r,g,b,expected",
