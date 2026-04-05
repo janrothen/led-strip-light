@@ -231,3 +231,61 @@ class TestEffectRunner:
         # Test that profile effect uses profile manager
         runner.run_profile_effect()
         mock_profile_manager.get_active_profile_color.assert_called_once()
+
+    def test_run_campfire_effect_default_params(
+        self, effect_runner, mock_strip_controller
+    ):
+        effect_runner.run_campfire_effect()
+        mock_strip_controller.run_sequence.assert_called_once()
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert "gamma" not in kwargs  # gamma not passed when None
+
+    def test_run_campfire_effect_with_gamma(self, effect_runner, mock_strip_controller):
+        effect_runner.run_campfire_effect(gamma=2.2)
+        mock_strip_controller.run_sequence.assert_called_once()
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert kwargs["gamma"] == pytest.approx(2.2)
+
+    def test_run_campfire_effect_custom_params(
+        self, effect_runner, mock_strip_controller
+    ):
+        effect_runner.run_campfire_effect(
+            duration=5000,
+            min_brightness=0.2,
+            max_brightness=0.9,
+            update_hz=30,
+        )
+        mock_strip_controller.run_sequence.assert_called_once()
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert kwargs["duration_ms"] == 5000
+        assert kwargs["min_brightness"] == pytest.approx(0.2)
+        assert kwargs["max_brightness"] == pytest.approx(0.9)
+        assert kwargs["update_hz"] == 30
+
+    def test_run_candle_effect_default_params(
+        self, effect_runner, mock_strip_controller
+    ):
+        effect_runner.run_candle_effect()
+        mock_strip_controller.run_sequence.assert_called_once()
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert "gamma" not in kwargs  # gamma not passed when None
+
+    def test_run_candle_effect_with_gamma(self, effect_runner, mock_strip_controller):
+        effect_runner.run_candle_effect(gamma=2.2)
+        mock_strip_controller.run_sequence.assert_called_once()
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert kwargs["gamma"] == pytest.approx(2.2)
+
+    def test_run_candle_effect_custom_params(
+        self, effect_runner, mock_strip_controller
+    ):
+        effect_runner.run_candle_effect(
+            duration=3000,
+            min_brightness=0.4,
+            max_brightness=0.8,
+        )
+        mock_strip_controller.run_sequence.assert_called_once()
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert kwargs["duration_ms"] == 3000
+        assert kwargs["min_brightness"] == pytest.approx(0.4)
+        assert kwargs["max_brightness"] == pytest.approx(0.8)

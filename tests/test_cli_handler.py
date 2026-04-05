@@ -11,7 +11,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from cli.cli_handler import CLIHandler
+from cli.cli_handler import CLIHandler, _positive_float, _positive_int, _unit_float
 from led.color import Color
 
 
@@ -309,3 +309,94 @@ class TestCLIHandler:
         assert "random" in help_text
         assert "cycle" in help_text
         assert "fade" in help_text
+
+    def test_execute_effect_campfire(self):
+        mock_runner = Mock()
+
+        args = Mock()
+        args.effect = "campfire"
+        args.base_color = "#ff9329"
+        args.duration_ms = None
+        args.update_hz = 60
+        args.min_brightness = 0.15
+        args.max_brightness = 1.0
+        args.hue_jitter = 0.02
+        args.saturation = None
+        args.spark_chance = 0.02
+        args.spark_gain = 1.35
+        args.tau_ms = 120
+        args.gamma = None
+
+        CLIHandler.execute_effect(mock_runner, args)
+        mock_runner.run_campfire_effect.assert_called_once()
+
+    def test_execute_effect_candle(self):
+        mock_runner = Mock()
+
+        args = Mock()
+        args.effect = "candle"
+        args.base_color = "#ff9329"
+        args.duration_ms = None
+        args.update_hz = 40
+        args.min_brightness = 0.35
+        args.max_brightness = 0.85
+        args.hue_jitter = 0.008
+        args.saturation = None
+        args.spark_chance = 0.005
+        args.spark_gain = 1.10
+        args.tau_ms = 300
+        args.gamma = None
+
+        CLIHandler.execute_effect(mock_runner, args)
+        mock_runner.run_candle_effect.assert_called_once()
+
+    def test_parser_campfire_subcommand(self):
+        parser = CLIHandler.create_parser()
+
+        args = parser.parse_args(["campfire"])
+        assert args.effect == "campfire"
+        assert args.duration_ms is None
+        assert args.update_hz == 60
+
+        args = parser.parse_args(["campfire", "--duration", "30000", "--update-hz", "30"])
+        assert args.duration_ms == 30000
+        assert args.update_hz == 30
+
+    def test_parser_candle_subcommand(self):
+        parser = CLIHandler.create_parser()
+
+        args = parser.parse_args(["candle"])
+        assert args.effect == "candle"
+        assert args.duration_ms is None
+        assert args.update_hz == 40
+
+    def test_positive_int_valid(self):
+        assert _positive_int("5") == 5
+        assert _positive_int("1") == 1
+
+    def test_positive_int_invalid(self):
+        with pytest.raises(argparse.ArgumentTypeError):
+            _positive_int("0")
+        with pytest.raises(argparse.ArgumentTypeError):
+            _positive_int("-1")
+
+    def test_unit_float_valid(self):
+        assert _unit_float("0.0") == pytest.approx(0.0)
+        assert _unit_float("0.5") == pytest.approx(0.5)
+        assert _unit_float("1.0") == pytest.approx(1.0)
+
+    def test_unit_float_invalid(self):
+        with pytest.raises(argparse.ArgumentTypeError):
+            _unit_float("-0.1")
+        with pytest.raises(argparse.ArgumentTypeError):
+            _unit_float("1.1")
+
+    def test_positive_float_valid(self):
+        assert _positive_float("0.1") == pytest.approx(0.1)
+        assert _positive_float("2.2") == pytest.approx(2.2)
+
+    def test_positive_float_invalid(self):
+        with pytest.raises(argparse.ArgumentTypeError):
+            _positive_float("0.0")
+        with pytest.raises(argparse.ArgumentTypeError):
+            _positive_float("-1.0")
