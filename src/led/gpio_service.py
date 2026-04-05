@@ -41,6 +41,6 @@ class GPIOService:
             return Color.BLACK
 
     def set_color(self, color: Color = Color.BLACK) -> None:
-        self.pi.set_PWM_dutycycle(self._red_pin, color.red)
-        self.pi.set_PWM_dutycycle(self._green_pin, color.green)
-        self.pi.set_PWM_dutycycle(self._blue_pin, color.blue)
+        self.pi.set_PWM_dutycycle(self._red_pin, color.r)
+        self.pi.set_PWM_dutycycle(self._green_pin, color.g)
+        self.pi.set_PWM_dutycycle(self._blue_pin, color.b)

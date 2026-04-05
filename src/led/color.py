@@ -23,9 +23,9 @@ class Color:
         r, g, b = red
     """
 
-    red: int = field(default=0)
-    green: int = field(default=0)
-    blue: int = field(default=0)
+    r: int = field(default=0)
+    g: int = field(default=0)
+    b: int = field(default=0)
 
     # Predefined color constants
     BLACK: ClassVar["Color"]
@@ -46,9 +46,9 @@ class Color:
     FLAME: ClassVar["Color"]  # Warm candle / flame amber (255,147,41)
 
     def __post_init__(self):
-        object.__setattr__(self, "red", self._clamp(self.red))
-        object.__setattr__(self, "green", self._clamp(self.green))
-        object.__setattr__(self, "blue", self._clamp(self.blue))
+        object.__setattr__(self, "r", self._clamp(self.r))
+        object.__setattr__(self, "g", self._clamp(self.g))
+        object.__setattr__(self, "b", self._clamp(self.b))
 
     @staticmethod
     def _clamp(value: Any) -> int:
@@ -58,7 +58,7 @@ class Color:
     @property
     def rgb(self) -> tuple[int, int, int]:
         """Return color as (red, green, blue) tuple."""
-        return (self.red, self.green, self.blue)
+        return (self.r, self.g, self.b)
 
     @classmethod
     def from_tuple(cls, rgb_tuple: tuple[int, int, int]) -> "Color":
@@ -72,10 +72,10 @@ class Color:
         if len(hex_string) != 6:
             raise ValueError("Hex string must be 6 characters")
         try:
-            r = int(hex_string[0:2], 16)
-            g = int(hex_string[2:4], 16)
-            b = int(hex_string[4:6], 16)
-            return cls(r, g, b)
+            red = int(hex_string[0:2], 16)
+            green = int(hex_string[2:4], 16)
+            blue = int(hex_string[4:6], 16)
+            return cls(red, green, blue)
         except ValueError as e:
             raise ValueError("Invalid hex color string") from e
 
@@ -100,11 +100,11 @@ class Color:
 
     def is_black(self) -> bool:
         """Check if the color is black (all channels are 0)."""
-        return self.red == 0 and self.green == 0 and self.blue == 0
+        return self.r == 0 and self.g == 0 and self.b == 0
 
     def max_channel(self) -> int:
         """Return the maximum channel value (R, G, or B)."""
-        return max(self.red, self.green, self.blue)
+        return max(self.r, self.g, self.b)
 
     def to_hex_with_hash(self) -> str:
         """Return the color as a hex string with a leading '#' (e.g. '#FF00FF')."""
@@ -112,13 +112,13 @@ class Color:
 
     def to_hex(self) -> str:
         """Return the color as a hex string without a leading '#' (e.g. 'FF00FF')."""
-        return f"{self.red:02X}{self.green:02X}{self.blue:02X}"
+        return f"{self.r:02X}{self.g:02X}{self.b:02X}"
 
     def __str__(self) -> str:
-        return f"Color(R={self.red}, G={self.green}, B={self.blue})"
+        return f"Color(R={self.r}, G={self.g}, B={self.b})"
 
     def __repr__(self) -> str:
-        return f"Color({self.red}, {self.green}, {self.blue})"
+        return f"Color({self.r}, {self.g}, {self.b})"
 
     def __iter__(self):
         """Allow unpacking: r, g, b = color"""

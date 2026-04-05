@@ -46,21 +46,21 @@ class TestCLIHandler:
     def test_parse_color_hex_with_hash(self):
         """Test parsing hex colors with hash prefix."""
         color = CLIHandler.parse_color("#FF0000")
-        assert color.red == 255
-        assert color.green == 0
-        assert color.blue == 0
+        assert color.r == 255
+        assert color.g == 0
+        assert color.b == 0
 
         color = CLIHandler.parse_color("#00FF80")
-        assert color.red == 0
-        assert color.green == 255
-        assert color.blue == 128
+        assert color.r == 0
+        assert color.g == 255
+        assert color.b == 128
 
     def test_parse_color_hex_without_hash(self):
         """Test parsing hex colors without hash prefix."""
         color = CLIHandler.parse_color("FF0000")
-        assert color.red == 255
-        assert color.green == 0
-        assert color.blue == 0
+        assert color.r == 255
+        assert color.g == 0
+        assert color.b == 0
 
     def test_parse_color_invalid(self):
         """Test parsing invalid color names raises error."""

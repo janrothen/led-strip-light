@@ -64,9 +64,9 @@ class LEDStripLightController:
             raise ValueError("Brightness must be between 0 and 100")
 
         current_color = self.get_color()
-        r_current = current_color.red
-        g_current = current_color.green
-        b_current = current_color.blue
+        r_current = current_color.r
+        g_current = current_color.g
+        b_current = current_color.b
 
         r_new = g_new = b_new = 0
         if current_color.is_black():
