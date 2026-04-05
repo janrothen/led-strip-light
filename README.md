@@ -21,12 +21,16 @@ Feature-rich Raspberry Pi project for controlling an RGB LED strip light. Includ
 
 Easily automate, script, or integrate your LED strip with smart home platforms and custom workflows.
 
-## Prerequisites
+## Requirements
 
-- LED strip light connected to a Raspberry Pi Zero W
-- Python 3
-- Python 3.9+ with pip
-- pigpio daemon (for GPIO control)
+**Hardware**
+- Raspberry Pi (tested on Pi Zero W Rev 1.1)
+- LED strip light
+
+**Software**
+- Python 3.9+
+- pip dependencies: `requests`, `Pillow` (see `pyproject.toml`)
+- Raspberry Pi extras: `RPi.GPIO`, `spidev`, `pigpio`, `gpiozero`, `numpy`, `waveshare-epd` (installed via `pip install -e ".[rpi]"`)
 
 The guide [How to control a RGB LED Strip Light with a Raspberry Pi Zero W](https://janrothen.github.io/led-strip-light/pi-zero-w-rgb-led-strip-control.html) shows how to physically connect a 12 V RGB strip to a Raspberry Pi Zero W.
 
@@ -239,3 +243,12 @@ curl -X POST http://localhost:5000/effects/stop
 You can integrate the LED strip with Homebridge for Apple HomeKit support. All installation and configuration instructions, including example Homebridge accessory configuration, can be found in the `deploy/homebridge/` directory of this repository.
 
 See [`README.md`](deploy/homebridge/README.md) for details on how to set up Homebridge integration and connect it to the Flask server endpoints.
+
+## Contributing
+
+Found a bug or have an idea? Open an issue or send a PR.
+Run `pytest` before submitting and keep changes focused.
+
+## License
+
+MIT © Jan Rothen — see [LICENSE](LICENSE) for details.
