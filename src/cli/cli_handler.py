@@ -272,6 +272,36 @@ Examples:
         return parser
 
     @staticmethod
+    def _run_flame_effect(effect_runner, method_name, import_name, args, base_color):
+        """Run campfire or candle via dedicated runner method, falling back to direct dispatch."""
+        runner_method = getattr(effect_runner, method_name, None)
+        kwargs = {
+            "duration": args.duration_ms,
+            "base_color": base_color,
+            "update_hz": args.update_hz,
+            "min_brightness": args.min_brightness,
+            "max_brightness": args.max_brightness,
+            "hue_jitter": args.hue_jitter,
+            "saturation": args.saturation,
+            "spark_chance": args.spark_chance,
+            "spark_gain": args.spark_gain,
+            "tau_ms": args.tau_ms,
+            "gamma": args.gamma,
+        }
+        if runner_method is not None:
+            runner_method(**kwargs)
+        else:
+            try:
+                import importlib
+
+                effect_fn = getattr(importlib.import_module("led.effects"), import_name)
+                effect_runner.strip.run_sequence(effect_fn, effect_runner.strip, **kwargs)
+            except Exception as e:
+                raise RuntimeError(
+                    f"EffectRunner lacks {method_name} and generic run_sequence fallback failed"
+                ) from e
+
+    @staticmethod
     def execute_effect(effect_runner, args):
         """Execute the specified effect with parsed arguments."""
         if args.effect == "profile":
@@ -286,85 +316,11 @@ Examples:
 
         elif args.effect == "campfire":
             base_color = CLIHandler.parse_color(args.base_color)
-            # Prefer a dedicated runner method if available
-            if hasattr(effect_runner, "run_campfire_effect"):
-                effect_runner.run_campfire_effect(
-                    duration=args.duration_ms,
-                    base_color=base_color,
-                    update_hz=args.update_hz,
-                    min_brightness=args.min_brightness,
-                    max_brightness=args.max_brightness,
-                    hue_jitter=args.hue_jitter,
-                    saturation=args.saturation,
-                    spark_chance=args.spark_chance,
-                    spark_gain=args.spark_gain,
-                    tau_ms=args.tau_ms,
-                    gamma=args.gamma,
-                )
-            else:
-                # Fallback: call the effect directly if the runner has a generic interface
-                try:
-                    from led.effects import campfire_effect
-
-                    effect_runner.strip.run_sequence(
-                        campfire_effect,
-                        effect_runner.strip,
-                        duration_ms=args.duration_ms,
-                        base_color=base_color,
-                        update_hz=args.update_hz,
-                        min_brightness=args.min_brightness,
-                        max_brightness=args.max_brightness,
-                        hue_jitter=args.hue_jitter,
-                        saturation=args.saturation,
-                        spark_chance=args.spark_chance,
-                        spark_gain=args.spark_gain,
-                        tau_ms=args.tau_ms,
-                        gamma=args.gamma,
-                    )
-                except Exception as e:
-                    raise RuntimeError(
-                        "EffectRunner lacks run_campfire_effect and generic run_sequence fallback failed"
-                    ) from e
+            CLIHandler._run_flame_effect(effect_runner, "run_campfire_effect", "campfire_effect", args, base_color)
 
         elif args.effect == "candle":
             base_color = CLIHandler.parse_color(args.base_color)
-            if hasattr(effect_runner, "run_candle_effect"):
-                effect_runner.run_candle_effect(
-                    duration=args.duration_ms,
-                    base_color=base_color,
-                    update_hz=args.update_hz,
-                    min_brightness=args.min_brightness,
-                    max_brightness=args.max_brightness,
-                    hue_jitter=args.hue_jitter,
-                    saturation=args.saturation,
-                    spark_chance=args.spark_chance,
-                    spark_gain=args.spark_gain,
-                    tau_ms=args.tau_ms,
-                    gamma=args.gamma,
-                )
-            else:
-                try:
-                    from led.effects import candle_effect
-
-                    effect_runner.strip.run_sequence(
-                        candle_effect,
-                        effect_runner.strip,
-                        duration_ms=args.duration_ms,
-                        base_color=base_color,
-                        update_hz=args.update_hz,
-                        min_brightness=args.min_brightness,
-                        max_brightness=args.max_brightness,
-                        hue_jitter=args.hue_jitter,
-                        saturation=args.saturation,
-                        spark_chance=args.spark_chance,
-                        spark_gain=args.spark_gain,
-                        tau_ms=args.tau_ms,
-                        gamma=args.gamma,
-                    )
-                except Exception as e:
-                    raise RuntimeError(
-                        "EffectRunner lacks run_candle_effect and generic run_sequence fallback failed"
-                    ) from e
+            CLIHandler._run_flame_effect(effect_runner, "run_candle_effect", "candle_effect", args, base_color)
 
         elif args.effect == "cycle":
             colors = CLIHandler.parse_colors(args.colors)
