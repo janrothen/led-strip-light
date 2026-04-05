@@ -240,14 +240,33 @@ def test_stop_effect_when_not_running():
     led_controller.stop_current_sequence.assert_not_called()
 
 
-def test_stop_effect_exception_is_swallowed():
+def test_stop_effect_timeout_is_swallowed():
     client, led_controller, _ = _build_client()
     led_controller.is_sequence_running.return_value = True
-    led_controller.stop_current_sequence.side_effect = RuntimeError("boom")
+    led_controller.stop_current_sequence.side_effect = TimeoutError("stuck")
 
     response = client.post("/effects/stop")
 
     assert response.status_code == 200
+
+
+def test_stop_effect_clears_name_even_on_timeout():
+    client, led_controller, _ = _build_client()
+
+    # Start an effect so active_effect["name"] is set
+    led_controller.is_sequence_running.return_value = False
+    client.post("/effects/random")
+
+    # Now simulate a stuck sequence on stop
+    led_controller.is_sequence_running.return_value = True
+    led_controller.stop_current_sequence.side_effect = TimeoutError("stuck")
+
+    client.post("/effects/stop")
+
+    # Name must be cleared regardless of the timeout
+    led_controller.is_sequence_running.return_value = False
+    payload = client.get("/effects").get_json()
+    assert payload["active"] is None
 
 
 def test_start_effect_exception_returns_400():
