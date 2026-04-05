@@ -11,20 +11,22 @@
 #   - Start:   sudo systemctl start homebridge.service
 #   - Stop:    sudo systemctl stop homebridge.service
 #   - Restart: sudo systemctl restart homebridge.service
-#   - Status:  sudo systemctl status homebridge.service
-#   - Logs:    sudo journalctl -u homebridge.service -f
+#   - Status:  systemctl status homebridge.service
+#   - Logs:    journalctl -u homebridge.service -f
 
 [Unit]
 Description=Homebridge HomeKit Server
 After=network-online.target
 Wants=network-online.target
+StartLimitBurst=5
+StartLimitIntervalSec=60
 
 [Service]
 Type=simple
 User=pi
 Group=pi
-WorkingDirectory=/home/pi/.homebridge
-ExecStart=/usr/local/bin/homebridge
+WorkingDirectory=/home/pi
+ExecStart=/usr/local/bin/homebridge -U /home/pi/.homebridge
 StandardOutput=journal
 StandardError=journal
 Restart=on-failure
