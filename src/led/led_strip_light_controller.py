@@ -98,11 +98,7 @@ class LEDStripLightController:
 
         logging.debug(f"Stopping sequence: {self._sequence.name}")
         self.interrupt()
-        try:
-            self._sequence._sequence_stop_signal = True
-            self._sequence.join(timeout)
-        except AttributeError:
-            pass
+        self._sequence.join(timeout)
 
         self._reset_sequence()
 

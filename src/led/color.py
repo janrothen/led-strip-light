@@ -90,12 +90,12 @@ class Color:
 
     @classmethod
     def random_pastel(cls) -> "Color":
-        """Create a random bright color with minimum brightness per channel."""
+        """Create a random pastel color (lighter, softer colors)."""
         return cls.random(100)
 
     @classmethod
     def random_bright(cls) -> "Color":
-        """Create a random pastel color (lighter, softer colors)."""
+        """Create a random bright color with minimum brightness per channel."""
         return cls.random(150)
 
     def is_black(self) -> bool:

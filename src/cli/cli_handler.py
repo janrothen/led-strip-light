@@ -5,6 +5,27 @@ import argparse
 from led.color import Color
 
 
+def _positive_int(value):
+    v = int(value)
+    if v <= 0:
+        raise argparse.ArgumentTypeError(f"{value} must be a positive integer")
+    return v
+
+
+def _unit_float(value):
+    v = float(value)
+    if not (0.0 <= v <= 1.0):
+        raise argparse.ArgumentTypeError(f"{value} must be between 0.0 and 1.0")
+    return v
+
+
+def _positive_float(value):
+    v = float(value)
+    if v <= 0.0:
+        raise argparse.ArgumentTypeError(f"{value} must be a positive number")
+    return v
+
+
 class CLIHandler:
     """Handles command-line argument parsing and validation."""
 
@@ -114,53 +135,53 @@ Examples:
             help="Total duration in milliseconds (default: run until interrupted)",
         )
         campfire_parser.add_argument(
-            "--update-hz", type=int, default=60, help="Update rate in Hz (default: 60)"
+            "--update-hz", type=_positive_int, default=60, help="Update rate in Hz (default: 60)"
         )
         campfire_parser.add_argument(
             "--min-brightness",
-            type=float,
+            type=_unit_float,
             default=0.15,
             help="Minimum perceived brightness 0..1 (default: 0.15)",
         )
         campfire_parser.add_argument(
             "--max-brightness",
-            type=float,
+            type=_unit_float,
             default=1.0,
             help="Maximum perceived brightness 0..1 (default: 1.0)",
         )
         campfire_parser.add_argument(
             "--hue-jitter",
-            type=float,
+            type=_unit_float,
             default=0.02,
             help="Hue variation around base color (default: 0.02)",
         )
         campfire_parser.add_argument(
             "--saturation",
-            type=float,
+            type=_unit_float,
             default=None,
             help="Override saturation 0..1 (default: base color saturation)",
         )
         campfire_parser.add_argument(
             "--spark-chance",
-            type=float,
+            type=_unit_float,
             default=0.02,
             help="Chance per tick of a brief spark 0..1 (default: 0.02)",
         )
         campfire_parser.add_argument(
             "--spark-gain",
-            type=float,
+            type=_positive_float,
             default=1.35,
             help="Spark intensity multiplier (default: 1.35)",
         )
         campfire_parser.add_argument(
             "--tau-ms",
-            type=int,
+            type=_positive_int,
             default=120,
             help="Smoothing time constant in ms (default: 120)",
         )
         campfire_parser.add_argument(
             "--gamma",
-            type=float,
+            type=_positive_float,
             default=None,
             help="Perceptual gamma (e.g., 2.2). Default: effect default",
         )
@@ -183,53 +204,53 @@ Examples:
             help="Total duration in milliseconds (default: run until interrupted)",
         )
         candle_parser.add_argument(
-            "--update-hz", type=int, default=40, help="Update rate in Hz (default: 40)"
+            "--update-hz", type=_positive_int, default=40, help="Update rate in Hz (default: 40)"
         )
         candle_parser.add_argument(
             "--min-brightness",
-            type=float,
+            type=_unit_float,
             default=0.35,
             help="Minimum perceived brightness 0..1 (default: 0.35)",
         )
         candle_parser.add_argument(
             "--max-brightness",
-            type=float,
+            type=_unit_float,
             default=0.85,
             help="Maximum perceived brightness 0..1 (default: 0.85)",
         )
         candle_parser.add_argument(
             "--hue-jitter",
-            type=float,
+            type=_unit_float,
             default=0.008,
             help="Hue variation around base color (default: 0.008)",
         )
         candle_parser.add_argument(
             "--saturation",
-            type=float,
+            type=_unit_float,
             default=None,
             help="Override saturation 0..1 (default: base color saturation)",
         )
         candle_parser.add_argument(
             "--spark-chance",
-            type=float,
+            type=_unit_float,
             default=0.005,
             help="Chance per tick of a brief spark 0..1 (default: 0.005)",
         )
         candle_parser.add_argument(
             "--spark-gain",
-            type=float,
+            type=_positive_float,
             default=1.10,
             help="Spark intensity multiplier (default: 1.10)",
         )
         candle_parser.add_argument(
             "--tau-ms",
-            type=int,
+            type=_positive_int,
             default=300,
             help="Smoothing time constant in ms (default: 300)",
         )
         candle_parser.add_argument(
             "--gamma",
-            type=float,
+            type=_positive_float,
             default=None,
             help="Perceptual gamma (e.g., 2.2). Default: effect default",
         )

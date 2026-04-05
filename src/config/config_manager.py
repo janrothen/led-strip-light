@@ -12,9 +12,12 @@ from .pin_assignment import PinAssignment
 
 # Prefer config.toml next to the current working directory (production: the
 # systemd WorkingDirectory). Fall back to src/ for development.
-_CWD_CONFIG = Path.cwd() / "config.toml"
 _REPO_CONFIG = Path(__file__).parents[1] / "config.toml"
-_CONFIG_PATH = _CWD_CONFIG if _CWD_CONFIG.exists() else _REPO_CONFIG
+
+
+def _default_config_path() -> Path:
+    cwd_config = Path.cwd() / "config.toml"
+    return cwd_config if cwd_config.exists() else _REPO_CONFIG
 
 PINS = "pins"
 R = "red"
@@ -39,7 +42,7 @@ class ConfigManager:
         if config_path is not None:
             self._config_path = Path(config_path)
         else:
-            self._config_path = _CONFIG_PATH
+            self._config_path = _default_config_path()
         self._load_config()
 
     def reload(self) -> None:

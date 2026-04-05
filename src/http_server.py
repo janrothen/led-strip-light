@@ -11,6 +11,8 @@ from led.gpio_service import GPIOService
 from led.led_strip_light_controller import LEDStripLightController
 from led.profile_manager import ProfileManager
 
+_FLAME_KEYS_INT = {"duration", "update_hz", "tau_ms"}
+_FLAME_KEYS_FLOAT = {"min_brightness", "max_brightness", "hue_jitter", "saturation", "spark_chance", "spark_gain", "gamma"}
 _FLAME_KEYS = [
     "duration",
     "update_hz",
@@ -30,9 +32,14 @@ def _parse_color(value: str) -> Color:
 
 
 def _parse_flame_kwargs(data: dict) -> dict:
-    kwargs = {k: data[k] for k in _FLAME_KEYS if k in data}
-    if "duration" in kwargs:
-        kwargs["duration"] = int(kwargs["duration"])
+    kwargs = {}
+    for k in _FLAME_KEYS:
+        if k not in data:
+            continue
+        if k in _FLAME_KEYS_INT:
+            kwargs[k] = int(data[k])
+        elif k in _FLAME_KEYS_FLOAT:
+            kwargs[k] = float(data[k])
     return kwargs
 
 
