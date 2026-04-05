@@ -6,8 +6,8 @@ from config.config_manager import ConfigManager
 
 from .color import Color
 
-PROFILE_MORNING: str = "profile.morning"
-PROFILE_EVENING: str = "profile.evening"
+PROFILE_MORNING: str = "morning"
+PROFILE_EVENING: str = "evening"
 
 
 class ProfileManager:

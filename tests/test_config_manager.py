@@ -20,7 +20,7 @@ class TestConfigManager:
 
     def create_test_config(self, content):
         """Helper to create temporary config file."""
-        fd, path = tempfile.mkstemp(suffix=".conf")
+        fd, path = tempfile.mkstemp(suffix=".toml")
         try:
             with os.fdopen(fd, "w") as f:
                 f.write(content)
@@ -46,7 +46,7 @@ blue = 100
 red = 255
 green = 50
 blue = 0
-        """
+"""
 
         config_path = self.create_test_config(config_content)
         try:
@@ -59,7 +59,7 @@ blue = 0
             assert pin_assignment.blue == 20
 
             # Test profile colors
-            morning_colors = config.get_color_profile("profile.morning").to_color()
+            morning_colors = config.get_color_profile("morning").to_color()
             assert morning_colors == Color(255, 200, 100)
 
         finally:
@@ -68,14 +68,14 @@ blue = 0
     def test_missing_config_file(self):
         """Test error handling for missing config file."""
         with pytest.raises(FileNotFoundError):
-            ConfigManager("nonexistent_config.conf")
+            ConfigManager("nonexistent_config.toml")
 
     def test_invalid_pin_config(self):
         """Test error handling for invalid pin configuration."""
         config_content = """
 [pins]
-red = invalid_number
-        """
+red = "invalid_string"
+"""
 
         config_path = self.create_test_config(config_content)
         try:
@@ -92,12 +92,12 @@ red = invalid_number
 red = 18
 green = 19
 blue = 20
-        """
+"""
 
         config_path = self.create_test_config(config_content)
         try:
             config = ConfigManager(config_path)
             with pytest.raises(ValueError):
-                config.get_color_profile("profile.nonexistent")
+                config.get_color_profile("nonexistent")
         finally:
             os.unlink(config_path)
