@@ -51,7 +51,7 @@ python3 -m venv --upgrade-deps .venv
 .venv/bin/pip install .
 
 # Install and start the systemd service
-sudo cp etc/systemd.d/ledstriplight-http-server.service /etc/systemd/system/
+sudo cp deploy/systemd/ledstriplight-http-server.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable ledstriplight-http-server.service
 sudo systemctl start ledstriplight-http-server.service
@@ -119,9 +119,9 @@ pytest --cov-report=html
 ### Project Structure
 ```
 led-strip-light/
-├── etc/
-│   ├── systemd.d/               # Systemd service files and installation guide
-│   ├── cron.d/                  # Cron job files for scheduled automation
+├── deploy/
+│   ├── systemd/                 # Systemd service files and installation guide
+│   ├── cron/                    # Cron job files for scheduled automation
 │   └── homebridge/              # Homebridge integration
 ├── src/                         # Application source code
 │   ├── run.py                   # Main application entry point
@@ -223,6 +223,6 @@ curl -X POST http://localhost:5000/effects/stop
 
 ## Homebridge Integration
 
-You can integrate the LED strip with Homebridge for Apple HomeKit support. All installation and configuration instructions, including example Homebridge accessory configuration, can be found in the `etc/homebridge/` directory of this repository.
+You can integrate the LED strip with Homebridge for Apple HomeKit support. All installation and configuration instructions, including example Homebridge accessory configuration, can be found in the `deploy/homebridge/` directory of this repository.
 
-See [`README.md`](etc/homebridge/README.md) for details on how to set up Homebridge integration and connect it to the Flask server endpoints.
+See [`README.md`](deploy/homebridge/README.md) for details on how to set up Homebridge integration and connect it to the Flask server endpoints.

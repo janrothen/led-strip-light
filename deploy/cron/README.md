@@ -1,5 +1,5 @@
 # Automated Scheduling with Cron
-The project includes a sample cron file (`etc/cron.d/ledstriplight`) that triggers the running Flask server via HTTP to start a profile effect (on) and turn the LEDs off at specific times.
+The project includes a sample cron file (`deploy/cron/ledstriplight`) that triggers the running Flask server via HTTP to start a profile effect (on) and turn the LEDs off at specific times.
 
 This keeps a single always-on server and avoids launching separate processes from cron.
 
@@ -8,7 +8,7 @@ This keeps a single always-on server and avoids launching separate processes fro
 ### 1. Copy the scheduling file
 Copy the cron file to the cron.d directory:
 ```bash
-sudo cp etc/cron.d/ledstriplight /etc/cron.d/
+sudo cp deploy/cron/ledstriplight /etc/cron.d/
 ```
 
 ### 2. Set proper permissions
