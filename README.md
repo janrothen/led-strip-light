@@ -29,13 +29,13 @@ Easily automate, script, or integrate your LED strip with smart home platforms a
 
 **Software**
 - Python 3.9+
-- pip dependencies: `flask`, `pigpio`, `configparser`, `python-dateutil` (see `pyproject.toml`)
+- pip dependencies: `flask`, `pigpio`, `python-dateutil`, `tomli` (Python < 3.11 only) (see `pyproject.toml`)
 
 The guide [How to control a RGB LED Strip Light with a Raspberry Pi Zero W](https://janrothen.github.io/led-strip-light/pi-zero-w-rgb-led-strip-control.html) shows how to physically connect a 12 V RGB strip to a Raspberry Pi Zero W.
 
 ## Installing
 
-Configure the scripts: [config.conf](src/config.conf)
+Configure the application: [config.toml](src/config.toml)
 
 This project uses the [pigpio](https://abyz.me.uk/rpi/pigpio/download.html) library for PWM control of the GPIO pins. To install it on your Raspberry Pi:
 ```bash
@@ -137,7 +137,7 @@ led-strip-light/
 │   │   └── cli_handler.py       # Command-line interface handler
 │   ├── config/
 │   │   ├── color_profile.py
-│   │   ├── config_manager.py    # Reads config.conf
+│   │   ├── config_manager.py    # Reads config.toml
 │   │   └── pin_assignment.py
 │   ├── led/
 │   │   ├── color.py
@@ -150,7 +150,7 @@ led-strip-light/
 │   │   └── index.html           # Web UI
 │   ├── utils/
 │   │   └── graceful_shutdown.py
-│   ├── config.conf              # GPIO pins and color profiles
+│   ├── config.toml              # GPIO pins and color profiles
 │   ├── http_server.py           # Flask REST API entry point
 │   └── run.py                   # CLI entry point
 └── tests/                       # Unit tests with mocked hardware
