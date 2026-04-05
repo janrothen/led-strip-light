@@ -286,7 +286,6 @@
                         </div>
                     </div>
                     <div class="field-group" style="align-self:flex-end;">
-                        <label>&nbsp;</label>
                         <button onclick="startBreathing()">Start</button>
                     </div>
                 </div>
@@ -309,7 +308,6 @@
                         </div>
                     </div>
                     <div class="field-group" style="align-self:flex-end;">
-                        <label>&nbsp;</label>
                         <button onclick="startFade()">Start</button>
                     </div>
                 </div>
@@ -322,7 +320,6 @@
                         <input type="number" id="profileDuration" value="10000" min="500" step="500" style="width:110px;">
                     </div>
                     <div class="field-group" style="align-self:flex-end;">
-                        <label>&nbsp;</label>
                         <button onclick="startProfile()">Start</button>
                     </div>
                 </div>
@@ -517,19 +514,19 @@
 
         function startBreathing() {
             const color = document.getElementById('breathingColor').value.replace('#','');
-            const duration = parseInt(document.getElementById('breathingDuration').value, 10) || 2000;
+            const duration = Number.parseInt(document.getElementById('breathingDuration').value, 10) || 2000;
             startEffect('breathing', { color, duration });
         }
 
         function startFade() {
             const from = document.getElementById('fadeFrom').value.replace('#','');
             const to = document.getElementById('fadeTo').value.replace('#','');
-            const duration = parseInt(document.getElementById('fadeDuration').value, 10) || 5000;
+            const duration = Number.parseInt(document.getElementById('fadeDuration').value, 10) || 5000;
             startEffect('fade', { from, to, duration });
         }
 
         function startProfile() {
-            const duration = parseInt(document.getElementById('profileDuration').value, 10) || 10000;
+            const duration = Number.parseInt(document.getElementById('profileDuration').value, 10) || 10000;
             startEffect('profile', { duration });
         }
     </script>
