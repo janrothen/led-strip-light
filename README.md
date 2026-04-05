@@ -57,6 +57,11 @@ sudo systemctl enable ledstriplight-http-server.service
 sudo systemctl start ledstriplight-http-server.service
 ```
 
+For full deployment instructions see the READMEs in [`deploy/`](deploy/):
+- [`deploy/systemd/`](deploy/systemd/README.md) — systemd service installation and management
+- [`deploy/cron/`](deploy/cron/README.md) — scheduled automation with cron
+- [`deploy/homebridge/`](deploy/homebridge/README.md) — Apple HomeKit integration
+
 ## Development Setup
 
 ### Virtual Environment
@@ -120,23 +125,31 @@ pytest --cov-report=html
 ```
 led-strip-light/
 ├── deploy/
-│   ├── systemd/                 # Systemd service files and installation guide
-│   ├── cron/                    # Cron job files for scheduled automation
-│   └── homebridge/              # Homebridge integration
-├── src/                         # Application source code
-│   ├── run.py                   # Main application entry point
-│   ├── http_server.py           # Flask REST API server
-│   ├── led/                     # Core LED control modules
-│   │   ├── effects.py           # LED effects (breathing, fade, etc.)
-│   │   ├── effect_runner.py     # Effect runner
-│   │   ├── gpio_service.py      # Hardware GPIO interface
-│   │   ├── led_strip_light_controller.py # Main LED controller
-│   │   └── profile_manager.py   # Time-based color profiles
+│   ├── cron/                    # Cron job for scheduled automation
+│   ├── homebridge/              # Homebridge config for Apple HomeKit
+│   └── systemd/                 # Systemd service files
+├── docs/                        # Documentation and wiring diagrams
+├── src/
 │   ├── cli/
 │   │   └── cli_handler.py       # Command-line interface handler
 │   ├── config/
-│   │   └── config_manager.py    # Configuration manager
-│   └── utils/                   # Utilities (shutdown handling)
+│   │   ├── color_profile.py
+│   │   ├── config_manager.py    # Reads config.conf
+│   │   └── pin_assignment.py
+│   ├── led/
+│   │   ├── color.py
+│   │   ├── effect_runner.py
+│   │   ├── effects.py           # LED effects (breathing, fade, campfire, …)
+│   │   ├── gpio_service.py      # pigpio PWM interface
+│   │   ├── led_strip_light_controller.py
+│   │   └── profile_manager.py   # Time-based color profiles
+│   ├── static/
+│   │   └── index.html           # Web UI
+│   ├── utils/
+│   │   └── graceful_shutdown.py
+│   ├── config.conf              # GPIO pins and color profiles
+│   ├── http_server.py           # Flask REST API entry point
+│   └── run.py                   # CLI entry point
 └── tests/                       # Unit tests with mocked hardware
 ```
 
