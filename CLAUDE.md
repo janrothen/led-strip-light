@@ -60,6 +60,39 @@ ProfileManager (time-based color selection from config.conf)
 
 **Color** is represented by `led/color.py`'s `Color` class (R, G, B 0–255). Named colors (`Color.RED`, `Color.BLACK`, etc.) are class attributes.
 
+### Project structure
+
+```
+led-strip-light/
+├── deploy/
+│   ├── cron/                    # Cron job for scheduled automation
+│   ├── homebridge/              # Homebridge config for Apple HomeKit
+│   └── systemd/                 # Systemd service files
+├── docs/                        # Documentation and wiring diagrams
+├── src/
+│   ├── cli/
+│   │   └── cli_handler.py
+│   ├── config/
+│   │   ├── color_profile.py
+│   │   ├── config_manager.py
+│   │   └── pin_assignment.py
+│   ├── led/
+│   │   ├── color.py
+│   │   ├── effect_runner.py
+│   │   ├── effects.py
+│   │   ├── gpio_service.py
+│   │   ├── led_strip_light_controller.py
+│   │   └── profile_manager.py
+│   ├── static/
+│   │   └── index.html           # Web UI
+│   ├── utils/
+│   │   └── graceful_shutdown.py
+│   ├── config.conf              # GPIO pins and color profiles
+│   ├── http_server.py           # Flask REST API entry point
+│   └── run.py                   # CLI entry point
+└── tests/                       # Unit tests with mocked hardware
+```
+
 ### Module layout
 
 | Path | Responsibility |
@@ -76,7 +109,7 @@ ProfileManager (time-based color selection from config.conf)
 
 ### Deployment
 
-- `etc/systemd.d/` — systemd service files; `start`/`stop` scripts at repo root call `systemctl`
-- `etc/cron.d/` — cron jobs for scheduled automation
-- `etc/homebridge/` — Homebridge config for Apple HomeKit integration
+- `deploy/systemd/` — systemd service files; `start`/`stop` scripts at repo root call `systemctl`
+- `deploy/cron/` — cron jobs for scheduled automation
+- `deploy/homebridge/` — Homebridge config for Apple HomeKit integration
 - The pigpio daemon (`pigpiod`) must be running on the Raspberry Pi before starting the app
