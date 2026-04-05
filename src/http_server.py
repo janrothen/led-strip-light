@@ -27,6 +27,10 @@ _FLAME_KEYS = [
 ]
 
 
+def _is_led_active(led_controller) -> bool:
+    return led_controller.is_on() or led_controller.is_sequence_running()
+
+
 def _parse_color(value: str) -> Color:
     return Color.from_hex(value.lstrip("#"))
 
@@ -132,9 +136,6 @@ def create_app(
         except Exception:
             pass
 
-    def _is_led_active() -> bool:
-        return led_controller.is_on() or led_controller.is_sequence_running()
-
     def _get_active_effect_name():
         if not led_controller.is_sequence_running():
             active_effect["name"] = None
@@ -148,7 +149,7 @@ def create_app(
     # --- Basic LED control endpoints -----------------------------------------
     @app.route("/on", methods=["POST"])
     def turn_on():
-        if not _is_led_active():
+        if not _is_led_active(led_controller):
             led_controller.switch_on()
         return Response(status=200)
 
@@ -160,7 +161,7 @@ def create_app(
 
     @app.route("/status", methods=["GET"])
     def get_status():
-        return Response("1" if _is_led_active() else "0", status=200)
+        return Response("1" if _is_led_active(led_controller) else "0", status=200)
 
     @app.route("/color", methods=["GET"])
     def get_color():
