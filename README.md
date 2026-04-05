@@ -29,8 +29,7 @@ Easily automate, script, or integrate your LED strip with smart home platforms a
 
 **Software**
 - Python 3.9+
-- pip dependencies: `requests`, `Pillow` (see `pyproject.toml`)
-- Raspberry Pi extras: `RPi.GPIO`, `spidev`, `pigpio`, `gpiozero`, `numpy`, `waveshare-epd` (installed via `pip install -e ".[rpi]"`)
+- pip dependencies: `flask`, `pigpio`, `configparser`, `python-dateutil` (see `pyproject.toml`)
 
 The guide [How to control a RGB LED Strip Light with a Raspberry Pi Zero W](https://janrothen.github.io/led-strip-light/pi-zero-w-rgb-led-strip-control.html) shows how to physically connect a 12 V RGB strip to a Raspberry Pi Zero W.
 
