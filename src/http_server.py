@@ -70,7 +70,7 @@ def create_app(
         return active_effect["name"]
 
     # --- Static controller file serving --------------------------------------
-    @app.route("/")
+    @app.route("/", methods=["GET"])
     def index():
         return send_from_directory("static", "index.html")
 
