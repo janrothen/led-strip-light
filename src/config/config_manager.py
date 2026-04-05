@@ -1,10 +1,20 @@
 #!/usr/bin/env python3
 
-import configparser
-import os
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib  # type: ignore[no-redef]
+
+from pathlib import Path
 
 from .color_profile import ColorProfile
 from .pin_assignment import PinAssignment
+
+# Prefer config.toml next to the current working directory (production: the
+# systemd WorkingDirectory). Fall back to src/ for development.
+_CWD_CONFIG = Path.cwd() / "config.toml"
+_REPO_CONFIG = Path(__file__).parents[1] / "config.toml"
+_CONFIG_PATH = _CWD_CONFIG if _CWD_CONFIG.exists() else _REPO_CONFIG
 
 PINS = "pins"
 R = "red"
@@ -17,7 +27,7 @@ class ConfigManager:
     """
     Configuration manager for LED strip light application.
 
-    Provides a structured interface to access configuration values from config.conf,
+    Provides a structured interface to access configuration values from config.toml,
     including GPIO pin assignments and color profiles for different times of day.
 
     The configuration file supports:
@@ -25,9 +35,11 @@ class ConfigManager:
     - Morning and evening color profiles with RGB values (0-255)
     """
 
-    def __init__(self, config_file: str = "config.conf") -> None:
-        self._config = configparser.ConfigParser()
-        self._config_file = config_file
+    def __init__(self, config_path: "Path | str | None" = None) -> None:
+        if config_path is not None:
+            self._config_path = Path(config_path)
+        else:
+            self._config_path = _CONFIG_PATH
         self._load_config()
 
     def reload(self) -> None:
@@ -41,33 +53,31 @@ class ConfigManager:
 
     def get_color_profile(self, profile: str) -> ColorProfile:
         """
-        Get color profile with RGB values.
+        Get color profile by name.
 
         Args:
-            profile: Profile name (e.g., 'profile.morning', 'profile.evening')
+            profile: Profile name (e.g., 'morning', 'evening')
 
         Returns:
             ColorProfile instance with validated RGB values
 
         Raises:
-            ValueError: If profile is not found or invalid
+            ValueError: If profile is not found or incomplete
         """
         try:
-            red = self._config.getint(profile, R)
-            green = self._config.getint(profile, G)
-            blue = self._config.getint(profile, B)
-            return ColorProfile(red=red, green=green, blue=blue)
-        except (configparser.NoSectionError, configparser.NoOptionError) as e:
+            section = self._config["profile"][profile]
+            return ColorProfile(red=section[R], green=section[G], blue=section[B])
+        except KeyError as e:
             raise ValueError(f"Profile '{profile}' not found or incomplete: {e}") from e
 
     def _load_config(self) -> None:
         """Load configuration from file."""
-        if not os.path.exists(self._config_file):
+        if not self._config_path.exists():
             raise FileNotFoundError(
-                f"Configuration file '{self._config_file}' not found"
+                f"Configuration file '{self._config_path}' not found"
             )
-
-        self._config.read(self._config_file)
+        with open(self._config_path, "rb") as f:
+            self._config = tomllib.load(f)
 
     def _get_pin(self, color: str) -> int:
         """
@@ -82,16 +92,19 @@ class ConfigManager:
         Raises:
             ValueError: If color is not valid or pin not configured
         """
-        valid_colors = COLOR_CHANNELS
-        if color not in valid_colors:
-            raise ValueError(f"Invalid color '{color}'. Must be one of: {valid_colors}")
+        if color not in COLOR_CHANNELS:
+            raise ValueError(f"Invalid color '{color}'. Must be one of: {COLOR_CHANNELS}")
 
         try:
-            pin = self._config.getint(PINS, color)
-            self._validate_pin(pin)
-            return pin
-        except (configparser.NoSectionError, configparser.NoOptionError) as e:
+            pin = self._config[PINS][color]
+        except KeyError as e:
             raise ValueError(f"Pin configuration for '{color}' not found: {e}") from e
+
+        if not isinstance(pin, int):
+            raise ValueError(f"Pin for '{color}' must be an integer, got: {pin!r}")
+
+        self._validate_pin(pin)
+        return pin
 
     def _validate_pin(self, pin: int) -> None:
         if not (1 <= pin <= 40):
