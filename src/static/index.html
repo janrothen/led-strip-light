@@ -28,7 +28,8 @@
             }
 
             function ensureLink(rel, sizes, href) {
-                let link = document.querySelector(`link[rel="${rel}"]${sizes ? `[sizes=\"${sizes}\"]` : ''}`);
+                const sizesAttr = sizes ? `[sizes="${sizes}"]` : '';
+                let link = document.querySelector(`link[rel="${rel}"]${sizesAttr}`);
                 if (!link) {
                     link = document.createElement('link');
                     link.rel = rel;
@@ -47,8 +48,8 @@
                     // Also update standard favicon with PNG for broad compatibility
                     const fav64 = makeIcon(64, '🌈');
                     ensureLink('icon', null, fav64);
-                } catch (_) {
-                    // Ignore errors; the fallback SVG favicon link remains
+                } catch (e) {
+                    console.debug('Icon creation failed, using fallback SVG favicon:', e);
                 }
             };
 
@@ -143,7 +144,7 @@
             color: #555;
         }
         button {
-            background-color: #007bff;
+            background-color: #0056b3;
             color: white;
             border: none;
             padding: 12px 24px;
@@ -154,7 +155,7 @@
             transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #004494;
         }
         button:disabled {
             background-color: #6c757d;
@@ -423,6 +424,7 @@
                     statusElement.className = `status-display ${isOn ? 'status-on' : 'status-off'}`;
                 }
             } catch (error) {
+                console.error('Failed to get status:', error);
                 document.getElementById('status').textContent = 'Status: Error';
             }
         }
@@ -482,7 +484,7 @@
                 const el = document.getElementById('activeEffect');
                 el.textContent = `Active Effect: ${active}`;
             } catch (e) {
-                // ignore
+                console.debug('Failed to get active effect:', e);
             }
         }
 
