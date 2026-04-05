@@ -13,6 +13,11 @@
 #   - Restart: sudo systemctl restart homebridge.service
 #   - Status:  systemctl status homebridge.service
 #   - Logs:    journalctl -u homebridge.service -f
+#
+# Restart limit: if the service crashes 5 times in 60 seconds, systemd stops retrying.
+# To reset and start again:
+#   sudo systemctl reset-failed homebridge.service
+#   sudo systemctl start homebridge.service
 
 [Unit]
 Description=Homebridge HomeKit Server

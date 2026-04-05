@@ -13,7 +13,7 @@ These systemd services run your LED Strip Light HTTP server (and optional Homebr
 ## Prerequisites
 - Raspberry Pi with Raspberry Pi OS
 - Python 3.x installed
-- pigpio daemon installed and running
+- pigpio daemon installed and enabled (`sudo systemctl enable pigpiod`) — the service will not start without it
 - LED strip light application files in `/home/pi/raspberry/led-strip-light/`
 
 ## Installation steps
@@ -54,7 +54,7 @@ sudo systemctl start ledstriplight-http-server.service
 | `sudo systemctl start ledstriplight-http-server.service` | Start the service |
 | `sudo systemctl stop ledstriplight-http-server.service` | Stop the service |
 | `sudo systemctl restart ledstriplight-http-server.service` | Restart the service |
-| `sudo systemctl status ledstriplight-http-server.service` | Check service status |
+| `systemctl status ledstriplight-http-server.service` | Check service status |
 | `sudo systemctl enable ledstriplight-http-server.service` | Enable auto-start on boot |
 | `sudo systemctl disable ledstriplight-http-server.service` | Disable auto-start on boot |
 
@@ -62,22 +62,22 @@ sudo systemctl start ledstriplight-http-server.service
 
 ### View service status
 ```bash
-sudo systemctl status ledstriplight-http-server.service
+systemctl status ledstriplight-http-server.service
 ```
 
 ### View live logs
 ```bash
-sudo journalctl -u ledstriplight-http-server.service -f
+journalctl -u ledstriplight-http-server.service -f
 ```
 
 ### View recent logs
 ```bash
-sudo journalctl -u ledstriplight-http-server.service --since "1 hour ago"
+journalctl -u ledstriplight-http-server.service --since "1 hour ago"
 ```
 
 ### View all logs
 ```bash
-sudo journalctl -u ledstriplight-http-server.service --no-pager
+journalctl -u ledstriplight-http-server.service --no-pager
 ```
 
 ## Configuration notes
@@ -92,8 +92,15 @@ sudo journalctl -u ledstriplight-http-server.service --no-pager
 
 ### Service won't start
 1. Check if the working directory exists: `ls -la /home/pi/raspberry/led-strip-light/`
-2. Verify pigpiod is running: `sudo systemctl status pigpiod`
-3. Check for Python errors: `sudo journalctl -u ledstriplight-http-server.service`
+2. Verify pigpiod is running: `systemctl status pigpiod` — the service requires it
+3. Check for Python errors: `journalctl -u ledstriplight-http-server.service`
+
+### Service hit the restart limit
+If the service crashes repeatedly, systemd will stop retrying after 5 failures in 60 seconds. To reset the limit and try again:
+```bash
+sudo systemctl reset-failed ledstriplight-http-server.service
+sudo systemctl start ledstriplight-http-server.service
+```
 
 ### Permission issues
 If you get permission errors, ensure:
@@ -103,7 +110,7 @@ If you get permission errors, ensure:
 ### Service keeps restarting
 Check the logs for errors:
 ```bash
-sudo journalctl -u ledstriplight-http-server.service --since "10 minutes ago"
+journalctl -u ledstriplight-http-server.service --since "10 minutes ago"
 ```
 
 ## Uninstalling
@@ -114,4 +121,5 @@ sudo systemctl stop ledstriplight-http-server.service
 sudo systemctl disable ledstriplight-http-server.service
 sudo rm /etc/systemd/system/ledstriplight-http-server.service
 sudo systemctl daemon-reload
+sudo systemctl reset-failed
 ```
