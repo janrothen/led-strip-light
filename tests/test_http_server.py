@@ -86,3 +86,175 @@ def test_unknown_effect_returns_404():
 
     assert response.status_code == 404
     assert "unknown effect" in response.get_json()["error"]
+
+
+def test_turn_on_when_not_active():
+    client, led_controller, _ = _build_client()
+    led_controller.is_on.return_value = False
+    led_controller.is_sequence_running.return_value = False
+
+    response = client.post("/on")
+
+    assert response.status_code == 200
+    led_controller.switch_on.assert_called_once()
+
+
+def test_turn_on_when_already_active():
+    client, led_controller, _ = _build_client()
+    led_controller.is_on.return_value = True
+
+    response = client.post("/on")
+
+    assert response.status_code == 200
+    led_controller.switch_on.assert_not_called()
+
+
+def test_turn_off():
+    client, led_controller, _ = _build_client()
+    led_controller.is_sequence_running.return_value = False
+
+    response = client.post("/off")
+
+    assert response.status_code == 200
+    led_controller.switch_off.assert_called_once()
+
+
+def test_get_status_when_on():
+    client, led_controller, _ = _build_client()
+    led_controller.is_on.return_value = True
+
+    response = client.get("/status")
+
+    assert response.status_code == 200
+    assert response.data == b"1"
+
+
+def test_get_status_when_off():
+    client, led_controller, _ = _build_client()
+    led_controller.is_on.return_value = False
+    led_controller.is_sequence_running.return_value = False
+
+    response = client.get("/status")
+
+    assert response.status_code == 200
+    assert response.data == b"0"
+
+
+def test_get_color():
+    client, led_controller, _ = _build_client()
+    led_controller.get_color.return_value = Color(255, 0, 0)
+
+    response = client.get("/color")
+
+    assert response.status_code == 200
+    assert response.data == b"#FF0000"
+
+
+def test_set_color():
+    client, led_controller, _ = _build_client()
+    led_controller.is_sequence_running.return_value = False
+
+    response = client.post("/color/FF0000")
+
+    assert response.status_code == 200
+    led_controller.set_color.assert_called_once_with(Color(255, 0, 0))
+
+
+def test_get_brightness():
+    client, led_controller, _ = _build_client()
+    led_controller.get_brightness_percentage.return_value = 75
+
+    response = client.get("/brightness")
+
+    assert response.status_code == 200
+    assert response.data == b"75"
+
+
+def test_set_brightness():
+    client, led_controller, _ = _build_client()
+    led_controller.is_sequence_running.return_value = False
+
+    response = client.post("/brightness/80")
+
+    assert response.status_code == 200
+    led_controller.set_brightness.assert_called_once_with(80)
+
+
+def test_start_campfire_effect():
+    client, _, effect_runner = _build_client()
+    response = client.post("/effects/campfire", json={"duration": 5000})
+
+    assert response.status_code == 200
+    effect_runner.run_campfire_effect.assert_called_once()
+
+
+def test_start_candle_effect():
+    client, _, effect_runner = _build_client()
+    response = client.post("/effects/candle")
+
+    assert response.status_code == 200
+    effect_runner.run_candle_effect.assert_called_once()
+
+
+def test_start_cycle_effect_with_colors_list():
+    client, _, effect_runner = _build_client()
+    response = client.post(
+        "/effects/cycle", json={"colors": ["FF0000", "00FF00"], "duration": 1000}
+    )
+
+    assert response.status_code == 200
+    call_kwargs = effect_runner.run_cycle_effect.call_args[1]
+    assert len(call_kwargs["colors"]) == 2
+    assert call_kwargs["duration"] == 1000
+
+
+def test_start_fade_effect():
+    client, _, effect_runner = _build_client()
+    response = client.post(
+        "/effects/fade", json={"from": "000000", "to": "FFFFFF", "duration": 3000}
+    )
+
+    assert response.status_code == 200
+    effect_runner.run_fade_effect.assert_called_once_with(
+        from_color=Color(0, 0, 0),
+        to_color=Color(255, 255, 255),
+        duration=3000,
+    )
+
+
+def test_start_profile_effect():
+    client, _, effect_runner = _build_client()
+    response = client.post("/effects/profile", json={"duration": 8000})
+
+    assert response.status_code == 200
+    effect_runner.run_profile_effect.assert_called_once_with(duration=8000)
+
+
+def test_stop_effect_when_not_running():
+    client, led_controller, _ = _build_client()
+    led_controller.is_sequence_running.return_value = False
+
+    response = client.post("/effects/stop")
+
+    assert response.status_code == 200
+    led_controller.stop_current_sequence.assert_not_called()
+
+
+def test_stop_effect_exception_is_swallowed():
+    client, led_controller, _ = _build_client()
+    led_controller.is_sequence_running.return_value = True
+    led_controller.stop_current_sequence.side_effect = RuntimeError("boom")
+
+    response = client.post("/effects/stop")
+
+    assert response.status_code == 200
+
+
+def test_start_effect_exception_returns_400():
+    client, _, effect_runner = _build_client()
+    effect_runner.run_breathing_effect.side_effect = ValueError("bad param")
+
+    response = client.post("/effects/breathing", json={"color": "FF0000"})
+
+    assert response.status_code == 400
+    assert "bad param" in response.get_json()["error"]

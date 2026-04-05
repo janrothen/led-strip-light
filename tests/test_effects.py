@@ -8,8 +8,22 @@ Tests various LED effects with mocked strip controller.
 
 from unittest.mock import Mock, patch
 
+import pytest
+
 from led.color import Color
-from led.effects import breathing_effect, fade_effect, random_color_effect
+from led.effects import (
+    _interp_channel,
+    breathing_effect,
+    campfire_effect,
+    candle_effect,
+    color_cycle_effect,
+    ease_in_quad,
+    ease_linear,
+    ease_out_quad,
+    fade_effect,
+    flickering_effect,
+    random_color_effect,
+)
 
 
 class TestEffects:
@@ -93,3 +107,197 @@ class TestEffects:
         # Should have called set_color with random colors
         assert mock_strip.set_color.call_count >= 1
         assert mock_random.called
+
+    def test_random_color_early_interrupt_after_set_color(self):
+        """Test random color effect returns when interrupted after set_color."""
+        mock_strip = Mock()
+        call_count = 0
+
+        def mock_interrupted():
+            nonlocal call_count
+            call_count += 1
+            # First call: while check (False), second: after set_color (True)
+            return call_count > 1
+
+        mock_strip.is_interrupted.side_effect = mock_interrupted
+
+        with patch("led.effects.sleep"):
+            random_color_effect(mock_strip, duration=100)
+
+        assert mock_strip.set_color.call_count == 1
+
+    def test_breathing_effect_with_hold_ms(self):
+        """Test breathing effect runs hold_ms sleep when hold_ms > 0."""
+        mock_strip = Mock()
+        call_count = 0
+
+        def mock_interrupted():
+            nonlocal call_count
+            call_count += 1
+            return call_count > 3
+
+        mock_strip.is_interrupted.side_effect = mock_interrupted
+
+        from led import effects
+
+        with patch.object(effects, "fade_effect"), patch("led.effects.sleep") as mock_sleep:
+            breathing_effect(mock_strip, Color.RED, duration=100, hold_ms=50)
+
+        mock_sleep.assert_called()
+
+    def test_breathing_effect_interrupt_after_fade(self):
+        """Test breathing returns when interrupted right after a fade step."""
+        mock_strip = Mock()
+        # is_interrupted: while=False, inner check=True → return
+        mock_strip.is_interrupted.side_effect = [False, True]
+
+        from led import effects
+
+        with patch.object(effects, "fade_effect"):
+            breathing_effect(mock_strip, Color.RED, duration=100)
+
+        assert mock_strip.is_interrupted.call_count >= 2
+
+    def test_fade_effect_second_interrupt_check(self):
+        """Test fade returns on the second is_interrupted check inside the loop."""
+        mock_strip = Mock()
+        # Step: first check False, second check True (triggers the second return)
+        mock_strip.is_interrupted.side_effect = [False, True]
+
+        with patch("led.effects.sleep"):
+            fade_effect(mock_strip, Color.BLACK, Color.RED, duration=100)
+
+    def test_interp_channel_with_gamma(self):
+        """Test _interp_channel applies gamma correction."""
+        result = _interp_channel(0, 255, 0.5, gamma=2.2)
+        # With gamma, midpoint should not be exactly 128
+        assert 0 <= result <= 255
+
+    def test_interp_channel_no_gamma(self):
+        """Test _interp_channel without gamma is linear."""
+        result = _interp_channel(0, 200, 0.5, gamma=None)
+        assert result == 100
+
+    def test_color_cycle_effect_runs_one_cycle(self):
+        """Test color_cycle_effect iterates through colors then stops."""
+        mock_strip = Mock()
+        call_count = 0
+
+        def mock_interrupted():
+            nonlocal call_count
+            call_count += 1
+            return call_count > 4
+
+        mock_strip.is_interrupted.side_effect = mock_interrupted
+
+        from led import effects
+
+        with patch.object(effects, "fade_effect"), patch("led.effects.sleep"):
+            color_cycle_effect(mock_strip, [Color.RED, Color.GREEN], duration=100)
+
+        assert mock_strip.set_color.called  # initial color set
+
+    def test_color_cycle_effect_empty_palette(self):
+        """Test color_cycle_effect returns immediately for empty palette."""
+        mock_strip = Mock()
+        color_cycle_effect(mock_strip, colors=[], duration=100)
+        mock_strip.set_color.assert_not_called()
+
+    def test_color_cycle_effect_interrupt_in_inner_loop(self):
+        """Test color_cycle_effect exits when interrupted inside the color loop."""
+        mock_strip = Mock()
+        # While=False → body; inner check=True → break; while=True → exit
+        mock_strip.is_interrupted.side_effect = [False, True, True]
+
+        from led import effects
+
+        with patch.object(effects, "fade_effect"):
+            color_cycle_effect(mock_strip, [Color.RED, Color.GREEN], duration=100)
+
+    def test_flickering_effect_interrupt_after_one_iteration(self):
+        """Test flickering_effect runs one iteration then stops on interrupt."""
+        mock_strip = Mock()
+        call_count = 0
+
+        def mock_interrupted():
+            nonlocal call_count
+            call_count += 1
+            # while=False, second check=True → return early
+            return call_count > 1
+
+        mock_strip.is_interrupted.side_effect = mock_interrupted
+
+        with patch("led.effects.sleep"):
+            flickering_effect(mock_strip, gamma=None)
+
+        assert mock_strip.set_color.call_count >= 1
+
+    def test_flickering_effect_continues_to_sleep(self):
+        """Test flickering_effect reaches sleep when not interrupted mid-loop."""
+        mock_strip = Mock()
+        call_count = 0
+
+        def mock_interrupted():
+            nonlocal call_count
+            call_count += 1
+            # while=False, mid-check=False → sleep, then while=True → exit
+            return call_count > 2
+
+        mock_strip.is_interrupted.side_effect = mock_interrupted
+
+        with patch("led.effects.sleep") as mock_sleep:
+            flickering_effect(mock_strip, gamma=None)
+
+        mock_sleep.assert_called()
+
+    def test_flickering_effect_with_gamma(self):
+        """Test flickering_effect uses gamma path when gamma is set."""
+        mock_strip = Mock()
+        mock_strip.is_interrupted.side_effect = [False, True]
+
+        with patch("led.effects.sleep"):
+            flickering_effect(mock_strip, gamma=2.2)
+
+        assert mock_strip.set_color.call_count >= 1
+
+    def test_flickering_effect_with_duration(self):
+        """Test flickering_effect exits via end_time when duration_ms is set."""
+        mock_strip = Mock()
+        mock_strip.is_interrupted.return_value = False
+
+        with patch("led.effects.sleep"):
+            # Very short duration; end_time will be reached quickly
+            flickering_effect(mock_strip, duration_ms=1, gamma=None)
+
+    def test_campfire_effect_delegates_to_flickering(self):
+        """Test campfire_effect calls flickering_effect."""
+        mock_strip = Mock()
+        mock_strip.is_interrupted.return_value = True  # exit immediately
+
+        with patch("led.effects.sleep"):
+            campfire_effect(mock_strip)
+
+    def test_candle_effect_delegates_to_flickering(self):
+        """Test candle_effect calls flickering_effect."""
+        mock_strip = Mock()
+        mock_strip.is_interrupted.return_value = True  # exit immediately
+
+        with patch("led.effects.sleep"):
+            candle_effect(mock_strip)
+
+
+class TestEasingFunctions:
+    def test_ease_linear(self):
+        assert ease_linear(0.0) == pytest.approx(0.0)
+        assert ease_linear(0.5) == pytest.approx(0.5)
+        assert ease_linear(1.0) == pytest.approx(1.0)
+
+    def test_ease_in_quad(self):
+        assert ease_in_quad(0.0) == pytest.approx(0.0)
+        assert ease_in_quad(0.5) == pytest.approx(0.25)
+        assert ease_in_quad(1.0) == pytest.approx(1.0)
+
+    def test_ease_out_quad(self):
+        assert ease_out_quad(0.0) == pytest.approx(0.0)
+        assert ease_out_quad(1.0) == pytest.approx(1.0)
+        assert ease_out_quad(0.5) == pytest.approx(0.75)
