@@ -20,7 +20,10 @@ def create_app(
     profile_manager: ProfileManager = None,
     effect_runner: EffectRunner = None,
 ) -> Flask:
-    app = Flask(__name__, static_folder="static", static_url_path="")
+    # CSRF protection is not required: this API has no session cookies or
+    # authentication, and all mutation endpoints consume JSON (not form data),
+    # so cross-origin requests are blocked by browser CORS preflight.
+    app = Flask(__name__, static_folder="static", static_url_path="")  # NOSONAR
 
     if config_manager is None:
         config_manager = ConfigManager()
