@@ -21,9 +21,13 @@ class LEDStripLightController:
             self.set_color(self._last_color or Color.WARM_YELLOW)
 
     def switch_off(self) -> None:
-        self.interrupt()
+        try:
+            self.stop_current_sequence()
+        except TimeoutError:
+            logging.warning("Sequence did not stop cleanly during switch_off")
         self.set_color(Color.BLACK)
-        self.resume()
+        if not self.is_sequence_running():
+            self.resume()
 
     def interrupt(self) -> None:
         self._interrupt = True
@@ -96,9 +100,17 @@ class LEDStripLightController:
             logging.debug("No sequence to stop.")
             return
 
-        logging.debug(f"Stopping sequence: {self._sequence.name}")
+        logging.debug("Stopping sequence: %s", self._sequence.name)
         self.interrupt()
         self._sequence.join(timeout)
+
+        if self._sequence.is_alive():
+            logging.warning(
+                "Sequence %s did not stop within %ds timeout",
+                self._sequence.name,
+                timeout,
+            )
+            raise TimeoutError(f"Sequence did not stop within {timeout}s")
 
         self._reset_sequence()
 

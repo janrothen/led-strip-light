@@ -126,15 +126,13 @@ def create_app(
 
     def _stop_active_effect() -> None:
         """Interrupt any running effect thread and clear active effect state."""
+        active_effect["name"] = None
         if not led_controller.is_sequence_running():
-            active_effect["name"] = None
             return
-
         try:
             led_controller.stop_current_sequence(timeout=2)
-            active_effect["name"] = None
-        except Exception:
-            pass
+        except TimeoutError:
+            pass  # Interrupt is set; thread will stop on its own
 
     def _get_active_effect_name():
         if not led_controller.is_sequence_running():

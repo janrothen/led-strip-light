@@ -143,6 +143,45 @@ class TestLEDStripLightController:
         with pytest.raises(ValueError):
             controller.set_brightness(101)
 
+    @patch("led.led_strip_light_controller.Thread")
+    def test_switch_off_waits_for_sequence(self, mock_thread_class, mock_gpio_service):
+        """Test switch_off joins the sequence thread before resuming."""
+        controller = LEDStripLightController(gpio_service=mock_gpio_service)
+        mock_thread = Mock()
+        mock_thread.name = "test_sequence"
+        mock_thread.is_alive.side_effect = [True, False]  # alive then stopped after join
+        mock_thread_class.return_value = mock_thread
+
+        def dummy_effect():
+            pass
+
+        controller.start_sequence(dummy_effect)
+        controller.switch_off()
+
+        mock_thread.join.assert_called_once()
+        mock_gpio_service.set_color.assert_called_with(Color.BLACK)
+        assert not controller.is_interrupted()  # resume() was called
+
+    @patch("led.led_strip_light_controller.Thread")
+    def test_switch_off_does_not_resume_when_sequence_times_out(
+        self, mock_thread_class, mock_gpio_service
+    ):
+        """Test switch_off still sets color to black but leaves interrupt set on timeout."""
+        controller = LEDStripLightController(gpio_service=mock_gpio_service)
+        mock_thread = Mock()
+        mock_thread.name = "stuck_sequence"
+        mock_thread.is_alive.return_value = True  # never stops
+        mock_thread_class.return_value = mock_thread
+
+        def dummy_effect():
+            pass
+
+        controller.start_sequence(dummy_effect)
+        controller.switch_off()  # must not raise
+
+        mock_gpio_service.set_color.assert_called_with(Color.BLACK)
+        assert controller.is_interrupted()  # resume() was NOT called
+
     def test_interrupt_control(self, led_controller):
         """Test interrupt state management."""
         assert not led_controller.is_interrupted()
@@ -181,26 +220,41 @@ class TestLEDStripLightController:
         assert led_controller._sequence is None
 
     @patch("led.led_strip_light_controller.Thread")
-    def test_stop_sequence_with_timeout(self, mock_thread_class, led_controller):
-        """Test stopping sequence with timeout."""
+    def test_stop_sequence_success(self, mock_thread_class, led_controller):
+        """Test stopping a sequence that exits in time."""
         mock_thread = Mock()
         mock_thread.name = "test_sequence"
-        mock_thread.is_alive.return_value = True
+        # is_alive: True during is_sequence_running check, False after join
+        mock_thread.is_alive.side_effect = [True, False]
         mock_thread_class.return_value = mock_thread
 
-        # Start a sequence
+        def dummy_effect():
+            pass
+
+        led_controller.start_sequence(dummy_effect)
+        led_controller.stop_current_sequence(timeout=5)
+
+        mock_thread.join.assert_called_once_with(5)
+        assert led_controller._sequence is None
+
+    @patch("led.led_strip_light_controller.Thread")
+    def test_stop_sequence_raises_on_timeout(self, mock_thread_class, led_controller):
+        """Test that TimeoutError is raised when the thread doesn't stop in time."""
+        mock_thread = Mock()
+        mock_thread.name = "stuck_sequence"
+        mock_thread.is_alive.return_value = True  # never stops
+        mock_thread_class.return_value = mock_thread
+
         def dummy_effect():
             pass
 
         led_controller.start_sequence(dummy_effect)
 
-        # Stop with custom timeout
-        timeout = 30
-        led_controller.stop_current_sequence(timeout=timeout)
+        with pytest.raises(TimeoutError):
+            led_controller.stop_current_sequence(timeout=1)
 
-        # Verify timeout was used
-        mock_thread.join.assert_called_once_with(timeout)
-        assert led_controller._sequence is None
+        # Thread reference retained; interrupt remains set so it will eventually stop
+        assert led_controller._sequence is mock_thread
         assert led_controller.is_interrupted()
 
     @patch("led.led_strip_light_controller.Thread")
