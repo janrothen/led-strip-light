@@ -11,15 +11,16 @@
 #   - Start:   sudo systemctl start ledstriplight-http-server.service
 #   - Stop:    sudo systemctl stop ledstriplight-http-server.service
 #   - Restart: sudo systemctl restart ledstriplight-http-server.service
-#   - Status:  sudo systemctl status ledstriplight-http-server.service
-#   - Logs:    sudo journalctl -u ledstriplight-http-server.service -f
+#   - Status:  systemctl status ledstriplight-http-server.service
+#   - Logs:    journalctl -u ledstriplight-http-server.service -f
 
 [Unit]
 Description=LED Strip Light Flask HTTP Server
-After=network.target
+After=network.target pigpiod.service
 # Ensure pigpio daemon is running before starting this service
-Wants=pigpiod.service
-After=pigpiod.service
+Requires=pigpiod.service
+StartLimitBurst=5
+StartLimitIntervalSec=60
 
 [Service]
 Type=simple
@@ -28,11 +29,11 @@ Group=pi
 WorkingDirectory=/home/pi/raspberry/led-strip-light/src
 ExecStart=/home/pi/raspberry/led-strip-light/.venv/bin/python -u ./http_server.py
 StandardOutput=journal
-StandardError=inherit
-Restart=always
+StandardError=journal
+Restart=on-failure
 RestartSec=10
-SyslogIdentifier=http_server
-Environment=FLASK_ENV=production
+SyslogIdentifier=ledstriplight
+Environment=FLASK_DEBUG=0
 
 [Install]
 WantedBy=multi-user.target
