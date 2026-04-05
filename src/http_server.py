@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import os
+
 from flask import Flask, Response, jsonify, request, send_from_directory
 
 from config.config_manager import ConfigManager
@@ -222,4 +224,6 @@ def create_app(
 
 
 if __name__ == "__main__":
-    create_app().run(host="0.0.0.0", port=5000)
+    host = os.environ.get("FLASK_HOST", "127.0.0.1")
+    port = int(os.environ.get("FLASK_PORT", "5000"))
+    create_app().run(host=host, port=port)
