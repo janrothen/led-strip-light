@@ -283,7 +283,6 @@ def flickering_effect(
 
     current_h = h0
     current_v = max(min_brightness, min(max_brightness, v0))
-    target_h = h0
     target_v = current_v
 
     period = 1.0 / max(1, update_hz)
