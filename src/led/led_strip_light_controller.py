@@ -100,14 +100,15 @@ class LEDStripLightController:
             logging.debug("No sequence to stop.")
             return
 
-        logging.debug("Stopping sequence: %s", self._sequence.name)
+        sequence = self._sequence
+        logging.debug("Stopping sequence: %s", sequence.name)
         self.interrupt()
-        self._sequence.join(timeout)
+        sequence.join(timeout)
 
-        if self._sequence.is_alive():
+        if sequence.is_alive():
             logging.warning(
                 "Sequence %s did not stop within %ds timeout",
-                self._sequence.name,
+                sequence.name,
                 timeout,
             )
             raise TimeoutError(f"Sequence did not stop within {timeout}s")
@@ -115,9 +116,10 @@ class LEDStripLightController:
         self._reset_sequence()
 
     def is_sequence_running(self) -> bool:
-        if self._sequence is None:
+        sequence = self._sequence
+        if sequence is None:
             return False
-        if self._sequence.is_alive():
+        if sequence.is_alive():
             return True
         self._reset_sequence()
         return False
