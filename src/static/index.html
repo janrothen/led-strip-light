@@ -4,22 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="LED Strip">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌈</text></svg>">
+    <meta name="theme-color" content="#0a0a0a">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
     <title>LED Strip Light Controller</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
-        // Generate a PNG apple-touch-icon with a rainbow emoji for iOS Home Screen
+        // Generate a PNG apple-touch-icon for iOS Home Screen
         (function createAppIcons() {
-            function makeIcon(size, emoji, bg = '#ffffff') {
+            function makeIcon(size, emoji, bg = '#0a0a0a') {
                 const c = document.createElement('canvas');
                 c.width = c.height = size;
                 const ctx = c.getContext('2d');
-                // Background
                 ctx.fillStyle = bg;
                 ctx.fillRect(0, 0, size, size);
-                // Emoji
-                const fontSize = Math.floor(size * 0.78); // scale emoji to canvas
+                const fontSize = Math.floor(size * 0.78);
                 ctx.font = `${fontSize}px Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, system-ui, sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -39,14 +41,11 @@
                 link.href = href;
             }
 
-            // Create icons once DOM is ready
             const run = () => {
                 try {
-                    const apple180 = makeIcon(180, '🌈');
+                    const apple180 = makeIcon(180, '💡');
                     ensureLink('apple-touch-icon', '180x180', apple180);
-
-                    // Also update standard favicon with PNG for broad compatibility
-                    const fav64 = makeIcon(64, '🌈');
+                    const fav64 = makeIcon(64, '💡');
                     ensureLink('icon', null, fav64);
                 } catch (e) {
                     console.debug('Icon creation failed, using fallback SVG favicon:', e);
@@ -61,279 +60,762 @@
         })();
     </script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1a1a1a;
+            --bg-elevated: #222222;
+            --border-color: #2a2a2a;
+            --border-hover: #3a3a3a;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1a1;
+            --text-muted: #666666;
+            --accent-primary: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-success: #22c55e;
+            --accent-success-hover: #16a34a;
+            --accent-danger: #ef4444;
+            --accent-danger-hover: #dc2626;
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
         }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-        }
-        .effect-card {
-            border: 1px solid #dcdcdc;
-            border-radius: 8px;
-            padding: 12px 16px 16px;
-            margin: 12px 0;
-            background: #ffffff;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            position: relative;
-        }
-        .effect-card h4 {
-            margin: 0 0 10px;
-            font-size: 16px;
-            color: #444;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .effect-fields {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: center;
-        }
-        .field-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            min-width: 120px;
-        }
-        .field-group label {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            color: #777;
-        }
-        .field-inline {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .effect-actions {
-            margin-top: 8px;
-        }
-        .effect-card button {
+
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
         }
-        .divider-label {
-            font-size: 11px;
-            background: #f0f0f0;
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: #666;
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
-        .control-group {
-            margin-bottom: 25px;
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px 16px 40px;
+        }
+
+        header {
+            text-align: center;
+            padding: 24px 0 32px;
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 24px;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
             padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: #fafafa;
+            margin-bottom: 16px;
         }
-        .control-group h3 {
-            margin-top: 0;
-            color: #555;
-        }
-        button {
-            background-color: #0056b3;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin: 5px;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #004494;
-        }
-        button:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-        }
-        .on-button {
-            background-color: #28a745;
-        }
-        .on-button:hover {
-            background-color: #218838;
-        }
-        .off-button {
-            background-color: #dc3545;
-        }
-        .off-button:hover {
-            background-color: #c82333;
-        }
-        input[type="color"] {
-            width: 60px;
-            height: 40px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        input[type="range"] {
-            width: 200px;
-            margin: 10px;
-        }
-        .status-display {
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            font-weight: bold;
-        }
-        .status-on {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .status-off {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .inline-control {
+
+        .section-header {
             display: flex;
             align-items: center;
             gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .section-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--bg-elevated);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Power Controls */
+        .power-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-on {
+            background: var(--accent-success);
+            color: white;
+        }
+
+        .btn-on:hover {
+            background: var(--accent-success-hover);
+            box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
+        }
+
+        .btn-off {
+            background: var(--accent-danger);
+            color: white;
+        }
+
+        .btn-off:hover {
+            background: var(--accent-danger-hover);
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+            border-color: var(--border-hover);
+        }
+
+        .btn-sm {
+            padding: 8px 14px;
+            font-size: 13px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status-on {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--accent-success);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .status-off {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .status-unknown {
+            background: var(--bg-elevated);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Color Picker */
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .color-input-wrapper {
+            position: relative;
+            width: 56px;
+            height: 56px;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            background: transparent;
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+        }
+
+        .color-value {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .color-hex {
+            font-family: 'SF Mono', Monaco, 'Consolas', monospace;
+            font-size: 14px;
+            color: var(--text-secondary);
+            background: var(--bg-elevated);
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .color-presets {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .color-preset {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .color-preset:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .color-preset:active {
+            transform: scale(0.95);
+        }
+
+        /* Brightness Slider */
+        .brightness-control {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .brightness-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brightness-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .brightness-value span {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--bg-elevated);
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--text-primary);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            transition: transform 0.15s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--text-primary);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Effects */
+        .effect-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .effect-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 14px 8px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .effect-btn:hover {
+            background: var(--border-color);
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+
+        .effect-btn.active {
+            background: var(--accent-glow);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .effect-icon {
+            font-size: 20px;
+        }
+
+        .active-effect-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .active-effect-badge.running {
+            background: var(--accent-glow);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        /* Effect Cards */
+        .effect-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .effect-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .effect-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .effect-card-badge {
+            font-size: 11px;
+            color: var(--text-muted);
+            background: var(--bg-card);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .effect-card-fields {
+            display: flex;
             flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
         }
-        .color-preview {
-            width: 40px;
-            height: 40px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            display: inline-block;
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
-        #brightnessValue {
-            min-width: 30px;
-            display: inline-block;
+
+        .field-group label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .field-group input[type="number"] {
+            width: 100px;
+            padding: 8px 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13px;
+        }
+
+        .field-group input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .field-group input[type="color"] {
+            width: 42px;
+            height: 42px;
+        }
+
+        /* Footer Actions */
+        .footer-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .footer-actions .btn {
+            flex: 1;
+        }
+
+        /* Animations */
+        .section {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 380px) {
+            .color-presets {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .effect-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🌈 LED Strip Light Controller</h1>
-        
+        <header>
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+                    <path d="M9 18h6"/>
+                    <path d="M10 22h4"/>
+                </svg>
+            </div>
+            <h1>LED Strip Controller</h1>
+            <p class="subtitle">Control your ambient lighting</p>
+        </header>
+
         <!-- Power Control -->
-        <div class="control-group">
-            <h3>Power Control</h3>
-            <button class="on-button" onclick="turnOn()">Turn On</button>
-            <button class="off-button" onclick="turnOff()">Turn Off</button>
-            <div id="status" class="status-display">Status: Unknown</div>
-        </div>
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v10"/>
+                        <path d="M18.4 6.6a9 9 0 1 1-12.77.04"/>
+                    </svg>
+                </div>
+                <h2 class="section-title">Power Control</h2>
+            </div>
+            <div class="power-controls">
+                <button class="btn btn-on" onclick="turnOn()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polygon points="10 8 16 12 10 16 10 8"/>
+                    </svg>
+                    Turn On
+                </button>
+                <button class="btn btn-off" onclick="turnOff()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <rect x="9" y="9" width="6" height="6"/>
+                    </svg>
+                    Turn Off
+                </button>
+            </div>
+            <div id="status" class="status-badge status-unknown">
+                <span class="status-dot"></span>
+                <span>Status: Unknown</span>
+            </div>
+        </section>
 
         <!-- Color Control -->
-        <div class="control-group">
-            <h3>Color Control</h3>
-            <div class="inline-control">
-                <input type="color" id="colorPicker" value="#ffffff" onchange="setColor()">
-                <button onclick="setColor()">Set Color</button>
-                <div id="colorPreview" class="color-preview"></div>
-                <span id="currentColor">#ffffff</span>
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="13.5" cy="6.5" r="2.5"/>
+                        <circle cx="17.5" cy="10.5" r="2.5"/>
+                        <circle cx="8.5" cy="7.5" r="2.5"/>
+                        <circle cx="6.5" cy="12.5" r="2.5"/>
+                        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.555C21.965 6.012 17.461 2 12 2z"/>
+                    </svg>
+                </div>
+                <h2 class="section-title">Color</h2>
             </div>
-            <div style="margin-top: 10px;">
-                <button onclick="setColor('#ff0000')">Red</button>
-                <button onclick="setColor('#00ff00')">Green</button>
-                <button onclick="setColor('#0000ff')">Blue</button>
-                <button onclick="setColor('#ffffff')">White</button>
-                <button onclick="setColor('#ffff00')">Yellow</button>
-                <button onclick="setColor('#ff00ff')">Magenta</button>
-                <button onclick="setColor('#00ffff')">Cyan</button>
+            <div class="color-picker-container">
+                <div class="color-input-wrapper">
+                    <input type="color" id="colorPicker" value="#ffffff" onchange="setColor()">
+                </div>
+                <div class="color-value">
+                    <span class="color-hex" id="currentColor">#ffffff</span>
+                    <button class="btn btn-primary btn-sm" onclick="setColor()">Apply</button>
+                </div>
             </div>
-        </div>
+            <div class="color-presets">
+                <button class="color-preset" style="background: #ef4444;" onclick="setColor('#ef4444')" title="Red"></button>
+                <button class="color-preset" style="background: #f97316;" onclick="setColor('#f97316')" title="Orange"></button>
+                <button class="color-preset" style="background: #eab308;" onclick="setColor('#eab308')" title="Yellow"></button>
+                <button class="color-preset" style="background: #22c55e;" onclick="setColor('#22c55e')" title="Green"></button>
+                <button class="color-preset" style="background: #3b82f6;" onclick="setColor('#3b82f6')" title="Blue"></button>
+                <button class="color-preset" style="background: #a855f7;" onclick="setColor('#a855f7')" title="Purple"></button>
+                <button class="color-preset" style="background: #ffffff; border: 1px solid #333;" onclick="setColor('#ffffff')" title="White"></button>
+            </div>
+        </section>
 
         <!-- Brightness Control -->
-        <div class="control-group">
-            <h3>Brightness Control</h3>
-            <div class="inline-control">
-                <input type="range" id="brightnessSlider" min="0" max="100" value="100" oninput="updateBrightnessDisplay()" onchange="setBrightness()">
-                <span id="brightnessValue">100</span>%
-                <button onclick="setBrightness()">Set Brightness</button>
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="4"/>
+                        <path d="M12 2v2"/>
+                        <path d="M12 20v2"/>
+                        <path d="m4.93 4.93 1.41 1.41"/>
+                        <path d="m17.66 17.66 1.41 1.41"/>
+                        <path d="M2 12h2"/>
+                        <path d="M20 12h2"/>
+                        <path d="m6.34 17.66-1.41 1.41"/>
+                        <path d="m19.07 4.93-1.41 1.41"/>
+                    </svg>
+                </div>
+                <h2 class="section-title">Brightness</h2>
             </div>
-        </div>
+            <div class="brightness-control">
+                <div class="brightness-header">
+                    <span class="brightness-value"><span id="brightnessValue">100</span><span>%</span></span>
+                </div>
+                <input type="range" id="brightnessSlider" min="0" max="100" value="100" oninput="updateBrightnessDisplay()" onchange="setBrightness()">
+            </div>
+        </section>
 
         <!-- Effects Control -->
-        <div class="control-group">
-            <h3>Effects</h3>
-            <div id="activeEffect" class="status-display" style="background:#e2e3e5;color:#333;border:1px solid #d6d8db;">Active Effect: none</div>
-            <div style="margin-bottom:10px;">
-                <button onclick="startEffect('campfire')">Campfire</button>
-                <button onclick="startEffect('candle')">Candle</button>
-                <button onclick="startEffect('random')">Random</button>
-                <button onclick="startEffect('cycle')">Cycle</button>
-                <button onclick="startEffect('profile')">Profile</button>
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                        <path d="M5 3v4"/>
+                        <path d="M3 5h4"/>
+                        <path d="M19 17v4"/>
+                        <path d="M17 19h4"/>
+                    </svg>
+                </div>
+                <h2 class="section-title">Effects</h2>
             </div>
+            
+            <div id="activeEffect" class="active-effect-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                </svg>
+                <span>No active effect</span>
+            </div>
+
+            <div class="effect-grid">
+                <button class="effect-btn" onclick="startEffect('campfire')">
+                    <span class="effect-icon">🔥</span>
+                    <span>Campfire</span>
+                </button>
+                <button class="effect-btn" onclick="startEffect('candle')">
+                    <span class="effect-icon">🕯️</span>
+                    <span>Candle</span>
+                </button>
+                <button class="effect-btn" onclick="startEffect('random')">
+                    <span class="effect-icon">🎲</span>
+                    <span>Random</span>
+                </button>
+                <button class="effect-btn" onclick="startEffect('cycle')">
+                    <span class="effect-icon">🌈</span>
+                    <span>Cycle</span>
+                </button>
+                <button class="effect-btn" onclick="startEffect('profile')">
+                    <span class="effect-icon">⏱️</span>
+                    <span>Profile</span>
+                </button>
+                <button class="effect-btn" onclick="stopEffect()" style="color: var(--accent-danger);">
+                    <span class="effect-icon">⏹️</span>
+                    <span>Stop</span>
+                </button>
+            </div>
+
+            <!-- Breathing Effect -->
             <div class="effect-card" id="breathingCard">
-                <h4>Breathing Effect <span class="divider-label">smooth fade in/out</span></h4>
-                <div class="effect-fields">
-                    <div class="field-group" style="min-width:90px;">
+                <div class="effect-card-header">
+                    <span class="effect-card-title">Breathing Effect</span>
+                    <span class="effect-card-badge">smooth fade in/out</span>
+                </div>
+                <div class="effect-card-fields">
+                    <div class="field-group">
                         <label for="breathingColor">Color</label>
-                        <input type="color" id="breathingColor" value="#ff0000">
+                        <input type="color" id="breathingColor" value="#3b82f6">
                     </div>
                     <div class="field-group">
-                        <label for="breathingDuration">Duration (ms per half)</label>
-                        <div class="field-inline">
-                            <input type="number" id="breathingDuration" value="2000" min="100" step="100" style="width:110px;">
-                        </div>
+                        <label for="breathingDuration">Duration (ms)</label>
+                        <input type="number" id="breathingDuration" value="2000" min="100" step="100">
                     </div>
-                    <div class="field-group" style="align-self:flex-end;">
-                        <button onclick="startBreathing()">Start</button>
+                    <div class="field-group">
+                        <button class="btn btn-primary btn-sm" onclick="startBreathing()">Start</button>
                     </div>
                 </div>
             </div>
+
+            <!-- Fade Effect -->
             <div class="effect-card" id="fadeCard">
-                <h4>Fade Effect <span class="divider-label">one-way transition</span></h4>
-                <div class="effect-fields">
-                    <div class="field-group" style="min-width:90px;">
+                <div class="effect-card-header">
+                    <span class="effect-card-title">Fade Effect</span>
+                    <span class="effect-card-badge">one-way transition</span>
+                </div>
+                <div class="effect-card-fields">
+                    <div class="field-group">
                         <label for="fadeFrom">From</label>
                         <input type="color" id="fadeFrom" value="#000000">
                     </div>
-                    <div class="field-group" style="min-width:90px;">
+                    <div class="field-group">
                         <label for="fadeTo">To</label>
                         <input type="color" id="fadeTo" value="#ffffff">
                     </div>
                     <div class="field-group">
-                        <label for="fadeDuration">Duration (ms)</label>
-                        <div class="field-inline">
-                            <input type="number" id="fadeDuration" value="5000" min="100" step="100" style="width:110px;">
-                        </div>
+                        <label for="fadeDuration">Duration</label>
+                        <input type="number" id="fadeDuration" value="5000" min="100" step="100">
                     </div>
-                    <div class="field-group" style="align-self:flex-end;">
-                        <button onclick="startFade()">Start</button>
+                    <div class="field-group">
+                        <button class="btn btn-primary btn-sm" onclick="startFade()">Start</button>
                     </div>
                 </div>
             </div>
+
+            <!-- Profile Effect -->
             <div class="effect-card" id="profileCard">
-                <h4>Profile Effect <span class="divider-label">time-based color</span></h4>
-                <div class="effect-fields">
+                <div class="effect-card-header">
+                    <span class="effect-card-title">Profile Effect</span>
+                    <span class="effect-card-badge">time-based color</span>
+                </div>
+                <div class="effect-card-fields">
                     <div class="field-group">
                         <label for="profileDuration">Duration (ms)</label>
-                        <input type="number" id="profileDuration" value="10000" min="500" step="500" style="width:110px;">
+                        <input type="number" id="profileDuration" value="10000" min="500" step="500">
                     </div>
-                    <div class="field-group" style="align-self:flex-end;">
-                        <button onclick="startProfile()">Start</button>
+                    <div class="field-group">
+                        <button class="btn btn-primary btn-sm" onclick="startProfile()">Start</button>
                     </div>
                 </div>
             </div>
-            <button class="off-button" onclick="stopEffect()">Stop Effect</button>
-        </div>
+        </section>
 
         <!-- Refresh Status -->
-        <div class="control-group">
-            <h3>Status</h3>
-            <button onclick="refreshStatus()">Refresh Status</button>
-            <button onclick="refreshAll()">Refresh All</button>
-        </div>
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                        <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+                        <path d="M16 21h5v-5"/>
+                    </svg>
+                </div>
+                <h2 class="section-title">Refresh</h2>
+            </div>
+            <div class="footer-actions">
+                <button class="btn btn-secondary" onclick="refreshStatus()">Refresh Status</button>
+                <button class="btn btn-primary" onclick="refreshAll()">Refresh All</button>
+            </div>
+        </section>
     </div>
 
     <script>
@@ -408,7 +890,6 @@
         // Update color display
         function updateColorDisplay(color) {
             document.getElementById('colorPicker').value = color;
-            document.getElementById('colorPreview').style.backgroundColor = color;
             document.getElementById('currentColor').textContent = color;
         }
 
@@ -420,12 +901,14 @@
                     const status = await response.text();
                     const isOn = status === '1';
                     const statusElement = document.getElementById('status');
-                    statusElement.textContent = `Status: ${isOn ? 'ON' : 'OFF'}`;
-                    statusElement.className = `status-display ${isOn ? 'status-on' : 'status-off'}`;
+                    statusElement.innerHTML = `<span class="status-dot"></span><span>Status: ${isOn ? 'ON' : 'OFF'}</span>`;
+                    statusElement.className = `status-badge ${isOn ? 'status-on' : 'status-off'}`;
                 }
             } catch (error) {
                 console.error('Failed to get status:', error);
-                document.getElementById('status').textContent = 'Status: Error';
+                const statusElement = document.getElementById('status');
+                statusElement.innerHTML = '<span class="status-dot"></span><span>Status: Error</span>';
+                statusElement.className = 'status-badge status-unknown';
             }
         }
 
@@ -482,7 +965,14 @@
                 const data = await res.json();
                 const active = data.active || 'none';
                 const el = document.getElementById('activeEffect');
-                el.textContent = `Active Effect: ${active}`;
+                const isRunning = active !== 'none';
+                el.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                    <span>${isRunning ? 'Active: ' + active : 'No active effect'}</span>
+                `;
+                el.className = `active-effect-badge ${isRunning ? 'running' : ''}`;
             } catch (e) {
                 console.debug('Failed to get active effect:', e);
             }
