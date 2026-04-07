@@ -70,41 +70,10 @@ The config file lives at:
 
 ```
 /var/lib/homebridge/config.json
+
 ```
 
-Example `config.json` for `homebridge-better-http-rgb`:
-
-```json
-{
-  "bridge": {
-    "name": "LED Strip Light Bridge",
-    "username": "CC:22:3D:E3:CE:30",
-    "port": 51826,
-    "pin": "031-45-154"
-  },
-  "accessories": [
-    {
-      "accessory": "Better-HTTP-RGB",
-      "name": "LED Strip Light",
-      "service": "Light",
-      "switch": {
-        "status": "http://localhost:5000/status",
-        "powerOn": "http://localhost:5000/on",
-        "powerOff": "http://localhost:5000/off"
-      },
-      "color": {
-        "status": "http://localhost:5000/color",
-        "url": "http://localhost:5000/color/%s",
-        "brightness": false
-      },
-      "brightness": {
-        "status": "http://localhost:5000/brightness",
-        "url": "http://localhost:5000/brightness/%s"
-      }
-    }
-  ]
-}
-```
+Example [config.json](config.json) for `homebridge-better-http-rgb` including the UI platform.
 
 Adjust the URLs to match your pigpio HTTP server setup.
 
