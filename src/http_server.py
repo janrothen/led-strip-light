@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""Flask REST API entry point for the LED strip light controller.
+
+Exposes endpoints for on/off, color, brightness, and named effects.
+Use ``create_app()`` to get a configured Flask application instance;
+all dependencies can be injected for testing without real hardware.
+"""
 
 import os
 
@@ -142,32 +148,38 @@ def create_app(
     # --- Static controller file serving --------------------------------------
     @app.route("/", methods=["GET"])
     def index():
+        """Serve the web UI."""
         return send_from_directory("static", "index.html")
 
     # --- Basic LED control endpoints -----------------------------------------
     @app.route("/on", methods=["POST"])
     def turn_on():
+        """Turn the strip on (restores last color). 200 on success."""
         if not _is_led_active(led_controller):
             led_controller.switch_on()
         return Response(status=200)
 
     @app.route("/off", methods=["POST"])
     def turn_off():
+        """Stop any active effect and turn the strip off. 200 on success."""
         _stop_active_effect()
         led_controller.switch_off()
         return Response(status=200)
 
     @app.route("/status", methods=["GET"])
     def get_status():
+        """Return '1' if the strip is on or an effect is running, '0' otherwise."""
         return Response("1" if _is_led_active(led_controller) else "0", status=200)
 
     @app.route("/color", methods=["GET"])
     def get_color():
+        """Return the current color as a '#RRGGBB' hex string."""
         hex_color = led_controller.get_display_color().to_hex_with_hash()
         return Response(hex_color, status=200)
 
     @app.route("/color/<value>", methods=["POST"])
     def set_color(value):
+        """Set the strip to a hex color (RRGGBB, with or without '#'). 200 on success."""
         _stop_active_effect()
         color = Color.from_hex(value)
         led_controller.set_color(color)
@@ -175,11 +187,13 @@ def create_app(
 
     @app.route("/brightness", methods=["GET"])
     def get_brightness():
+        """Return current brightness as an integer percentage (0–100)."""
         brightness = led_controller.get_brightness_percentage()
         return Response(str(brightness), status=200)
 
     @app.route("/brightness/<int:value>", methods=["POST"])
     def set_brightness(value):
+        """Set brightness percentage (0–100), preserving hue. 400 if out of range."""
         _stop_active_effect()
         led_controller.set_brightness(value)
         return Response(status=200)
@@ -187,6 +201,7 @@ def create_app(
     # --- Effect management ----------------------------------------------------
     @app.route("/effects", methods=["GET"])
     def list_effects():
+        """Return active effect name and list of available effect names."""
         return jsonify(
             {
                 "active": _get_active_effect_name(),
@@ -204,11 +219,18 @@ def create_app(
 
     @app.route("/effects/stop", methods=["POST"])
     def stop_effect():
+        """Stop any running effect. Returns {"status": "stopped"}."""
         _stop_active_effect()
         return jsonify({"status": "stopped"})
 
     @app.route("/effects/<effect_name>", methods=["POST"])
     def start_effect(effect_name: str):
+        """Start a named effect with optional JSON body params.
+
+        Returns {"status": "started", "effect": ..., "params": ...} on success.
+        Returns 404 {"error": ...} for unknown effect names.
+        Returns 400 {"error": ...} for invalid parameters.
+        """
         data = request.get_json(silent=True) or {}
         try:
             _dispatch_effect(effect_name, data, effect_runner)

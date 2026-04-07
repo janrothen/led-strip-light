@@ -1,14 +1,15 @@
 # Central configuration file
 
 # Pin assignments:
-# These pins correspond to the GPIO pins used for controlling the RGB LED strip light.
+# BCM GPIO numbers for the RGB PWM channels of the LED strip.
 [pins]
 red   = 27
 green = 17
 blue  = 22
 
 # Time-based color profiles:
-# The values are in the range of 0-255 for each color channel.
+# "morning" is active from 00:00 until 12:00; "evening" from 12:00 until 24:00.
+# Values are 8-bit channel intensities (0–255).
 [profile.morning]
 red   = 150
 green = 200

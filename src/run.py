@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""CLI entry point: parse arguments, run one effect, then loop until SIGTERM/SIGINT."""
 
 import logging
 import time
@@ -16,7 +17,8 @@ logging.basicConfig(
 )
 
 
-def main():
+def main() -> None:
+    """Wire dependencies, execute the requested effect, and run until shutdown."""
     # Parse command line arguments
     parser = CLIHandler.create_parser()
     args = parser.parse_args()

@@ -6,6 +6,7 @@ from led.color import Color
 
 
 def _positive_int(value):
+    """argparse type: integer > 0."""
     v = int(value)
     if v <= 0:
         raise argparse.ArgumentTypeError(f"{value} must be a positive integer")
@@ -13,6 +14,7 @@ def _positive_int(value):
 
 
 def _unit_float(value):
+    """argparse type: float in [0.0, 1.0]."""
     v = float(value)
     if not (0.0 <= v <= 1.0):
         raise argparse.ArgumentTypeError(f"{value} must be between 0.0 and 1.0")
@@ -20,6 +22,7 @@ def _unit_float(value):
 
 
 def _positive_float(value):
+    """argparse type: float > 0.0."""
     v = float(value)
     if v <= 0.0:
         raise argparse.ArgumentTypeError(f"{value} must be a positive number")
