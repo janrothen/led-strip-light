@@ -33,6 +33,42 @@ Easily automate, script, or integrate your LED strip with smart home platforms a
 
 The guide [How to control a RGB LED Strip Light with a Raspberry Pi Zero W](https://janrothen.github.io/led-strip-light/pi-zero-w-rgb-led-strip-control.html) shows how to physically connect a 12 V RGB strip to a Raspberry Pi Zero W.
 
+## Architecture
+
+```mermaid
+graph TD
+    subgraph Entry Points
+        CLI["run.py\n(CLI)"]
+        HTTP["http_server.py\n(Flask REST API)"]
+    end
+
+    subgraph Config
+        CM["ConfigManager\n(config.toml)"]
+        PA["PinAssignment"]
+        PM["ProfileManager\n(time-based colors)"]
+    end
+
+    subgraph LED Control
+        GPIO["GPIOService\n(pigpio PWM)"]
+        CTRL["LEDStripLightController\n(color · brightness · thread)"]
+        ER["EffectRunner\n(effect dispatch)"]
+        EFX["effects.py\n(breathing · fade · campfire\ncandle · cycle · random)"]
+    end
+
+    HW["RGB LED Strip\n(hardware)"]
+
+    CLI --> CTRL
+    HTTP --> CTRL
+    CM --> PA
+    CM --> PM
+    PA --> GPIO
+    GPIO --> CTRL
+    CTRL --> ER
+    ER -->|"background thread"| EFX
+    PM --> ER
+    GPIO --> HW
+```
+
 ## Installing
 
 Configure the application: [config.toml](src/config.toml)
