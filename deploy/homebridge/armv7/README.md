@@ -48,8 +48,8 @@ This installs Homebridge, Homebridge Config UI X, and a bundled Node.js. It also
 
 - If migrating from an older setup, copy your config and pairing data:
 ```bash
-sudo cp ~/.homebridge/config.json /var/lib/homebridge/config.json
-sudo cp -r ~/.homebridge/persist/ /var/lib/homebridge/persist/
+sudo cp /home/pi/.homebridge/config.json /var/lib/homebridge/config.json
+sudo cp -r /home/pi/.homebridge/persist/ /var/lib/homebridge/persist/
 sudo chown -R homebridge:homebridge /var/lib/homebridge/
 sudo systemctl restart homebridge
 ```
@@ -82,6 +82,9 @@ Adjust the URLs to match your pigpio HTTP server setup.
 ## 6. Service Management
 
 ```bash
+# Enable (start on boot) and start immediately
+sudo systemctl enable --now homebridge
+
 # Check status
 sudo systemctl status homebridge
 

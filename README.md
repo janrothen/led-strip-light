@@ -130,6 +130,8 @@ led-strip-light/
 ├── deploy/
 │   ├── cron/                    # Cron job for scheduled automation
 │   ├── homebridge/              # Homebridge config for Apple HomeKit
+│   │   ├── armv6/               # Pi Zero W (npm install method)
+│   │   └── armv7/               # Pi Zero 2 W (apt install method)
 │   └── systemd/                 # Systemd service files
 ├── docs/                        # Documentation and wiring diagrams
 ├── src/
