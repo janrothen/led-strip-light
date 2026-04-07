@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-from __future__ import annotations
 
 import logging
-from typing import Any
+from collections.abc import Callable
+from typing import Protocol
 
 from .color import Color
 from .effects import (
@@ -18,6 +18,20 @@ from .effects import (
 _DEFAULT_FLAME_COLOR = Color(255, 147, 41)
 
 
+class SequencedStrip(Protocol):
+    """Strip controller interface required by EffectRunner."""
+
+    def set_color(self, color: Color) -> None: ...
+    def is_interrupted(self) -> bool: ...
+    def run_sequence(self, func: Callable, /, *args: object, **kwargs: object) -> None: ...
+
+
+class ProfileManagerLike(Protocol):
+    """Profile manager interface required by EffectRunner."""
+
+    def get_active_profile_color(self) -> Color: ...
+
+
 class EffectRunner:
     """
     Manages and executes LED strip light effects.
@@ -27,7 +41,7 @@ class EffectRunner:
     """
 
     def __init__(
-        self, strip_controller: Any, profile_manager: Any | None = None
+        self, strip_controller: SequencedStrip, profile_manager: ProfileManagerLike | None = None
     ) -> None:
         self.strip = strip_controller
         self.profile_manager = profile_manager

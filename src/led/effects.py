@@ -32,8 +32,6 @@ Notes:
     - Effects return early if strip.is_interrupted() becomes True.
 """
 
-from __future__ import annotations
-
 import colorsys
 import logging
 import math
