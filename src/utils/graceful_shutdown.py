@@ -32,7 +32,10 @@ class GracefulShutdown:
         signal.signal(signal.SIGTERM, self._exit)
 
     def _exit(self, signum: int, frame: FrameType | None) -> None:
-        print(
-            f"Received signal {signum}, shutting down..."
-        )  # python's logging module isn't fully reentrant -> don't use logging inside the signal handler
+        """Set the kill flag on SIGINT/SIGTERM.
+
+        Uses print rather than logging because the logging module is not fully
+        reentrant and can deadlock when called from a signal handler.
+        """
+        print(f"Received signal {signum}, shutting down...")
         self.kill_now = True

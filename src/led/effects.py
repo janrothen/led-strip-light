@@ -50,21 +50,24 @@ CHANNEL_MAX: float = 255.0  # 8-bit channel scale factor
 
 # ── Easing functions ───────────────────────────────────────────────────────
 def ease_linear(t: float) -> float:
+    """No easing — constant rate. Use for mechanical, uniform transitions."""
     return t
 
 
 def ease_in_out_sine(t: float) -> float:
-    # Smooth start and end
+    """Smooth start and end (sinusoidal). Default; most natural for lighting."""
     from math import cos, pi
 
     return 0.5 * (1 - cos(pi * t))
 
 
 def ease_in_quad(t: float) -> float:
+    """Slow start, fast end (quadratic). Use for effects that accelerate into a color."""
     return t * t
 
 
 def ease_out_quad(t: float) -> float:
+    """Fast start, slow end (quadratic). Use for snappy effects that settle gently."""
     return t * (2 - t)
 
 

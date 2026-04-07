@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Core LED strip controller: color/brightness control and effect thread management."""
 
 import logging
 from collections.abc import Callable
@@ -10,6 +11,18 @@ from .gpio_service import GPIOService
 
 
 class LEDStripLightController:
+    """Controls an RGB LED strip: color, brightness, on/off, and sequenced effects.
+
+    Wraps a GPIOService with higher-level state management:
+    - on/off tracks whether the strip is emitting light (non-black color)
+    - brightness scales the current color proportionally, preserving hue
+    - sequences run effect functions in a background thread; starting a new
+      sequence stops the previous one first via an interrupt flag
+
+    The interrupt flag is cooperative: effect functions must poll
+    ``is_interrupted()`` in their loops and return early when it is set.
+    """
+
     def __init__(self, gpio_service: GPIOService) -> None:
         self._gpio_service = gpio_service
         self._interrupt = False
@@ -17,10 +30,15 @@ class LEDStripLightController:
         self._last_color = None
 
     def switch_on(self) -> None:
+        """Turn the strip on, restoring the last known color (warm yellow if none)."""
         if not self.is_on():
             self.set_color(self._last_color or Color.WARM_YELLOW)
 
     def switch_off(self) -> None:
+        """Stop any running sequence and set the strip to black (off).
+
+        Clears the interrupt flag afterwards so future sequences can start.
+        """
         try:
             self.stop_current_sequence()
         except TimeoutError:
@@ -30,12 +48,15 @@ class LEDStripLightController:
             self.resume()
 
     def interrupt(self) -> None:
+        """Signal any running effect thread to stop at its next poll."""
         self._interrupt = True
 
     def resume(self) -> None:
+        """Clear the interrupt flag so effect threads may run."""
         self._interrupt = False
 
     def is_on(self) -> bool:
+        """Return True if the strip is emitting light (non-black color)."""
         return not self.get_color().is_black()
 
     def is_interrupted(self) -> bool:
@@ -43,6 +64,7 @@ class LEDStripLightController:
         return self._interrupt
 
     def get_color(self) -> Color:
+        """Return the current hardware color (may be black when off)."""
         return self._gpio_service.get_color()
 
     def get_display_color(self) -> Color:
@@ -58,6 +80,7 @@ class LEDStripLightController:
         return color
 
     def set_color(self, color: Color = Color.WARM_YELLOW) -> None:
+        """Set the strip color and remember it as the last active color (if non-black)."""
         if not color.is_black():
             self._last_color = color
         self._gpio_service.set_color(color)
@@ -98,10 +121,12 @@ class LEDStripLightController:
 
     # region Sequence control
     def run_sequence(self, func: Callable, *args: Any, **kwargs: Any) -> None:
+        """Stop any running sequence, then start a new one in a background thread."""
         self.stop_current_sequence()
         self.start_sequence(func, *args, **kwargs)
 
     def start_sequence(self, func: Callable, *args: Any, **kwargs: Any) -> None:
+        """Start ``func`` in a background thread without stopping the current sequence."""
         logging.debug(f"Starting sequence: {func.__name__}")
         self._sequence = Thread(target=self._run_sequence, args=(func, args, kwargs))
         self.resume()
@@ -128,6 +153,7 @@ class LEDStripLightController:
         self._reset_sequence()
 
     def is_sequence_running(self) -> bool:
+        """Return True if a sequence thread is currently alive."""
         sequence = self._sequence
         if sequence is None:
             return False
