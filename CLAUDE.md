@@ -104,7 +104,7 @@ led-strip-light/
 | `led/led_strip_light_controller.py` | Color/brightness control + sequence thread management |
 | `led/gpio_service.py` | pigpio PWM interface |
 | `led/profile_manager.py` | Selects color profile by time of day |
-| `config/config_manager.py` | Reads `config.toml` via `tomllib`/`tomli` |
+| `config/config_manager.py` | Reads `config.toml` via `tomllib` |
 | `cli/cli_handler.py` | argparse setup and effect dispatch |
 | `utils/graceful_shutdown.py` | SIGTERM/SIGINT handler |
 | `tests/conftest.py` | Shared fixtures; `patch_pigpio` mocks hardware |
