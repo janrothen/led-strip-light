@@ -163,7 +163,7 @@ def create_app(
 
     @app.route("/color", methods=["GET"])
     def get_color():
-        hex_color = led_controller.get_color().to_hex_with_hash()
+        hex_color = led_controller.get_display_color().to_hex_with_hash()
         return Response(hex_color, status=200)
 
     @app.route("/color/<value>", methods=["POST"])

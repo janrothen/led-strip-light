@@ -142,12 +142,22 @@ def test_get_status_when_off():
 
 def test_get_color():
     client, led_controller, _ = _build_client()
-    led_controller.get_color.return_value = Color(255, 0, 0)
+    led_controller.get_display_color.return_value = Color(255, 0, 0)
 
     response = client.get("/color")
 
     assert response.status_code == 200
     assert response.data == b"#FF0000"
+
+
+def test_get_color_when_off_returns_last_known_color():
+    client, led_controller, _ = _build_client()
+    led_controller.get_display_color.return_value = Color(255, 147, 41)  # WARM_YELLOW fallback
+
+    response = client.get("/color")
+
+    assert response.status_code == 200
+    assert response.data == b"#FF9329"
 
 
 def test_set_color():

@@ -65,6 +65,31 @@ class TestLEDStripLightController:
         # Test getting color
         assert controller.get_color() == test_color
 
+    def test_get_display_color_when_on(self, mock_gpio_service):
+        """get_display_color returns the actual color when the LED is on."""
+        test_color = Color(255, 0, 0)
+        mock_gpio_service.get_color.return_value = test_color
+        controller = LEDStripLightController(gpio_service=mock_gpio_service)
+
+        assert controller.get_display_color() == test_color
+
+    def test_get_display_color_falls_back_to_last_known_when_black(self, mock_gpio_service):
+        """get_display_color returns last known color instead of black to avoid NaN hue."""
+        last_color = Color(255, 0, 0)
+        mock_gpio_service.get_color.return_value = last_color
+        controller = LEDStripLightController(gpio_service=mock_gpio_service)
+        controller.set_color(last_color)  # populate _last_color
+
+        mock_gpio_service.get_color.return_value = Color.BLACK
+        assert controller.get_display_color() == last_color
+
+    def test_get_display_color_falls_back_to_warm_yellow_with_no_history(self, mock_gpio_service):
+        """get_display_color falls back to WARM_YELLOW when no color has ever been set."""
+        mock_gpio_service.get_color.return_value = Color.BLACK
+        controller = LEDStripLightController(gpio_service=mock_gpio_service)
+
+        assert controller.get_display_color() == Color.WARM_YELLOW
+
     @pytest.mark.parametrize(
         "current_color,brightness,expected",
         [
