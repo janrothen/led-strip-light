@@ -45,6 +45,18 @@ class LEDStripLightController:
     def get_color(self) -> Color:
         return self._gpio_service.get_color()
 
+    def get_display_color(self) -> Color:
+        """Return the current color, or the last known non-black color when off.
+
+        Homebridge computes hue/saturation from the color endpoint. Pure black
+        has no defined hue, so returning it causes NaN warnings. Returning the
+        last active color keeps H/S valid while brightness/power track on/off.
+        """
+        color = self.get_color()
+        if color.is_black():
+            return self._last_color or Color.WARM_YELLOW
+        return color
+
     def set_color(self, color: Color = Color.WARM_YELLOW) -> None:
         if not color.is_black():
             self._last_color = color
