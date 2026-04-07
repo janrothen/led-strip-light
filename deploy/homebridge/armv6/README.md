@@ -78,7 +78,7 @@ http://homebridge.local:8581
 
 On first access you will be asked to create a local admin account for the UI.
 
-## 6: Add the LED Strip Light accessory
+## 6. Add the LED Strip Light accessory
 
 Scan the QR code in your phones `Home` app to add the accessory.
 
