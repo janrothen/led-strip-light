@@ -269,32 +269,25 @@
             font-size: 13px;
         }
 
-        .status-badge {
+        .status-inline {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
-            border-radius: var(--radius-md);
+            gap: 6px;
+            margin-left: auto;
             font-size: 13px;
             font-weight: 500;
         }
 
-        .status-on {
-            background: rgba(34, 197, 94, 0.15);
+        .status-inline.status-on {
             color: var(--accent-success);
-            border: 1px solid rgba(34, 197, 94, 0.3);
         }
 
-        .status-off {
-            background: rgba(239, 68, 68, 0.15);
+        .status-inline.status-off {
             color: var(--accent-danger);
-            border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
-        .status-unknown {
-            background: var(--bg-elevated);
+        .status-inline.status-unknown {
             color: var(--text-muted);
-            border: 1px solid var(--border-color);
         }
 
         .status-dot {
@@ -637,6 +630,10 @@
                     </svg>
                 </div>
                 <h2 class="section-title">Power Control</h2>
+                <div id="status" class="status-inline status-unknown">
+                    <span class="status-dot"></span>
+                    <span class="status-text">--</span>
+                </div>
             </div>
             <div class="power-controls">
                 <button class="btn btn-on" onclick="turnOn()">
@@ -653,10 +650,6 @@
                     </svg>
                     Turn Off
                 </button>
-            </div>
-            <div id="status" class="status-badge status-unknown">
-                <span class="status-dot"></span>
-                <span>Status: Unknown</span>
             </div>
         </section>
 
@@ -936,14 +929,14 @@
                     const status = await response.text();
                     const isOn = status === '1';
                     const statusElement = document.getElementById('status');
-                    statusElement.innerHTML = `<span class="status-dot"></span><span>Status: ${isOn ? 'ON' : 'OFF'}</span>`;
-                    statusElement.className = `status-badge ${isOn ? 'status-on' : 'status-off'}`;
+                    statusElement.innerHTML = `<span class="status-dot"></span><span class="status-text">${isOn ? 'ON' : 'OFF'}</span>`;
+                    statusElement.className = `status-inline ${isOn ? 'status-on' : 'status-off'}`;
                 }
             } catch (error) {
                 console.error('Failed to get status:', error);
                 const statusElement = document.getElementById('status');
-                statusElement.innerHTML = '<span class="status-dot"></span><span>Status: Error</span>';
-                statusElement.className = 'status-badge status-unknown';
+                statusElement.innerHTML = '<span class="status-dot"></span><span class="status-text">--</span>';
+                statusElement.className = 'status-inline status-unknown';
             }
         }
 
