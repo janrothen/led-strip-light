@@ -17,7 +17,7 @@ class GPIOService:
     """
 
     def __init__(
-        self, red_pin: int = None, green_pin: int = None, blue_pin: int = None
+        self, red_pin: int | None = None, green_pin: int | None = None, blue_pin: int | None = None
     ) -> None:
         self.logger = logging.getLogger(__name__)
 

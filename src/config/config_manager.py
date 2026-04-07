@@ -35,7 +35,7 @@ class ConfigManager:
     - Morning and evening color profiles with RGB values (0-255)
     """
 
-    def __init__(self, config_path: "Path | str | None" = None) -> None:
+    def __init__(self, config_path: Path | str | None = None) -> None:
         if config_path is not None:
             self._config_path = Path(config_path)
         else:

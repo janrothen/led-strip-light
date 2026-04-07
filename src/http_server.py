@@ -107,11 +107,11 @@ def _dispatch_effect(effect_name: str, data: dict, effect_runner: EffectRunner) 
 
 def create_app(
     *,
-    config_manager: ConfigManager = None,
-    gpio_service: GPIOService = None,
-    led_controller: LEDStripLightController = None,
-    profile_manager: ProfileManager = None,
-    effect_runner: EffectRunner = None,
+    config_manager: ConfigManager | None = None,
+    gpio_service: GPIOService | None = None,
+    led_controller: LEDStripLightController | None = None,
+    profile_manager: ProfileManager | None = None,
+    effect_runner: EffectRunner | None = None,
 ) -> Flask:
     # CSRF protection is not required: this API has no session cookies or
     # authentication, and all mutation endpoints consume JSON (not form data),
