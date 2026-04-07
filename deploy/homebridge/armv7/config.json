@@ -1,0 +1,37 @@
+{
+  "bridge": {
+    "name": "LED Strip Light Bridge",
+    "username": "0E:4F:67:3A:12:34",
+    "port": 51826,
+    "pin": "031-45-154"
+  },
+  "accessories": [
+    {
+      "accessory": "HTTP-RGB",
+      "name": "LED Strip Light",
+      "service": "Light",
+      "http_method": "POST",
+      "switch": {
+        "status": "http://zero.local:5000/status",
+        "powerOn": "http://zero.local:5000/on",
+        "powerOff": "http://zero.local:5000/off"
+      },
+      "color": {
+        "status": "http://zero.local:5000/color",
+        "url": "http://zero.local:5000/color/%s",
+        "brightness": false
+      },
+      "brightness": {
+        "status": "http://zero.local:5000/brightness",
+        "url": "http://zero.local:5000/brightness/%s"
+      }
+    }
+  ],
+  "platforms": [
+    {
+      "platform": "config",
+      "name": "Config",
+      "port": 8581
+    }
+  ]
+}

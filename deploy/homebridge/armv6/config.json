@@ -26,5 +26,12 @@
         "url": "http://zero.local:5000/brightness/%s"
       }
     }
+  ],
+  "platforms": [
+    {
+      "platform": "config",
+      "name": "Config",
+      "port": 8581
+    }
   ]
 }
