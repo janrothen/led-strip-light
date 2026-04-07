@@ -4,9 +4,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LED Strip Light</title>
+  <meta name="description" content="Control RGB LED strips from a Raspberry Pi Zero W via REST API, web UI, Apple HomeKit, and CLI. Built-in effects, scheduling, and Homebridge integration.">
+  <meta property="og:title" content="LED Strip Light — Raspberry Pi RGB Controller">
+  <meta property="og:description" content="Drive RGB LED strips from a Pi Zero W with REST API, web UI, HomeKit, and CLI support.">
+  <meta property="og:image" content="https://janrothen.github.io/led-strip-light/images/web_interface.png">
+  <meta property="og:url" content="https://janrothen.github.io/led-strip-light/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>LED Strip Light — Raspberry Pi RGB Controller with HomeKit</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌈</text></svg>">
   <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" />
+  <link rel="canonical" href="https://janrothen.github.io/led-strip-light/">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "LED Strip Light",
+    "operatingSystem": "Linux (Raspberry Pi OS)",
+    "applicationCategory": "UtilitiesApplication",
+    "description": "Control RGB LED strips from a Raspberry Pi Zero W via REST API, web UI, and Apple HomeKit.",
+    "url": "https://janrothen.github.io/led-strip-light/",
+    "author": { "@type": "Person", "name": "Jan Rothen" },
+    "codeRepository": "https://github.com/janrothen/led-strip-light",
+    "license": "https://github.com/janrothen/led-strip-light/blob/main/LICENSE"
+  }
+</script>
 </head>
 
 <body>
@@ -16,7 +38,7 @@
     <a href="https://github.com/janrothen/led-strip-light">GitHub repo</a>
   </nav>
 
-  <h1>🌈 LED Strip Light</h1>
+  <h1>LED Strip Light</h1>
   <p>
     Welcome! This project lets you drive RGB LED strips from a Raspberry Pi Zero W.
     It includes:
@@ -34,29 +56,22 @@
   <h2>Preview</h2>
   <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin: 20px 0;">
     <div style="text-align: center;">
-      <img src="images/homekit.jpg" alt="HomeKit integration" style="max-width: 300px; width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <img src="images/homekit.jpg" alt="HomeKit tile for LED strip brightness and color control on iPhone" style="max-width: 300px; width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
       <p style="font-style: italic; color: #666;">HomeKit integration</p>
     </div>
     <div style="text-align: center;">
-      <img src="images/web_interface.png" alt="Web interface" style="max-width: 300px; width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <img src="images/web_interface.png" alt="Flask web interface showing RGB color picker and effect controls" style="max-width: 300px; width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
       <p style="font-style: italic; color: #666;">Web control interface</p>
     </div>
   </div>
   
-  <h2>Getting Started</h2>
-  <ul>
-    <li><strong>Installation:</strong> <code>pip install .</code></li>
-    <li><strong>Configuration:</strong> edit <code>config.toml</code> in the <code>src</code> directory</li>
-    <li><strong>Usage:</strong> <code>./run.py profile</code></li>
-  </ul>
-  
   <h2>Documentation</h2>
-  <ul>
-    <li><a href="https://github.com/janrothen/led-strip-light/blob/main/README.md">README on GitHub</a></li>
+  <ol>
     <li><a href="pi-zero-w-rgb-led-strip-control.html">Hardware setup guide</a></li>
-  </ul>
+    <li><a href="https://github.com/janrothen/led-strip-light/blob/main/README.md">Software setup guide</a></li>
+  </ol>
   <footer>
-    <p>© 2025 Jan Rothen – <a href="https://github.com/janrothen/led-strip-light">Source on GitHub</a></p>
+    <p>© 2026 Jan Rothen – <a href="https://github.com/janrothen/led-strip-light">Source on GitHub</a></p>
   </footer>
 </body>
 
