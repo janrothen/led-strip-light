@@ -37,9 +37,16 @@ The guide [How to control a RGB LED Strip Light with a Raspberry Pi Zero W](http
 
 ```mermaid
 graph TD
+    subgraph Clients
+        SIRI["Siri / HomeKit"]
+        WEBUI["Web Browser\n(index.html)"]
+        SHELL["Shell / Cron"]
+    end
+
     subgraph Entry Points
-        CLI["run.py\n(CLI)"]
+        HB["Homebridge\n(homebridge-http-rgb-push)"]
         HTTP["http_server.py\n(Flask REST API)"]
+        CLI["run.py\n(CLI)"]
     end
 
     subgraph Config
@@ -57,8 +64,13 @@ graph TD
 
     HW["RGB LED Strip\n(hardware)"]
 
-    CLI --> CTRL
+    SIRI -->|"HomeKit protocol"| HB
+    HB -->|"HTTP"| HTTP
+    WEBUI -->|"HTTP"| HTTP
+    SHELL --> CLI
+
     HTTP --> CTRL
+    CLI --> CTRL
     CM --> PA
     CM --> PM
     PA --> GPIO
