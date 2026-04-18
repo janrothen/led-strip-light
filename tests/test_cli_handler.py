@@ -17,7 +17,6 @@ from cli.cli_handler import (
     _unit_float,
     create_parser,
     execute_effect,
-    parse_color,
     parse_colors,
 )
 from led.color import Color
@@ -29,43 +28,43 @@ class TestCLIHandler:
     def test_parse_color_predefined_colors(self):
         """Test parsing predefined color names."""
         # Test basic colors
-        assert parse_color("red") == Color.RED
-        assert parse_color("green") == Color.GREEN
-        assert parse_color("blue") == Color.BLUE
-        assert parse_color("white") == Color.WHITE
-        assert parse_color("black") == Color.BLACK
+        assert Color.parse("red") == Color.RED
+        assert Color.parse("green") == Color.GREEN
+        assert Color.parse("blue") == Color.BLUE
+        assert Color.parse("white") == Color.WHITE
+        assert Color.parse("black") == Color.BLACK
 
         # Test case insensitivity
-        assert parse_color("RED") == Color.RED
-        assert parse_color("Green") == Color.GREEN
-        assert parse_color("BLUE") == Color.BLUE
+        assert Color.parse("RED") == Color.RED
+        assert Color.parse("Green") == Color.GREEN
+        assert Color.parse("BLUE") == Color.BLUE
 
     def test_parse_color_extended_colors(self):
         """Test parsing extended color names."""
-        assert parse_color("yellow") == Color.YELLOW
-        assert parse_color("cyan") == Color.CYAN
-        assert parse_color("magenta") == Color.MAGENTA
-        assert parse_color("orange") == Color.ORANGE
-        assert parse_color("purple") == Color.PURPLE
-        assert parse_color("pink") == Color.PINK
-        assert parse_color("warm_white") == Color.WARM_WHITE
-        assert parse_color("cool_white") == Color.COOL_WHITE
+        assert Color.parse("yellow") == Color.YELLOW
+        assert Color.parse("cyan") == Color.CYAN
+        assert Color.parse("magenta") == Color.MAGENTA
+        assert Color.parse("orange") == Color.ORANGE
+        assert Color.parse("purple") == Color.PURPLE
+        assert Color.parse("pink") == Color.PINK
+        assert Color.parse("warm_white") == Color.WARM_WHITE
+        assert Color.parse("cool_white") == Color.COOL_WHITE
 
     def test_parse_color_hex_with_hash(self):
         """Test parsing hex colors with hash prefix."""
-        color = parse_color("#FF0000")
+        color = Color.parse("#FF0000")
         assert color.r == 255
         assert color.g == 0
         assert color.b == 0
 
-        color = parse_color("#00FF80")
+        color = Color.parse("#00FF80")
         assert color.r == 0
         assert color.g == 255
         assert color.b == 128
 
     def test_parse_color_hex_without_hash(self):
         """Test parsing hex colors without hash prefix."""
-        color = parse_color("FF0000")
+        color = Color.parse("FF0000")
         assert color.r == 255
         assert color.g == 0
         assert color.b == 0
@@ -73,18 +72,18 @@ class TestCLIHandler:
     def test_parse_color_invalid(self):
         """Test parsing invalid color names raises error."""
         with pytest.raises(ValueError, match="Unknown color: invalid_color"):
-            parse_color("invalid_color")
+            Color.parse("invalid_color")
 
         with pytest.raises(ValueError, match="Unknown color: "):
-            parse_color("")
+            Color.parse("")
 
     def test_parse_color_invalid_hex(self):
         """Test parsing invalid hex colors raises error."""
         with pytest.raises(ValueError):
-            parse_color("#GGGGGG")  # Invalid hex characters
+            Color.parse("#GGGGGG")  # Invalid hex characters
 
         with pytest.raises(ValueError):
-            parse_color("#FF00")  # Too short
+            Color.parse("#FF00")  # Too short
 
     def test_parse_colors_single_color(self):
         """Test parsing single color from comma-separated string."""

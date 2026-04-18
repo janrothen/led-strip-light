@@ -37,10 +37,6 @@ def _is_led_active(led_controller) -> bool:
     return led_controller.is_on() or led_controller.is_sequence_running()
 
 
-def _parse_color(value: str) -> Color:
-    return Color.from_hex(value.lstrip("#"))
-
-
 def _parse_flame_kwargs(data: dict) -> dict:
     return {k: coerce(data[k]) for k, coerce in _FLAME_COERCERS.items() if k in data}
 
@@ -68,7 +64,7 @@ def _resolve_dependencies(
 
 def _handle_breathing(runner: EffectRunner, data: dict) -> None:
     runner.run_breathing_effect(
-        color=_parse_color(data.get("color", "FF0000")),
+        color=Color.parse(data.get("color", "FF0000")),
         duration=int(data.get("duration", 2000)),
     )
 
@@ -83,14 +79,14 @@ def _handle_cycle(runner: EffectRunner, data: dict) -> None:
     if colors_raw:
         if not isinstance(colors_raw, list):
             raise ValueError("colors must be a list of hex strings")
-        colors = [_parse_color(c) for c in colors_raw]
+        colors = [Color.parse(c) for c in colors_raw]
     runner.run_cycle_effect(colors=colors, duration=int(data.get("duration", 2000)))
 
 
 def _handle_fade(runner: EffectRunner, data: dict) -> None:
     runner.run_fade_effect(
-        from_color=_parse_color(data.get("from", "000000")),
-        to_color=_parse_color(data.get("to", "FFFFFF")),
+        from_color=Color.parse(data.get("from", "000000")),
+        to_color=Color.parse(data.get("to", "FFFFFF")),
         duration=int(data.get("duration", 5000)),
     )
 
@@ -192,9 +188,9 @@ def create_app(
 
     @app.route("/color/<value>", methods=["POST"])
     def set_color(value):
-        """Set the strip to a hex color (RRGGBB, with or without '#'). 200 on success."""
+        """Set the strip to a color (name or hex RRGGBB, with or without '#'). 200 on success."""
         _stop_active_effect()
-        color = Color.from_hex(value)
+        color = Color.parse(value)
         led_controller.set_color(color)
         return Response(status=200)
 
