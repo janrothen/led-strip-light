@@ -20,7 +20,7 @@ class TestLEDStripLightController:
         controller = LEDStripLightController(mock_gpio_service)
 
         assert controller._gpio_service == mock_gpio_service
-        assert controller._interrupt is False
+        assert not controller.is_interrupted()
         assert controller._sequence is None
 
     def test_switch_on_off(self, mock_gpio_service):
