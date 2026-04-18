@@ -18,20 +18,18 @@ from led.gpio_service import GPIOService
 from led.led_strip_light_controller import LEDStripLightController
 from led.profile_manager import ProfileManager
 
-_FLAME_KEYS_INT = {"duration", "update_hz", "tau_ms"}
-_FLAME_KEYS_FLOAT = {"min_brightness", "max_brightness", "hue_jitter", "saturation", "spark_chance", "spark_gain", "gamma"}
-_FLAME_KEYS = [
-    "duration",
-    "update_hz",
-    "min_brightness",
-    "max_brightness",
-    "hue_jitter",
-    "saturation",
-    "spark_chance",
-    "spark_gain",
-    "tau_ms",
-    "gamma",
-]
+_FLAME_COERCERS = {
+    "duration": int,
+    "update_hz": int,
+    "tau_ms": int,
+    "min_brightness": float,
+    "max_brightness": float,
+    "hue_jitter": float,
+    "saturation": float,
+    "spark_chance": float,
+    "spark_gain": float,
+    "gamma": float,
+}
 
 
 def _is_led_active(led_controller) -> bool:
@@ -43,15 +41,7 @@ def _parse_color(value: str) -> Color:
 
 
 def _parse_flame_kwargs(data: dict) -> dict:
-    kwargs = {}
-    for k in _FLAME_KEYS:
-        if k not in data:
-            continue
-        if k in _FLAME_KEYS_INT:
-            kwargs[k] = int(data[k])
-        elif k in _FLAME_KEYS_FLOAT:
-            kwargs[k] = float(data[k])
-    return kwargs
+    return {k: coerce(data[k]) for k, coerce in _FLAME_COERCERS.items() if k in data}
 
 
 def _resolve_dependencies(
