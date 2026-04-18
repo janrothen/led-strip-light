@@ -236,7 +236,7 @@ def create_app(
             _dispatch_effect(effect_name, data, effect_runner)
         except KeyError:
             return jsonify({"error": f"unknown effect '{effect_name}'"}), 404
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             return jsonify({"error": str(e)}), 400
         active_effect["name"] = effect_name
         return jsonify({"status": "started", "effect": effect_name, "params": data})
