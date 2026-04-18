@@ -95,39 +95,21 @@ class EffectRunner:
             tau_ms: Smoothing time constant
             gamma: Perceptual gamma (None = effect default)
         """
-        logging.info(
-            "Starting campfire effect: duration=%s base=%s update_hz=%d min_brightness=%.2f max_brightness=%.2f "
-            "hue_jitter=%.3f saturation=%s spark_chance=%.3f spark_gain=%.2f tau_ms=%d gamma=%s",
-            duration,
-            base_color,
-            update_hz,
-            min_brightness,
-            max_brightness,
-            hue_jitter,
-            saturation,
-            spark_chance,
-            spark_gain,
-            tau_ms,
-            gamma,
+        self._run_flame(
+            "campfire",
+            campfire_effect,
+            duration=duration,
+            base_color=base_color,
+            update_hz=update_hz,
+            min_brightness=min_brightness,
+            max_brightness=max_brightness,
+            hue_jitter=hue_jitter,
+            saturation=saturation,
+            spark_chance=spark_chance,
+            spark_gain=spark_gain,
+            tau_ms=tau_ms,
+            gamma=gamma,
         )
-
-        # Only pass gamma if explicitly provided so the effect default stays intact
-        kwargs = {
-            "duration_ms": duration,
-            "base_color": base_color,
-            "update_hz": update_hz,
-            "min_brightness": min_brightness,
-            "max_brightness": max_brightness,
-            "hue_jitter": hue_jitter,
-            "saturation": saturation,
-            "spark_chance": spark_chance,
-            "spark_gain": spark_gain,
-            "tau_ms": tau_ms,
-        }
-        if gamma is not None:
-            kwargs["gamma"] = gamma
-
-        self.strip.run_sequence(campfire_effect, self.strip, **kwargs)
 
     def run_candle_effect(
         self,
@@ -145,9 +127,49 @@ class EffectRunner:
         gamma: float | None = None,
     ) -> None:
         """Run gentle candle effect (wrapper around campfire with calmer defaults)."""
+        self._run_flame(
+            "candle",
+            candle_effect,
+            duration=duration,
+            base_color=base_color,
+            update_hz=update_hz,
+            min_brightness=min_brightness,
+            max_brightness=max_brightness,
+            hue_jitter=hue_jitter,
+            saturation=saturation,
+            spark_chance=spark_chance,
+            spark_gain=spark_gain,
+            tau_ms=tau_ms,
+            gamma=gamma,
+        )
+
+    def _run_flame(
+        self,
+        label: str,
+        effect_func: Callable,
+        *,
+        duration: int | None,
+        base_color: Color,
+        update_hz: int,
+        min_brightness: float,
+        max_brightness: float,
+        hue_jitter: float,
+        saturation: float | None,
+        spark_chance: float,
+        spark_gain: float,
+        tau_ms: int,
+        gamma: float | None,
+    ) -> None:
+        """Log and dispatch a flame-style effect (campfire/candle).
+
+        ``duration`` is renamed to ``duration_ms`` for the effect function.
+        Only non-None ``gamma`` is forwarded so the effect default stays intact.
+        """
         logging.info(
-            "Starting candle effect: duration=%s base=%s update_hz=%d min_brightness=%.2f max_brightness=%.2f "
-            "hue_jitter=%.3f saturation=%s spark_chance=%.3f spark_gain=%.2f tau_ms=%d gamma=%s",
+            "Starting %s effect: duration=%s base=%s update_hz=%d min_brightness=%.2f "
+            "max_brightness=%.2f hue_jitter=%.3f saturation=%s spark_chance=%.3f "
+            "spark_gain=%.2f tau_ms=%d gamma=%s",
+            label,
             duration,
             base_color,
             update_hz,
@@ -160,7 +182,7 @@ class EffectRunner:
             tau_ms,
             gamma,
         )
-        kwargs = {
+        kwargs: dict = {
             "duration_ms": duration,
             "base_color": base_color,
             "update_hz": update_hz,
@@ -174,7 +196,7 @@ class EffectRunner:
         }
         if gamma is not None:
             kwargs["gamma"] = gamma
-        self.strip.run_sequence(candle_effect, self.strip, **kwargs)
+        self.strip.run_sequence(effect_func, self.strip, **kwargs)
 
     def run_random_effect(self, interval: int = 2000) -> None:
         """Run random color effect."""
