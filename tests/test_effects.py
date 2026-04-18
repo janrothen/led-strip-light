@@ -14,8 +14,6 @@ from led.color import Color
 from led.effects import (
     _interp_channel,
     breathing_effect,
-    campfire_effect,
-    candle_effect,
     color_cycle_effect,
     ease_in_quad,
     ease_linear,
@@ -102,7 +100,7 @@ class TestEffects:
 
         with patch("led.effects.sleep"), patch("led.color.Color.random") as mock_random:
             mock_random.return_value = Color.RED
-            random_color_effect(mock_strip, duration=100)
+            random_color_effect(mock_strip, interval=100)
 
         # Should have called set_color with random colors
         assert mock_strip.set_color.call_count >= 1
@@ -122,7 +120,7 @@ class TestEffects:
         mock_strip.is_interrupted.side_effect = mock_interrupted
 
         with patch("led.effects.sleep"):
-            random_color_effect(mock_strip, duration=100)
+            random_color_effect(mock_strip, interval=100)
 
         assert mock_strip.set_color.call_count == 1
 
@@ -268,22 +266,6 @@ class TestEffects:
         with patch("led.effects.sleep"):
             # Very short duration; end_time will be reached quickly
             flickering_effect(mock_strip, duration_ms=1, gamma=None)
-
-    def test_campfire_effect_delegates_to_flickering(self):
-        """Test campfire_effect calls flickering_effect."""
-        mock_strip = Mock()
-        mock_strip.is_interrupted.return_value = True  # exit immediately
-
-        with patch("led.effects.sleep"):
-            campfire_effect(mock_strip)
-
-    def test_candle_effect_delegates_to_flickering(self):
-        """Test candle_effect calls flickering_effect."""
-        mock_strip = Mock()
-        mock_strip.is_interrupted.return_value = True  # exit immediately
-
-        with patch("led.effects.sleep"):
-            candle_effect(mock_strip)
 
 
 class TestEasingFunctions:
