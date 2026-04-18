@@ -8,6 +8,7 @@ all dependencies can be injected for testing without real hardware.
 
 import os
 import threading
+from collections.abc import Callable
 
 from flask import Flask, Response, jsonify, request, send_from_directory
 
@@ -65,41 +66,56 @@ def _resolve_dependencies(
     return config_manager, led_controller, profile_manager, effect_runner
 
 
+def _handle_breathing(runner: EffectRunner, data: dict) -> None:
+    runner.run_breathing_effect(
+        color=_parse_color(data.get("color", "FF0000")),
+        duration=int(data.get("duration", 2000)),
+    )
+
+
+def _handle_random(runner: EffectRunner, data: dict) -> None:
+    runner.run_random_effect(interval=int(data.get("interval", 2000)))
+
+
+def _handle_cycle(runner: EffectRunner, data: dict) -> None:
+    colors_raw = data.get("colors")
+    colors = None
+    if colors_raw:
+        if not isinstance(colors_raw, list):
+            raise ValueError("colors must be a list of hex strings")
+        colors = [_parse_color(c) for c in colors_raw]
+    runner.run_cycle_effect(colors=colors, duration=int(data.get("duration", 2000)))
+
+
+def _handle_fade(runner: EffectRunner, data: dict) -> None:
+    runner.run_fade_effect(
+        from_color=_parse_color(data.get("from", "000000")),
+        to_color=_parse_color(data.get("to", "FFFFFF")),
+        duration=int(data.get("duration", 5000)),
+    )
+
+
+def _handle_profile(runner: EffectRunner, data: dict) -> None:
+    runner.run_profile_effect(duration=int(data.get("duration", 10000)))
+
+
+_EFFECT_HANDLERS: dict[str, Callable[[EffectRunner, dict], None]] = {
+    "breathing": _handle_breathing,
+    "campfire": lambda r, d: r.run_campfire_effect(**_parse_flame_kwargs(d)),
+    "candle": lambda r, d: r.run_candle_effect(**_parse_flame_kwargs(d)),
+    "cycle": _handle_cycle,
+    "fade": _handle_fade,
+    "profile": _handle_profile,
+    "random": _handle_random,
+}
+
+
 def _dispatch_effect(effect_name: str, data: dict, effect_runner: EffectRunner) -> None:
-    if effect_name == "breathing":
-        color_hex = data.get("color", "FF0000")
-        duration = int(data.get("duration", 2000))
-        effect_runner.run_breathing_effect(color=_parse_color(color_hex), duration=duration)
-    elif effect_name == "campfire":
-        effect_runner.run_campfire_effect(**_parse_flame_kwargs(data))
-    elif effect_name == "candle":
-        effect_runner.run_candle_effect(**_parse_flame_kwargs(data))
-    elif effect_name == "random":
-        interval = int(data.get("interval", 2000))
-        effect_runner.run_random_effect(interval=interval)
-    elif effect_name == "cycle":
-        duration = int(data.get("duration", 2000))
-        colors_raw = data.get("colors")
-        colors = None
-        if colors_raw:
-            if not isinstance(colors_raw, list):
-                raise ValueError("colors must be a list of hex strings")
-            colors = [_parse_color(c) for c in colors_raw]
-        effect_runner.run_cycle_effect(colors=colors, duration=duration)
-    elif effect_name == "fade":
-        from_hex = data.get("from", "000000")
-        to_hex = data.get("to", "FFFFFF")
-        duration = int(data.get("duration", 5000))
-        effect_runner.run_fade_effect(
-            from_color=_parse_color(from_hex),
-            to_color=_parse_color(to_hex),
-            duration=duration,
-        )
-    elif effect_name == "profile":
-        duration = int(data.get("duration", 10000))
-        effect_runner.run_profile_effect(duration=duration)
-    else:
-        raise KeyError(effect_name)
+    try:
+        handler = _EFFECT_HANDLERS[effect_name]
+    except KeyError:
+        raise KeyError(effect_name) from None
+    handler(effect_runner, data)
 
 
 def create_app(
@@ -202,15 +218,7 @@ def create_app(
         return jsonify(
             {
                 "active": _get_active_effect_name(),
-                "available": [
-                    "breathing",
-                    "campfire",
-                    "candle",
-                    "random",
-                    "cycle",
-                    "fade",
-                    "profile",
-                ],
+                "available": sorted(_EFFECT_HANDLERS),
             }
         )
 

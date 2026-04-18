@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+from collections.abc import Callable
 
 from led.color import Color
 from led.effect_runner import EffectRunner
@@ -282,33 +283,53 @@ def _add_flame_arguments(
     )
 
 
+def _run_profile(runner: EffectRunner, args) -> None:
+    runner.run_profile_effect(duration=args.duration)
+
+
+def _run_breathing(runner: EffectRunner, args) -> None:
+    runner.run_breathing_effect(color=parse_color(args.color), duration=args.duration)
+
+
+def _run_random(runner: EffectRunner, args) -> None:
+    runner.run_random_effect(interval=args.interval)
+
+
+def _run_campfire(runner: EffectRunner, args) -> None:
+    runner.run_campfire_effect(**_flame_kwargs(args, parse_color(args.base_color)))
+
+
+def _run_candle(runner: EffectRunner, args) -> None:
+    runner.run_candle_effect(**_flame_kwargs(args, parse_color(args.base_color)))
+
+
+def _run_cycle(runner: EffectRunner, args) -> None:
+    runner.run_cycle_effect(colors=parse_colors(args.colors), duration=args.duration)
+
+
+def _run_fade(runner: EffectRunner, args) -> None:
+    runner.run_fade_effect(
+        from_color=parse_color(args.from_color),
+        to_color=parse_color(args.to_color),
+        duration=args.duration,
+    )
+
+
+_EFFECT_HANDLERS: dict[str, Callable[[EffectRunner, argparse.Namespace], None]] = {
+    "breathing": _run_breathing,
+    "campfire": _run_campfire,
+    "candle": _run_candle,
+    "cycle": _run_cycle,
+    "fade": _run_fade,
+    "profile": _run_profile,
+    "random": _run_random,
+}
+
+
 def execute_effect(effect_runner: EffectRunner, args) -> None:
     """Execute the specified effect with parsed arguments."""
-    if args.effect == "profile":
-        effect_runner.run_profile_effect(duration=args.duration)
-    elif args.effect == "breathing":
-        effect_runner.run_breathing_effect(
-            color=parse_color(args.color), duration=args.duration
-        )
-    elif args.effect == "random":
-        effect_runner.run_random_effect(interval=args.interval)
-    elif args.effect == "campfire":
-        effect_runner.run_campfire_effect(
-            **_flame_kwargs(args, parse_color(args.base_color))
-        )
-    elif args.effect == "candle":
-        effect_runner.run_candle_effect(
-            **_flame_kwargs(args, parse_color(args.base_color))
-        )
-    elif args.effect == "cycle":
-        effect_runner.run_cycle_effect(
-            colors=parse_colors(args.colors), duration=args.duration
-        )
-    elif args.effect == "fade":
-        effect_runner.run_fade_effect(
-            from_color=parse_color(args.from_color),
-            to_color=parse_color(args.to_color),
-            duration=args.duration,
-        )
-    else:
-        raise ValueError(f"Unknown effect: {args.effect}")
+    try:
+        handler = _EFFECT_HANDLERS[args.effect]
+    except KeyError:
+        raise ValueError(f"Unknown effect: {args.effect}") from None
+    handler(effect_runner, args)
