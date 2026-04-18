@@ -31,38 +31,9 @@ def _positive_float(value):
     return v
 
 
-_COLOR_NAMES = {
-    "black": Color.BLACK,
-    "white": Color.WHITE,
-    "red": Color.RED,
-    "green": Color.GREEN,
-    "blue": Color.BLUE,
-    "yellow": Color.YELLOW,
-    "cyan": Color.CYAN,
-    "magenta": Color.MAGENTA,
-    "orange": Color.ORANGE,
-    "purple": Color.PURPLE,
-    "pink": Color.PINK,
-    "warm_white": Color.WARM_WHITE,
-    "cool_white": Color.COOL_WHITE,
-}
-
-
-def parse_color(color_str: str) -> Color:
-    """Parse a color name or hex string (with or without '#') to a Color."""
-    color_str = color_str.lower()
-    if color_str in _COLOR_NAMES:
-        return _COLOR_NAMES[color_str]
-    if color_str.startswith("#"):
-        return Color.from_hex(color_str)
-    if len(color_str) == 6 and all(c in "0123456789abcdef" for c in color_str):
-        return Color.from_hex(color_str)
-    raise ValueError(f"Unknown color: {color_str}")
-
-
 def parse_colors(colors_str: str) -> list[Color]:
     """Parse a comma-separated color string to a list of Color objects."""
-    return [parse_color(c.strip()) for c in colors_str.split(",")]
+    return [Color.parse(c.strip()) for c in colors_str.split(",")]
 
 
 def _flame_kwargs(args, base_color: Color) -> dict:
@@ -288,7 +259,7 @@ def _run_profile(runner: EffectRunner, args) -> None:
 
 
 def _run_breathing(runner: EffectRunner, args) -> None:
-    runner.run_breathing_effect(color=parse_color(args.color), duration=args.duration)
+    runner.run_breathing_effect(color=Color.parse(args.color), duration=args.duration)
 
 
 def _run_random(runner: EffectRunner, args) -> None:
@@ -296,11 +267,11 @@ def _run_random(runner: EffectRunner, args) -> None:
 
 
 def _run_campfire(runner: EffectRunner, args) -> None:
-    runner.run_campfire_effect(**_flame_kwargs(args, parse_color(args.base_color)))
+    runner.run_campfire_effect(**_flame_kwargs(args, Color.parse(args.base_color)))
 
 
 def _run_candle(runner: EffectRunner, args) -> None:
-    runner.run_candle_effect(**_flame_kwargs(args, parse_color(args.base_color)))
+    runner.run_candle_effect(**_flame_kwargs(args, Color.parse(args.base_color)))
 
 
 def _run_cycle(runner: EffectRunner, args) -> None:
@@ -309,8 +280,8 @@ def _run_cycle(runner: EffectRunner, args) -> None:
 
 def _run_fade(runner: EffectRunner, args) -> None:
     runner.run_fade_effect(
-        from_color=parse_color(args.from_color),
-        to_color=parse_color(args.to_color),
+        from_color=Color.parse(args.from_color),
+        to_color=Color.parse(args.to_color),
         duration=args.duration,
     )
 

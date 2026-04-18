@@ -80,6 +80,22 @@ class Color:
             raise ValueError("Invalid hex color string") from e
 
     @classmethod
+    def parse(cls, value: str) -> "Color":
+        """Parse a color name or hex string (with or without '#') to a Color.
+
+        Names are resolved case-insensitively against the predefined constants
+        (e.g. "red", "warm_white"). Hex inputs are delegated to ``from_hex``.
+        """
+        lowered = value.lower()
+        if lowered in _NAMED_COLORS:
+            return _NAMED_COLORS[lowered]
+        if lowered.startswith("#") or (
+            len(lowered) == 6 and all(c in "0123456789abcdef" for c in lowered)
+        ):
+            return cls.from_hex(lowered)
+        raise ValueError(f"Unknown color: {value}")
+
+    @classmethod
     def random(cls, min_brightness: int = MIN_COLOR_VALUE) -> "Color":
         """Create a random color with RGB values between 0-255."""
         return cls(
@@ -142,3 +158,21 @@ Color.ORANGE = Color(255, 165, 0)
 Color.PURPLE = Color(128, 0, 128)
 Color.PINK = Color(255, 192, 203)
 Color.FLAME = Color(255, 147, 41)
+
+_NAMED_COLORS: dict[str, Color] = {
+    "black": Color.BLACK,
+    "white": Color.WHITE,
+    "warm_white": Color.WARM_WHITE,
+    "cool_white": Color.COOL_WHITE,
+    "red": Color.RED,
+    "green": Color.GREEN,
+    "blue": Color.BLUE,
+    "yellow": Color.YELLOW,
+    "warm_yellow": Color.WARM_YELLOW,
+    "cyan": Color.CYAN,
+    "magenta": Color.MAGENTA,
+    "orange": Color.ORANGE,
+    "purple": Color.PURPLE,
+    "pink": Color.PINK,
+    "flame": Color.FLAME,
+}

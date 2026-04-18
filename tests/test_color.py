@@ -67,6 +67,27 @@ class TestColor:
         with pytest.raises(ValueError):
             Color.from_hex("#ZZ0000")
 
+    def test_parse_named_color(self):
+        assert Color.parse("red") == Color.RED
+        assert Color.parse("RED") == Color.RED
+        assert Color.parse("warm_white") == Color.WARM_WHITE
+
+    def test_parse_hex_with_and_without_hash(self):
+        assert Color.parse("#FF0000") == Color.RED
+        assert Color.parse("FF0000") == Color.RED
+
+    def test_parse_unknown_raises(self):
+        with pytest.raises(ValueError, match="Unknown color: bogus"):
+            Color.parse("bogus")
+        with pytest.raises(ValueError, match="Unknown color: "):
+            Color.parse("")
+
+    def test_parse_invalid_hex_raises(self):
+        with pytest.raises(ValueError):
+            Color.parse("#GGGGGG")
+        with pytest.raises(ValueError):
+            Color.parse("#FF00")
+
     def test_predefined_colors(self):
         """Test predefined color constants."""
         assert Color.RED.rgb == (255, 0, 0)
