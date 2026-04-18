@@ -6,6 +6,7 @@ Use ``create_app()`` to get a configured Flask application instance;
 all dependencies can be injected for testing without real hardware.
 """
 
+import contextlib
 import os
 import threading
 from collections.abc import Callable
@@ -143,10 +144,9 @@ def create_app(
             active_effect["name"] = None
             if not led_controller.is_sequence_running():
                 return
-            try:
+            # Interrupt is set; on timeout the worker stops on its own poll.
+            with contextlib.suppress(TimeoutError):
                 led_controller.stop_current_sequence(timeout=2)
-            except TimeoutError:
-                pass  # Interrupt is set; thread will stop on its own
 
     def _get_active_effect_name():
         with state_lock:

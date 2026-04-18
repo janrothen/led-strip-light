@@ -116,9 +116,7 @@ def breathing_effect(
         hold_ms: Optional time to hold at each end (ms).
     """
     while not strip.is_interrupted():
-        fade_in_colors = [Color.BLACK, color]
-        fade_out_colors = [color, Color.BLACK]
-        for c_from, c_to in zip(fade_in_colors, fade_out_colors):
+        for c_from, c_to in ((Color.BLACK, color), (color, Color.BLACK)):
             fade_effect(strip, c_from, c_to, duration, ease=ease, gamma=gamma)
             if strip.is_interrupted():
                 return
