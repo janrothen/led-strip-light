@@ -45,16 +45,22 @@ class LEDStripLightController:
     def switch_off(self) -> None:
         """Stop any running sequence and set the strip to black (off).
 
-        Clears the interrupt flag afterwards so future sequences can start.
+        On success, clears the interrupt flag so future sequences can start.
+        If the effect thread fails to stop in time, logs an error and leaves
+        the strip in its current state: writing BLACK would be pointless
+        because the running worker would overwrite it on its next frame.
+        The interrupt flag is left set so the worker exits on its next poll.
         """
         try:
             self.stop_current_sequence()
         except TimeoutError:
-            logging.warning("Sequence did not stop cleanly during switch_off")
+            logging.error(
+                "Effect worker did not stop during switch_off; LEDs left in current state."
+            )
+            return
         with self._lock:
             self.set_color(Color.BLACK)
-            if not self.is_sequence_running():
-                self.resume()
+            self.resume()
 
     def interrupt(self) -> None:
         """Signal any running effect thread to stop at its next poll."""

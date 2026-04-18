@@ -188,10 +188,15 @@ class TestLEDStripLightController:
         assert not controller.is_interrupted()  # resume() was called
 
     @patch("led.led_strip_light_controller.Thread")
-    def test_switch_off_does_not_resume_when_sequence_times_out(
+    def test_switch_off_skips_black_write_when_sequence_times_out(
         self, mock_thread_class, mock_gpio_service
     ):
-        """Test switch_off still sets color to black but leaves interrupt set on timeout."""
+        """switch_off skips writing BLACK when the effect thread refuses to stop.
+
+        Writing BLACK while the worker is still alive is pointless — it would
+        overwrite on the next frame. The interrupt flag is left set so the
+        worker exits on its next poll.
+        """
         controller = LEDStripLightController(gpio_service=mock_gpio_service)
         mock_thread = Mock()
         mock_thread.name = "stuck_sequence"
@@ -202,9 +207,10 @@ class TestLEDStripLightController:
             pass
 
         controller.start_sequence(dummy_effect)
+        mock_gpio_service.set_color.reset_mock()
         controller.switch_off()  # must not raise
 
-        mock_gpio_service.set_color.assert_called_with(Color.BLACK)
+        mock_gpio_service.set_color.assert_not_called()
         assert controller.is_interrupted()  # resume() was NOT called
 
     def test_interrupt_control(self, led_controller):
