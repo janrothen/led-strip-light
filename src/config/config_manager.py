@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import tomllib
-
 from pathlib import Path
 
 from .color_profile import ColorProfile
