@@ -11,7 +11,15 @@ from unittest.mock import Mock
 
 import pytest
 
-from cli.cli_handler import CLIHandler, _positive_float, _positive_int, _unit_float
+from cli.cli_handler import (
+    _positive_float,
+    _positive_int,
+    _unit_float,
+    create_parser,
+    execute_effect,
+    parse_color,
+    parse_colors,
+)
 from led.color import Color
 
 
@@ -21,43 +29,43 @@ class TestCLIHandler:
     def test_parse_color_predefined_colors(self):
         """Test parsing predefined color names."""
         # Test basic colors
-        assert CLIHandler.parse_color("red") == Color.RED
-        assert CLIHandler.parse_color("green") == Color.GREEN
-        assert CLIHandler.parse_color("blue") == Color.BLUE
-        assert CLIHandler.parse_color("white") == Color.WHITE
-        assert CLIHandler.parse_color("black") == Color.BLACK
+        assert parse_color("red") == Color.RED
+        assert parse_color("green") == Color.GREEN
+        assert parse_color("blue") == Color.BLUE
+        assert parse_color("white") == Color.WHITE
+        assert parse_color("black") == Color.BLACK
 
         # Test case insensitivity
-        assert CLIHandler.parse_color("RED") == Color.RED
-        assert CLIHandler.parse_color("Green") == Color.GREEN
-        assert CLIHandler.parse_color("BLUE") == Color.BLUE
+        assert parse_color("RED") == Color.RED
+        assert parse_color("Green") == Color.GREEN
+        assert parse_color("BLUE") == Color.BLUE
 
     def test_parse_color_extended_colors(self):
         """Test parsing extended color names."""
-        assert CLIHandler.parse_color("yellow") == Color.YELLOW
-        assert CLIHandler.parse_color("cyan") == Color.CYAN
-        assert CLIHandler.parse_color("magenta") == Color.MAGENTA
-        assert CLIHandler.parse_color("orange") == Color.ORANGE
-        assert CLIHandler.parse_color("purple") == Color.PURPLE
-        assert CLIHandler.parse_color("pink") == Color.PINK
-        assert CLIHandler.parse_color("warm_white") == Color.WARM_WHITE
-        assert CLIHandler.parse_color("cool_white") == Color.COOL_WHITE
+        assert parse_color("yellow") == Color.YELLOW
+        assert parse_color("cyan") == Color.CYAN
+        assert parse_color("magenta") == Color.MAGENTA
+        assert parse_color("orange") == Color.ORANGE
+        assert parse_color("purple") == Color.PURPLE
+        assert parse_color("pink") == Color.PINK
+        assert parse_color("warm_white") == Color.WARM_WHITE
+        assert parse_color("cool_white") == Color.COOL_WHITE
 
     def test_parse_color_hex_with_hash(self):
         """Test parsing hex colors with hash prefix."""
-        color = CLIHandler.parse_color("#FF0000")
+        color = parse_color("#FF0000")
         assert color.r == 255
         assert color.g == 0
         assert color.b == 0
 
-        color = CLIHandler.parse_color("#00FF80")
+        color = parse_color("#00FF80")
         assert color.r == 0
         assert color.g == 255
         assert color.b == 128
 
     def test_parse_color_hex_without_hash(self):
         """Test parsing hex colors without hash prefix."""
-        color = CLIHandler.parse_color("FF0000")
+        color = parse_color("FF0000")
         assert color.r == 255
         assert color.g == 0
         assert color.b == 0
@@ -65,28 +73,28 @@ class TestCLIHandler:
     def test_parse_color_invalid(self):
         """Test parsing invalid color names raises error."""
         with pytest.raises(ValueError, match="Unknown color: invalid_color"):
-            CLIHandler.parse_color("invalid_color")
+            parse_color("invalid_color")
 
         with pytest.raises(ValueError, match="Unknown color: "):
-            CLIHandler.parse_color("")
+            parse_color("")
 
     def test_parse_color_invalid_hex(self):
         """Test parsing invalid hex colors raises error."""
         with pytest.raises(ValueError):
-            CLIHandler.parse_color("#GGGGGG")  # Invalid hex characters
+            parse_color("#GGGGGG")  # Invalid hex characters
 
         with pytest.raises(ValueError):
-            CLIHandler.parse_color("#FF00")  # Too short
+            parse_color("#FF00")  # Too short
 
     def test_parse_colors_single_color(self):
         """Test parsing single color from comma-separated string."""
-        colors = CLIHandler.parse_colors("red")
+        colors = parse_colors("red")
         assert len(colors) == 1
         assert colors[0] == Color.RED
 
     def test_parse_colors_multiple_colors(self):
         """Test parsing multiple colors from comma-separated string."""
-        colors = CLIHandler.parse_colors("red,green,blue")
+        colors = parse_colors("red,green,blue")
         assert len(colors) == 3
         assert colors[0] == Color.RED
         assert colors[1] == Color.GREEN
@@ -94,7 +102,7 @@ class TestCLIHandler:
 
     def test_parse_colors_with_spaces(self):
         """Test parsing colors with spaces around commas."""
-        colors = CLIHandler.parse_colors("red, green , blue")
+        colors = parse_colors("red, green , blue")
         assert len(colors) == 3
         assert colors[0] == Color.RED
         assert colors[1] == Color.GREEN
@@ -102,7 +110,7 @@ class TestCLIHandler:
 
     def test_parse_colors_mixed_formats(self):
         """Test parsing mix of named colors and hex colors."""
-        colors = CLIHandler.parse_colors("red,#00FF00,blue")
+        colors = parse_colors("red,#00FF00,blue")
         assert len(colors) == 3
         assert colors[0] == Color.RED
         assert colors[1].rgb == (0, 255, 0)
@@ -110,13 +118,13 @@ class TestCLIHandler:
 
     def test_create_parser(self):
         """Test that argument parser is created correctly."""
-        parser = CLIHandler.create_parser()
+        parser = create_parser()
         assert isinstance(parser, argparse.ArgumentParser)
         assert parser.description == "LED Strip Light Controller"
 
     def test_parser_profile_subcommand(self):
         """Test profile subcommand parsing."""
-        parser = CLIHandler.create_parser()
+        parser = create_parser()
 
         # Test with default duration
         args = parser.parse_args(["profile"])
@@ -130,7 +138,7 @@ class TestCLIHandler:
 
     def test_parser_breathing_subcommand(self):
         """Test breathing subcommand parsing."""
-        parser = CLIHandler.create_parser()
+        parser = create_parser()
 
         # Test with defaults
         args = parser.parse_args(["breathing"])
@@ -146,7 +154,7 @@ class TestCLIHandler:
 
     def test_parser_random_subcommand(self):
         """Test random subcommand parsing."""
-        parser = CLIHandler.create_parser()
+        parser = create_parser()
 
         # Test with default
         args = parser.parse_args(["random"])
@@ -160,7 +168,7 @@ class TestCLIHandler:
 
     def test_parser_cycle_subcommand(self):
         """Test cycle subcommand parsing."""
-        parser = CLIHandler.create_parser()
+        parser = create_parser()
 
         # Test with defaults
         args = parser.parse_args(["cycle"])
@@ -178,7 +186,7 @@ class TestCLIHandler:
 
     def test_parser_fade_subcommand(self):
         """Test fade subcommand parsing."""
-        parser = CLIHandler.create_parser()
+        parser = create_parser()
 
         # Test with defaults
         args = parser.parse_args(["fade"])
@@ -198,7 +206,7 @@ class TestCLIHandler:
 
     def test_parser_requires_subcommand(self):
         """Test that parser requires a subcommand."""
-        parser = CLIHandler.create_parser()
+        parser = create_parser()
 
         with pytest.raises(SystemExit):
             parser.parse_args([])  # No subcommand should fail
@@ -212,7 +220,7 @@ class TestCLIHandler:
         args.effect = "profile"
         args.duration = 5000
 
-        CLIHandler.execute_effect(mock_runner, args)
+        execute_effect(mock_runner, args)
         mock_runner.run_profile_effect.assert_called_once_with(duration=5000)
 
     def test_execute_effect_breathing(self):
@@ -224,7 +232,7 @@ class TestCLIHandler:
         args.color = "red"
         args.duration = 3000
 
-        CLIHandler.execute_effect(mock_runner, args)
+        execute_effect(mock_runner, args)
         mock_runner.run_breathing_effect.assert_called_once_with(
             color=Color.RED, duration=3000
         )
@@ -237,7 +245,7 @@ class TestCLIHandler:
         args.effect = "random"
         args.interval = 1500
 
-        CLIHandler.execute_effect(mock_runner, args)
+        execute_effect(mock_runner, args)
         mock_runner.run_random_effect.assert_called_once_with(interval=1500)
 
     def test_execute_effect_cycle(self):
@@ -249,7 +257,7 @@ class TestCLIHandler:
         args.colors = "red,green,blue"
         args.duration = 2000
 
-        CLIHandler.execute_effect(mock_runner, args)
+        execute_effect(mock_runner, args)
 
         # Verify the call was made with parsed colors
         call_args = mock_runner.run_cycle_effect.call_args
@@ -270,7 +278,7 @@ class TestCLIHandler:
         args.to_color = "white"
         args.duration = 5000
 
-        CLIHandler.execute_effect(mock_runner, args)
+        execute_effect(mock_runner, args)
         mock_runner.run_fade_effect.assert_called_once_with(
             from_color=Color.BLACK, to_color=Color.WHITE, duration=5000
         )
@@ -283,11 +291,11 @@ class TestCLIHandler:
         args.effect = "unknown_effect"
 
         with pytest.raises(ValueError, match="Unknown effect: unknown_effect"):
-            CLIHandler.execute_effect(mock_runner, args)
+            execute_effect(mock_runner, args)
 
     def test_argument_validation_types(self):
         """Test that argument types are validated correctly."""
-        parser = CLIHandler.create_parser()
+        parser = create_parser()
 
         # Test invalid duration (should be int)
         with pytest.raises(SystemExit):
@@ -299,7 +307,7 @@ class TestCLIHandler:
 
     def test_help_message_generation(self):
         """Test that help messages are generated correctly."""
-        parser = CLIHandler.create_parser()
+        parser = create_parser()
 
         # This should not raise an exception
         help_text = parser.format_help()
@@ -327,7 +335,7 @@ class TestCLIHandler:
         args.tau_ms = 120
         args.gamma = None
 
-        CLIHandler.execute_effect(mock_runner, args)
+        execute_effect(mock_runner, args)
         mock_runner.run_campfire_effect.assert_called_once()
 
     def test_execute_effect_candle(self):
@@ -347,11 +355,11 @@ class TestCLIHandler:
         args.tau_ms = 300
         args.gamma = None
 
-        CLIHandler.execute_effect(mock_runner, args)
+        execute_effect(mock_runner, args)
         mock_runner.run_candle_effect.assert_called_once()
 
     def test_parser_campfire_subcommand(self):
-        parser = CLIHandler.create_parser()
+        parser = create_parser()
 
         args = parser.parse_args(["campfire"])
         assert args.effect == "campfire"
@@ -363,7 +371,7 @@ class TestCLIHandler:
         assert args.update_hz == 30
 
     def test_parser_candle_subcommand(self):
-        parser = CLIHandler.create_parser()
+        parser = create_parser()
 
         args = parser.parse_args(["candle"])
         assert args.effect == "candle"

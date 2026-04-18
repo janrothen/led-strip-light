@@ -32,10 +32,10 @@ def m():
         patch("run.LEDStripLightController") as MockController,
         patch("run.ProfileManager") as MockProfileManager,
         patch("run.EffectRunner") as MockEffectRunner,
-        patch("run.CLIHandler") as MockCLI,
+        patch("run.create_parser", return_value=mock_parser) as mock_create_parser,
+        patch("run.execute_effect") as mock_execute_effect,
         patch("run.time.sleep"),
     ):
-        MockCLI.create_parser.return_value = mock_parser
         yield SimpleNamespace(
             gs=mock_gs,
             config=mock_config,
@@ -49,7 +49,8 @@ def m():
             MockController=MockController,
             MockProfileManager=MockProfileManager,
             MockEffectRunner=MockEffectRunner,
-            MockCLI=MockCLI,
+            mock_create_parser=mock_create_parser,
+            mock_execute_effect=mock_execute_effect,
         )
 
 
@@ -79,14 +80,14 @@ def test_switch_off_called_on_startup(m):
     assert m.controller.switch_off.call_count >= 1
     # verify it's called before execute_effect
     startup_off = m.controller.switch_off.call_args_list[0]
-    execute_call = m.MockCLI.execute_effect.call_args_list[0]
+    execute_call = m.mock_execute_effect.call_args_list[0]
     assert m.controller.switch_off.call_args_list.index(startup_off) < \
-           m.MockCLI.execute_effect.call_args_list.index(execute_call) + 1
+           m.mock_execute_effect.call_args_list.index(execute_call) + 1
 
 
 def test_execute_effect_called_with_runner_and_args(m):
     main()
-    m.MockCLI.execute_effect.assert_called_once_with(m.effect_runner, m.args)
+    m.mock_execute_effect.assert_called_once_with(m.effect_runner, m.args)
 
 
 def test_cleanup_stops_sequence_on_exit(m):
