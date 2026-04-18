@@ -36,7 +36,7 @@ cd src && ./run.py campfire --duration 60000
 
 The application has two entry points that share the same core:
 
-- **`run.py`** — CLI entry point; parses args via `CLIHandler`, runs one effect, then loops until SIGTERM
+- **`run.py`** — CLI entry point; parses args via `cli_handler` (module-level `create_parser` / `execute_effect`), runs one effect, then loops until SIGTERM
 - **`http_server.py`** — Flask REST API; uses a `create_app()` factory that accepts dependency injection for testing
 
 Both entry points wire the same dependency chain:

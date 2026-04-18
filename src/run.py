@@ -4,7 +4,7 @@
 import logging
 import time
 
-from cli.cli_handler import CLIHandler
+from cli.cli_handler import create_parser, execute_effect
 from config.config_manager import ConfigManager
 from led.effect_runner import EffectRunner
 from led.gpio_service import GPIOService
@@ -20,7 +20,7 @@ logging.basicConfig(
 def main() -> None:
     """Wire dependencies, execute the requested effect, and run until shutdown."""
     # Parse command line arguments
-    parser = CLIHandler.create_parser()
+    parser = create_parser()
     args = parser.parse_args()
 
     # Initialize dependencies
@@ -41,7 +41,7 @@ def main() -> None:
     logging.info(f"App started with effect: {args.effect}. Press Ctrl+C to stop.")
 
     # Execute the requested effect
-    CLIHandler.execute_effect(effect_runner, args)
+    execute_effect(effect_runner, args)
 
     # Main loop
     while not killer.kill_now:
