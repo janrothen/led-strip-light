@@ -48,8 +48,7 @@ def main() -> None:
         logging.info("Running...")
         time.sleep(1)
 
-    # Cleanup
-    led_controller.stop_current_sequence()
+    # Cleanup — switch_off stops any running sequence before turning off.
     led_controller.switch_off()
     logging.info("App exited cleanly.")
 
