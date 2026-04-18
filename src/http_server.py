@@ -7,6 +7,7 @@ all dependencies can be injected for testing without real hardware.
 """
 
 import os
+import threading
 
 from flask import Flask, Response, jsonify, request, send_from_directory
 
@@ -129,21 +130,27 @@ def create_app(
     )
 
     active_effect = {"name": None}
+    # Serializes (dispatch, name-write) and (stop, name-clear) so the
+    # "currently active effect name" stays consistent with what the
+    # controller is actually running when requests arrive concurrently.
+    state_lock = threading.Lock()
 
     def _stop_active_effect() -> None:
         """Interrupt any running effect thread and clear active effect state."""
-        active_effect["name"] = None
-        if not led_controller.is_sequence_running():
-            return
-        try:
-            led_controller.stop_current_sequence(timeout=2)
-        except TimeoutError:
-            pass  # Interrupt is set; thread will stop on its own
+        with state_lock:
+            active_effect["name"] = None
+            if not led_controller.is_sequence_running():
+                return
+            try:
+                led_controller.stop_current_sequence(timeout=2)
+            except TimeoutError:
+                pass  # Interrupt is set; thread will stop on its own
 
     def _get_active_effect_name():
-        if not led_controller.is_sequence_running():
-            active_effect["name"] = None
-        return active_effect["name"]
+        with state_lock:
+            if not led_controller.is_sequence_running():
+                active_effect["name"] = None
+            return active_effect["name"]
 
     # --- Static controller file serving --------------------------------------
     @app.route("/", methods=["GET"])
@@ -232,13 +239,14 @@ def create_app(
         Returns 400 {"error": ...} for invalid parameters.
         """
         data = request.get_json(silent=True) or {}
-        try:
-            _dispatch_effect(effect_name, data, effect_runner)
-        except KeyError:
-            return jsonify({"error": f"unknown effect '{effect_name}'"}), 404
-        except (ValueError, TypeError) as e:
-            return jsonify({"error": str(e)}), 400
-        active_effect["name"] = effect_name
+        with state_lock:
+            try:
+                _dispatch_effect(effect_name, data, effect_runner)
+            except KeyError:
+                return jsonify({"error": f"unknown effect '{effect_name}'"}), 404
+            except (ValueError, TypeError) as e:
+                return jsonify({"error": str(e)}), 400
+            active_effect["name"] = effect_name
         return jsonify({"status": "started", "effect": effect_name, "params": data})
 
     app.config["LED_CONTROLLER"] = led_controller
