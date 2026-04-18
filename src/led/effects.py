@@ -3,14 +3,14 @@
 
 Exports (grouped):
     Core effects: fade_effect, breathing_effect, color_cycle_effect, random_color_effect
-    Flicker engine: flickering_effect (generic) + presets campfire_effect, candle_effect
-    Easing: ease_linear, ease_in_out_sine (default via EASE_DEFAULT), ease_in_quad, ease_out_quad
+    Flicker engine: flickering_effect (pass campfire/candle presets via kwargs)
+    Easing: ease_linear, ease_in_out_sine (default), ease_in_quad, ease_out_quad
     Preset kwargs: FADE_PRESET_SMOOTH, FADE_PRESET_LINEAR, FADE_PRESET_SNAPPY
-    Types & constants: StripLike, FADE_STEP_MS, DEFAULT_EFFECT_DURATION_MS, CHANNEL_MAX, SRGB_GAMMA, EASE_DEFAULT
+    Types & constants: StripLike, FADE_STEP_MS, DEFAULT_EFFECT_DURATION_MS, CHANNEL_MAX, SRGB_GAMMA
 
 Quick start:
-        from led.effects import fade_effect, breathing_effect, color_cycle_effect, campfire_effect
-        from led.effects import FADE_PRESET_SMOOTH, flickering_effect
+        from led.effects import fade_effect, breathing_effect, color_cycle_effect, flickering_effect
+        from led.effects import FADE_PRESET_SMOOTH
         from led.color import Color
 
         # Smooth perceptual fade to white over 2s
@@ -23,8 +23,8 @@ Quick start:
         color_cycle_effect(strip, [Color.RED, Color.GREEN, Color.BLUE], 1500,
                                              hold_ms=250, ease=ease_linear)
 
-        # Campfire preset (runs until interrupted)
-        campfire_effect(strip)
+        # Flame flicker (runs until interrupted)
+        flickering_effect(strip)
 
 Notes:
     - Durations are milliseconds unless noted.
@@ -56,9 +56,7 @@ def ease_linear(t: float) -> float:
 
 def ease_in_out_sine(t: float) -> float:
     """Smooth start and end (sinusoidal). Default; most natural for lighting."""
-    from math import cos, pi
-
-    return 0.5 * (1 - cos(pi * t))
+    return 0.5 * (1 - math.cos(math.pi * t))
 
 
 def ease_in_quad(t: float) -> float:
@@ -70,8 +68,6 @@ def ease_out_quad(t: float) -> float:
     """Fast start, slow end (quadratic). Use for snappy effects that settle gently."""
     return t * (2 - t)
 
-
-EASE_DEFAULT = ease_in_out_sine
 
 FADE_PRESET_SMOOTH = {
     "ease": ease_in_out_sine,
@@ -125,19 +121,19 @@ def breathing_effect(
 
 
 def random_color_effect(
-    strip: StripLike, duration: int = DEFAULT_EFFECT_DURATION_MS
+    strip: StripLike, interval: int = DEFAULT_EFFECT_DURATION_MS
 ) -> None:
     """Changes colors randomly at specified intervals.
 
     Args:
         strip: Target strip-like object.
-        duration: Time between random color changes (ms).
+        interval: Time between random color changes (ms).
     """
     while not strip.is_interrupted():
         strip.set_color(Color.random_pastel())
         if strip.is_interrupted():
             return
-        sleep(duration / 1000.0)
+        sleep(interval / 1000.0)
 
 
 def color_cycle_effect(
@@ -332,70 +328,6 @@ def flickering_effect(
         sleep(max(0.0, next_due - monotonic()))
 
 
-def campfire_effect(
-    strip: StripLike,
-    *,
-    duration_ms: int | None = None,
-    base_color: Color = Color.FLAME,
-    update_hz: int = 60,
-    min_brightness: float = 0.15,
-    max_brightness: float = 1.00,
-    hue_jitter: float = 0.02,
-    saturation: float | None = None,
-    spark_chance: float = 0.02,
-    spark_gain: float = 1.35,
-    tau_ms: int = 120,
-    gamma: float | None = SRGB_GAMMA,
-) -> None:
-    """Warm, natural campfire style flicker preset."""
-    flickering_effect(
-        strip,
-        duration_ms=duration_ms,
-        base_color=base_color,
-        update_hz=update_hz,
-        min_brightness=min_brightness,
-        max_brightness=max_brightness,
-        hue_jitter=hue_jitter,
-        saturation=saturation,
-        spark_chance=spark_chance,
-        spark_gain=spark_gain,
-        tau_ms=tau_ms,
-        gamma=gamma,
-    )
-
-
-def candle_effect(
-    strip: StripLike,
-    *,
-    duration_ms: int | None = None,
-    base_color: Color = Color.FLAME,
-    update_hz: int = 40,
-    min_brightness: float = 0.35,
-    max_brightness: float = 0.85,
-    hue_jitter: float = 0.008,
-    saturation: float | None = None,
-    spark_chance: float = 0.005,
-    spark_gain: float = 1.10,
-    tau_ms: int = 300,
-    gamma: float | None = SRGB_GAMMA,
-) -> None:
-    """Softer, slower candle flame variant preset."""
-    flickering_effect(
-        strip,
-        duration_ms=duration_ms,
-        base_color=base_color,
-        update_hz=update_hz,
-        min_brightness=min_brightness,
-        max_brightness=max_brightness,
-        hue_jitter=hue_jitter,
-        saturation=saturation,
-        spark_chance=spark_chance,
-        spark_gain=spark_gain,
-        tau_ms=tau_ms,
-        gamma=gamma,
-    )
-
-
 __all__ = [
     "FADE_STEP_MS",
     "DEFAULT_EFFECT_DURATION_MS",
@@ -405,7 +337,6 @@ __all__ = [
     "ease_in_out_sine",
     "ease_in_quad",
     "ease_out_quad",
-    "EASE_DEFAULT",
     # presets
     "FADE_PRESET_SMOOTH",
     "FADE_PRESET_LINEAR",
@@ -416,6 +347,4 @@ __all__ = [
     "color_cycle_effect",
     "random_color_effect",
     "flickering_effect",
-    "campfire_effect",
-    "candle_effect",
 ]

@@ -8,10 +8,9 @@ from .color import Color
 from .effects import (
     FADE_PRESET_SMOOTH,
     breathing_effect,
-    campfire_effect,
-    candle_effect,
     color_cycle_effect,
     fade_effect,
+    flickering_effect,
     random_color_effect,
 )
 
@@ -97,7 +96,7 @@ class EffectRunner:
         """
         self._run_flame(
             "campfire",
-            campfire_effect,
+            flickering_effect,
             duration=duration,
             base_color=base_color,
             update_hz=update_hz,
@@ -129,7 +128,7 @@ class EffectRunner:
         """Run gentle candle effect (wrapper around campfire with calmer defaults)."""
         self._run_flame(
             "candle",
-            candle_effect,
+            flickering_effect,
             duration=duration,
             base_color=base_color,
             update_hz=update_hz,
