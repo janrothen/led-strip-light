@@ -8,14 +8,17 @@ green = 17
 blue  = 22
 
 # Time-based color profiles:
-# "morning" is active from 00:00 until 12:00; "evening" from 12:00 until 24:00.
-# Values are 8-bit channel intensities (0–255).
+# Each profile's `start_hour` (0-23) marks when it becomes active; it remains
+# active until the next profile's start_hour (selection wraps midnight).
+# RGB values are 8-bit channel intensities (0–255).
 [profile.morning]
+start_hour = 0
 red   = 150
 green = 200
 blue  = 10
 
 [profile.evening]
+start_hour = 12
 red   = 200
 green = 20
 blue  = 0

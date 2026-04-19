@@ -6,37 +6,40 @@ from config.config_manager import ConfigManager
 
 from .color import Color
 
-PROFILE_MORNING: str = "morning"
-PROFILE_EVENING: str = "evening"
-
 
 class ProfileManager:
     """
-    Manages color profiles for different times of day.
+    Selects color profiles by time of day.
 
-    Handles the logic for determining which profile is the active
-    one based on the current time and retrieving color
-    configurations from the configuration manager.
+    Each profile has a start_hour (0-23) marking when it becomes active; it
+    remains active until the next profile's start_hour. Selection wraps around
+    midnight, so the profile with the largest start_hour stays active until the
+    earliest profile of the next day takes over.
     """
 
     def __init__(self, config_manager: ConfigManager) -> None:
         self._config = config_manager
 
-    def get_active_profile_color(self) -> Color:
-        """Get Color object for the currently active profile."""
-        active_profile = self._get_active_profile()
+    def get_active_profile_color(self, now: datetime.datetime | None = None) -> Color:
+        """Get the Color of the currently active profile."""
+        active_profile = self._get_active_profile(now)
         return self._config.get_color_profile(active_profile).to_color()
 
     def get_profile_color(self, profile_name: str) -> Color:
-        """Get Color object for a specific profile."""
-        color_profile = self._config.get_color_profile(profile_name)
-        return color_profile.to_color()
+        """Get the Color of a specific profile by name."""
+        return self._config.get_color_profile(profile_name).to_color()
 
-    def _get_active_profile(self) -> str:
-        """Get the currently active profile based on time of day."""
-        now: datetime.datetime = datetime.datetime.now()
-        return PROFILE_MORNING if self._is_morning(now) else PROFILE_EVENING
-
-    def _is_morning(self, now: datetime.datetime) -> bool:
-        """Check if the given time is considered morning (before 12:00)."""
-        return now.time() < datetime.time(12)
+    def _get_active_profile(self, now: datetime.datetime | None = None) -> str:
+        if now is None:
+            now = datetime.datetime.now()
+        profiles = self._config.get_profiles()
+        # Sorted by start_hour descending: the first profile whose start_hour is
+        # <= now.hour is the active one. If none match, now is before the
+        # earliest start_hour and we wrap to yesterday's latest profile.
+        by_start = sorted(
+            profiles.items(), key=lambda item: item[1].start_hour, reverse=True
+        )
+        for name, profile in by_start:
+            if profile.start_hour <= now.hour:
+                return name
+        return by_start[0][0]
