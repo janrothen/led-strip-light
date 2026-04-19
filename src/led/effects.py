@@ -306,16 +306,15 @@ def flickering_effect(
         current_h += (target_h - current_h) * alpha
         current_v += (target_v - current_v) * alpha
 
-        r_f, g_f, b_f = colorsys.hsv_to_rgb(current_h % 1.0, s0, current_v)
+        # Apply gamma to the brightness scalar only, so base_color's hue and
+        # saturation are preserved. Applying it per-channel after HSV→RGB would
+        # compress low channels more than high ones and shift the hue.
+        brightness = current_v**gamma if (gamma and gamma > 0) else current_v
+        r_f, g_f, b_f = colorsys.hsv_to_rgb(current_h % 1.0, s0, brightness)
 
-        if gamma and gamma > 0:
-            r = int(round((r_f**gamma) * CHANNEL_MAX))
-            g = int(round((g_f**gamma) * CHANNEL_MAX))
-            b = int(round((b_f**gamma) * CHANNEL_MAX))
-        else:
-            r = int(round(r_f * CHANNEL_MAX))
-            g = int(round(g_f * CHANNEL_MAX))
-            b = int(round(b_f * CHANNEL_MAX))
+        r = int(round(r_f * CHANNEL_MAX))
+        g = int(round(g_f * CHANNEL_MAX))
+        b = int(round(b_f * CHANNEL_MAX))
 
         strip.set_color(Color.from_tuple((r, g, b)))
 
