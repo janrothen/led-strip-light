@@ -112,6 +112,7 @@ sudo systemctl start ledstriplight-http-server.service
 For full deployment instructions see the READMEs in [`deploy/`](deploy/):
 - [`deploy/systemd/`](deploy/systemd/README.md) — systemd service installation and management
 - [`deploy/cron/`](deploy/cron/README.md) — scheduled automation with cron
+- [`deploy/logrotate.d/`](deploy/logrotate.d/README.md) — log rotation for the cron log
 - [`deploy/homebridge/`](deploy/homebridge/README.md) — Apple HomeKit integration
 
 ## Development Setup
@@ -181,6 +182,7 @@ led-strip-light/
 │   ├── homebridge/              # Homebridge config for Apple HomeKit
 │   │   ├── armv6/               # Pi Zero W (npm install method)
 │   │   └── armv7/               # Pi Zero 2 W (apt install method)
+│   ├── logrotate.d/             # Logrotate drop-in for the cron log
 │   └── systemd/                 # Systemd service files
 ├── docs/                        # Documentation and wiring diagrams
 ├── src/
