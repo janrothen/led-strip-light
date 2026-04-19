@@ -69,6 +69,7 @@ led-strip-light/
 │   ├── homebridge/              # Homebridge config for Apple HomeKit
 │   │   ├── armv6/               # Pi Zero W (npm install method)
 │   │   └── armv7/               # Pi Zero 2 W (apt install method)
+│   ├── logrotate.d/             # Logrotate drop-in for the cron log
 │   └── systemd/                 # Systemd service files
 ├── docs/                        # Documentation and wiring diagrams
 ├── src/
@@ -112,7 +113,8 @@ led-strip-light/
 ### Deployment
 
 - `deploy/systemd/` — systemd service files; `start`/`stop` scripts at repo root call `systemctl`
-- `deploy/cron/` — cron jobs for scheduled automation
+- `deploy/cron/` — cron jobs for scheduled automation (writes to `/var/log/ledstriplight-cron.log`)
+- `deploy/logrotate.d/` — logrotate drop-in for the cron log (weekly, keep 4 compressed)
 - `deploy/homebridge/armv6/` — Homebridge config for Pi Zero W (ARMv6, npm install method)
 - `deploy/homebridge/armv7/` — Homebridge config for Pi Zero 2 W (ARMv7/ARM64, apt install method)
 - The pigpio daemon (`pigpiod`) must be running on the Raspberry Pi before starting the app
