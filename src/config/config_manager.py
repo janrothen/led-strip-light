@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import tomllib
-
 from pathlib import Path
 
 from .color_profile import ColorProfile
@@ -16,7 +15,10 @@ def _default_config_path() -> Path:
     cwd_config = Path.cwd() / "config.toml"
     return cwd_config if cwd_config.exists() else _REPO_CONFIG
 
+
 PINS = "pins"
+PROFILE = "profile"
+START_HOUR = "start_hour"
 R = "red"
 G = "green"
 B = "blue"
@@ -32,7 +34,8 @@ class ConfigManager:
 
     The configuration file supports:
     - GPIO pin assignments for RGB channels
-    - Morning and evening color profiles with RGB values (0-255)
+    - One or more [profile.NAME] sections, each with RGB values (0-255) and a
+      start_hour (0-23) marking the start of its active window
     """
 
     def __init__(self, config_path: Path | str | None = None) -> None:
@@ -59,25 +62,50 @@ class ConfigManager:
             profile: Profile name (e.g., 'morning', 'evening')
 
         Returns:
-            ColorProfile instance with validated RGB values
+            ColorProfile instance with validated RGB values and start_hour
 
         Raises:
             ValueError: If profile is not found or incomplete
         """
         try:
-            section = self._config["profile"][profile]
-            return ColorProfile(red=section[R], green=section[G], blue=section[B])
+            section = self._config[PROFILE][profile]
+            return ColorProfile(
+                red=section[R],
+                green=section[G],
+                blue=section[B],
+                start_hour=section[START_HOUR],
+            )
         except KeyError as e:
             raise ValueError(f"Profile '{profile}' not found or incomplete: {e}") from e
 
+    def get_profiles(self) -> dict[str, ColorProfile]:
+        """Return all configured color profiles keyed by name."""
+        return {
+            name: self.get_color_profile(name) for name in self._config.get(PROFILE, {})
+        }
+
     def _load_config(self) -> None:
-        """Load configuration from file."""
+        """Load configuration from file and validate profile sections."""
         if not self._config_path.exists():
             raise FileNotFoundError(
                 f"Configuration file '{self._config_path}' not found"
             )
         with open(self._config_path, "rb") as f:
             self._config = tomllib.load(f)
+        self._validate_profiles()
+
+    def _validate_profiles(self) -> None:
+        """Ensure at least one profile exists and all have distinct start hours."""
+        sections = self._config.get(PROFILE, {})
+        if not sections:
+            raise ValueError(f"No [profile.*] sections found in '{self._config_path}'")
+        profiles = {name: self.get_color_profile(name) for name in sections}
+        start_hours = [p.start_hour for p in profiles.values()]
+        if len(set(start_hours)) != len(start_hours):
+            raise ValueError(
+                f"Duplicate profile start_hour values in '{self._config_path}': "
+                f"{ {name: p.start_hour for name, p in profiles.items()} }"
+            )
 
     def _get_pin(self, color: str) -> int:
         """
@@ -93,7 +121,9 @@ class ConfigManager:
             ValueError: If color is not valid or pin not configured
         """
         if color not in COLOR_CHANNELS:
-            raise ValueError(f"Invalid color '{color}'. Must be one of: {COLOR_CHANNELS}")
+            raise ValueError(
+                f"Invalid color '{color}'. Must be one of: {COLOR_CHANNELS}"
+            )
 
         try:
             pin = self._config[PINS][color]
