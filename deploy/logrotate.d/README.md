@@ -10,7 +10,8 @@ logrotate config is needed for the HTTP server.
 Rotation schedule:
 - weekly, keeping 4 compressed copies (~one month of history)
 - skipped if the log is missing or empty
-- rotated file recreated as `root:root` (the cron user) so writes still succeed
+- rotated file recreated as `pi:pi` so the `pi` user can tail it without `sudo`
+  (root's cron job can write to it regardless of ownership)
 
 ## Installation steps
 
