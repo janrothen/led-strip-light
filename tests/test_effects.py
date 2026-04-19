@@ -190,10 +190,13 @@ class TestEffects:
 
         from led import effects
 
-        with patch.object(effects, "fade_effect"), patch("led.effects.sleep"):
+        with (
+            patch.object(effects, "fade_effect") as mock_fade,
+            patch("led.effects.sleep"),
+        ):
             color_cycle_effect(mock_strip, [Color.RED, Color.GREEN], duration=100)
 
-        assert mock_strip.set_color.called  # initial color set
+        assert mock_fade.called  # fade runs for each transition
 
     def test_color_cycle_effect_empty_palette(self):
         """Test color_cycle_effect returns immediately for empty palette."""

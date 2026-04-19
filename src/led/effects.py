@@ -37,7 +37,9 @@ import logging
 import math
 import random
 from collections.abc import Callable, Iterable
+from itertools import pairwise
 from time import monotonic, sleep
+from types import MappingProxyType
 from typing import Protocol
 
 from .color import Color
@@ -69,15 +71,16 @@ def ease_out_quad(t: float) -> float:
     return t * (2 - t)
 
 
-FADE_PRESET_SMOOTH = {
-    "ease": ease_in_out_sine,
-    "gamma": SRGB_GAMMA,
-}  # natural breath-like
-FADE_PRESET_SNAPPY = {
-    "ease": ease_out_quad,
-    "gamma": SRGB_GAMMA,
-}  # quick-in, gentle-out
-FADE_PRESET_LINEAR = {"ease": ease_linear, "gamma": None}  # straight linear
+# Presets are read-only so a caller mutating one can't poison every future fade.
+FADE_PRESET_SMOOTH = MappingProxyType(
+    {"ease": ease_in_out_sine, "gamma": SRGB_GAMMA}
+)  # natural breath-like
+FADE_PRESET_SNAPPY = MappingProxyType(
+    {"ease": ease_out_quad, "gamma": SRGB_GAMMA}
+)  # quick-in, gentle-out
+FADE_PRESET_LINEAR = MappingProxyType(
+    {"ease": ease_linear, "gamma": None}
+)  # straight linear
 
 # Example usage:
 # fade_effect(strip, Color.BLACK, Color.WHITE, 2000, **FADE_PRESET_SMOOTH)
@@ -131,8 +134,6 @@ def random_color_effect(
     """
     while not strip.is_interrupted():
         strip.set_color(Color.random_pastel())
-        if strip.is_interrupted():
-            return
         sleep(interval / 1000.0)
 
 
@@ -160,22 +161,18 @@ def color_cycle_effect(
     )
     if not palette:
         return
+    if len(palette) == 1:
+        strip.set_color(palette[0])
+        return
 
-    # Start with the first color
-    strip.set_color(palette[0])
+    # Pair each color with its successor, wrapping the last back to the first.
+    cycle_pairs = list(pairwise([*palette, palette[0]]))
 
     while not strip.is_interrupted():
-        for i in range(len(palette)):
-            if strip.is_interrupted():
-                break
-
-            current_color = palette[i]
-            next_color = palette[(i + 1) % len(palette)]
-
+        for current_color, next_color in cycle_pairs:
             fade_effect(
                 strip, current_color, next_color, duration, ease=ease, gamma=gamma
             )
-
             if strip.is_interrupted():
                 return
             if hold_ms:
@@ -213,6 +210,9 @@ def fade_effect(
         steps,
     )
 
+    # Anchor the first frame at color_start so the caller doesn't need to
+    # pre-set it — otherwise the first emitted frame would be one step in.
+    strip.set_color(color_start)
     start_time = monotonic()
     for step in range(steps):
         if strip.is_interrupted():
@@ -230,9 +230,6 @@ def fade_effect(
 
         # Align sleep to the original start to reduce drift over long fades
         next_due = start_time + ((step + 1) * FADE_STEP_MS / 1000.0)
-        if strip.is_interrupted():
-            logging.debug("Fading interrupted at step %d/%d", step + 1, steps)
-            return
         sleep(max(0.0, next_due - monotonic()))
 
     strip.set_color(color_end)
@@ -241,7 +238,10 @@ def fade_effect(
 
 def _interp_channel(v0: int, v1: int, t: float, gamma: float | None) -> int:
     """Interpolate one 8-bit channel from v0→v1 at progress t in [0,1].
-    If gamma is provided, interpolate in linear light then encode back.
+
+    If gamma is provided, inputs are treated as sRGB-encoded: decode to linear
+    light via x**gamma, lerp, then encode back via x**(1/gamma). Output is in
+    the same encoding as the inputs.
     """
     if gamma and gamma > 0:
         a = (v0 / CHANNEL_MAX) ** gamma
@@ -267,7 +267,29 @@ def flickering_effect(
     tau_ms: int = 120,
     gamma: float | None = SRGB_GAMMA,
 ) -> None:
-    """Generic smoothed random walk + occasional spark flicker generator."""
+    """Smoothed random-walk flicker with occasional sparks (flames, candles).
+
+    Brightness random-walks between ``min_brightness`` and ``max_brightness``,
+    low-pass-filtered with time constant ``tau_ms``; random sparks briefly
+    boost it by ``spark_gain``. Hue jitters within ``±hue_jitter`` of
+    ``base_color``'s hue.
+
+    Args:
+        strip: Target strip-like object.
+        duration_ms: Total run time in ms, or ``None`` to run until interrupted.
+        base_color: Base color whose hue and saturation drive the flicker.
+        update_hz: Frame rate. Must be > 0.
+        min_brightness / max_brightness: Brightness bounds in [0, 1].
+        hue_jitter: Max hue drift per tick (in HSV units, 0..1 wraps).
+        saturation: Override saturation (0..1), or ``None`` to use ``base_color``'s.
+        spark_chance: Per-tick probability of a brightness spike.
+        spark_gain: Brightness multiplier applied during a spark.
+        tau_ms: Low-pass filter time constant; larger = smoother/slower.
+        gamma: If set, shapes the brightness curve perceptually. ``None`` = linear.
+    """
+    if update_hz <= 0:
+        raise ValueError(f"update_hz must be > 0, got {update_hz}")
+
     # Convert base color to HSV in 0..1
     r0, g0, b0 = base_color.rgb
     h0, s0, v0 = colorsys.rgb_to_hsv(
@@ -280,9 +302,17 @@ def flickering_effect(
     current_v = max(min_brightness, min(max_brightness, v0))
     target_v = current_v
 
-    period = 1.0 / max(1, update_hz)
+    period = 1.0 / update_hz
     end_time = None if duration_ms is None else (monotonic() + duration_ms / 1000.0)
     last = monotonic()
+
+    logging.debug(
+        "Flickering start: base=%s duration_ms=%s update_hz=%d gamma=%s",
+        base_color,
+        duration_ms,
+        update_hz,
+        gamma,
+    )
 
     while not strip.is_interrupted():
         if end_time is not None and monotonic() >= end_time:
@@ -318,13 +348,11 @@ def flickering_effect(
 
         strip.set_color(Color.from_tuple((r, g, b)))
 
-        if strip.is_interrupted():
-            logging.debug("Flickering interrupted")
-            return
-
         # Keep update cadence stable
         next_due = now + period
         sleep(max(0.0, next_due - monotonic()))
+
+    logging.debug("Flickering stopped")
 
 
 __all__ = [
