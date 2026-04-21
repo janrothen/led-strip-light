@@ -62,7 +62,7 @@ def create_parser() -> argparse.ArgumentParser:
 Examples:
     %(prog)s profile
     %(prog)s breathing --color red --duration 3000
-    %(prog)s campfire --base-color #ff9329 --duration 30000
+    %(prog)s campfire --base-color #ff4e04 --duration 30000
     %(prog)s candle --duration 60000
     %(prog)s random --interval 2000
     %(prog)s cycle --colors red,green,blue --duration 2000
@@ -188,8 +188,8 @@ def _add_flame_arguments(
     subparser.add_argument(
         "--base-color",
         dest="base_color",
-        default="#ff9329",
-        help="Base warm color (name or hex, default: #ff9329)",
+        default="#ff4e04",
+        help="Base warm color (name or hex, default: #ff4e04)",
     )
     subparser.add_argument(
         "--duration",
