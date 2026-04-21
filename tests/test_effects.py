@@ -13,6 +13,7 @@ import pytest
 from led.color import Color
 from led.effects import (
     _interp_channel,
+    aurora_effect,
     breathing_effect,
     color_cycle_effect,
     ease_in_quad,
@@ -269,6 +270,100 @@ class TestEffects:
         with patch("led.effects.sleep"):
             # Very short duration; end_time will be reached quickly
             flickering_effect(mock_strip, duration_ms=1, gamma=None)
+
+    def test_aurora_effect_interrupt_after_one_iteration(self):
+        """aurora_effect runs one iteration then stops on interrupt."""
+        mock_strip = Mock()
+        call_count = 0
+
+        def mock_interrupted():
+            nonlocal call_count
+            call_count += 1
+            return call_count > 1
+
+        mock_strip.is_interrupted.side_effect = mock_interrupted
+
+        with patch("led.effects.sleep"):
+            aurora_effect(mock_strip, gamma=None)
+
+        assert mock_strip.set_color.call_count >= 1
+
+    def test_aurora_effect_with_gamma(self):
+        """aurora_effect uses gamma path when gamma is set."""
+        mock_strip = Mock()
+        mock_strip.is_interrupted.side_effect = [False, True]
+
+        with patch("led.effects.sleep"):
+            aurora_effect(mock_strip, gamma=2.2)
+
+        assert mock_strip.set_color.call_count >= 1
+
+    def test_aurora_effect_with_duration(self):
+        """aurora_effect exits via end_time when duration_ms is set."""
+        mock_strip = Mock()
+        mock_strip.is_interrupted.return_value = False
+
+        with patch("led.effects.sleep"):
+            aurora_effect(mock_strip, duration_ms=1, gamma=None)
+
+    def test_aurora_effect_hue_stays_in_bounds(self):
+        """aurora_effect keeps rendered hue within [hue_min, hue_max]."""
+        import colorsys
+
+        from led.color import Color
+
+        mock_strip = Mock()
+        # Run enough ticks for the random walk to push toward the bounds
+        interrupt_sequence = [False] * 60 + [True]
+        mock_strip.is_interrupted.side_effect = interrupt_sequence
+
+        seen_colors: list[Color] = []
+
+        def capture(color):
+            seen_colors.append(color)
+
+        mock_strip.set_color.side_effect = capture
+
+        with patch("led.effects.sleep"):
+            aurora_effect(
+                mock_strip,
+                hue_min=0.33,
+                hue_max=0.78,
+                min_brightness=0.5,
+                max_brightness=0.9,
+                # Large step amplifies any boundary violations for the test
+                hue_step=0.5,
+                tau_ms=1,
+                gamma=None,
+            )
+
+        # Filter out pure-black frames (shouldn't happen but guard against div-by-zero)
+        # and confirm hue stays within range.
+        hues = []
+        for c in seen_colors:
+            r, g, b = c.rgb
+            h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+            if s > 0 and v > 0:
+                hues.append(h)
+        assert hues  # got something
+        # Allow a tiny epsilon for rounding between HSV→RGB→HSV.
+        for h in hues:
+            assert 0.33 - 0.01 <= h <= 0.78 + 0.01
+
+    def test_aurora_effect_rejects_bad_update_hz(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="update_hz"):
+            aurora_effect(mock_strip, update_hz=0)
+
+    def test_aurora_effect_rejects_bad_hue_range(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="hue_min"):
+            aurora_effect(mock_strip, hue_min=0.8, hue_max=0.3)
+
+    def test_aurora_effect_rejects_out_of_unit_hue(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match=r"hue_min/hue_max"):
+            aurora_effect(mock_strip, hue_min=-0.1, hue_max=0.5)
 
 
 class TestEasingFunctions:

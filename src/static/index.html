@@ -722,6 +722,10 @@
                     <span class="effect-icon">🕯️</span>
                     <span>Candle</span>
                 </button>
+                <button class="effect-btn" onclick="startEffect('aurora')">
+                    <span class="effect-icon">🌌</span>
+                    <span>Aurora</span>
+                </button>
                 <button class="effect-btn" onclick="startEffect('random')">
                     <span class="effect-icon">🎲</span>
                     <span>Random</span>
@@ -799,6 +803,35 @@
                     </div>
                     <div class="field-group">
                         <button class="btn btn-primary btn-sm" onclick="startProfile()">Start</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aurora Effect -->
+            <div class="effect-card" id="auroraCard">
+                <div class="effect-card-header">
+                    <span class="effect-card-title">Aurora Drift</span>
+                    <span class="effect-card-badge">slow HSV wander</span>
+                </div>
+                <div class="effect-card-fields">
+                    <div class="field-group">
+                        <label for="auroraFrom">From hue</label>
+                        <input type="color" id="auroraFrom" value="#22c55e">
+                    </div>
+                    <div class="field-group">
+                        <label for="auroraTo">To hue</label>
+                        <input type="color" id="auroraTo" value="#a855f7">
+                    </div>
+                    <div class="field-group">
+                        <label for="auroraDuration">Duration (ms)</label>
+                        <input type="number" id="auroraDuration" min="0" step="1000" placeholder="∞">
+                    </div>
+                    <div class="field-group">
+                        <label for="auroraTau">Smoothness (ms)</label>
+                        <input type="number" id="auroraTau" value="2500" min="100" step="100">
+                    </div>
+                    <div class="field-group">
+                        <button class="btn btn-primary btn-sm" onclick="startAurora()">Start</button>
                     </div>
                 </div>
             </div>
@@ -1026,6 +1059,44 @@
         function startProfile() {
             const duration = Number.parseInt(document.getElementById('profileDuration').value, 10) || 10000;
             startEffect('profile', { duration });
+        }
+
+        // Convert #RRGGBB to HSV hue in [0, 1].
+        function hexToHue(hex) {
+            const h = hex.replace('#', '');
+            const r = parseInt(h.slice(0, 2), 16) / 255;
+            const g = parseInt(h.slice(2, 4), 16) / 255;
+            const b = parseInt(h.slice(4, 6), 16) / 255;
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            const d = max - min;
+            if (d === 0) return 0;
+            let hue;
+            if (max === r) hue = ((g - b) / d) % 6;
+            else if (max === g) hue = (b - r) / d + 2;
+            else hue = (r - g) / d + 4;
+            hue = hue / 6;
+            if (hue < 0) hue += 1;
+            return hue;
+        }
+
+        function startAurora() {
+            const fromHue = hexToHue(document.getElementById('auroraFrom').value);
+            const toHue = hexToHue(document.getElementById('auroraTo').value);
+            let hue_min = Math.min(fromHue, toHue);
+            let hue_max = Math.max(fromHue, toHue);
+            if (hue_max - hue_min < 0.01) {
+                alert('Aurora hue range is too narrow — pick two more-different colors.');
+                return;
+            }
+            const tau_ms = Number.parseInt(document.getElementById('auroraTau').value, 10) || 2500;
+            const params = { hue_min, hue_max, tau_ms };
+            const durationRaw = document.getElementById('auroraDuration').value.trim();
+            if (durationRaw) {
+                const d = Number.parseInt(durationRaw, 10);
+                if (d > 0) params.duration = d;
+            }
+            startEffect('aurora', params);
         }
     </script>
 </body>

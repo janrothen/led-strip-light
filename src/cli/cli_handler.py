@@ -36,6 +36,23 @@ def parse_colors(colors_str: str) -> list[Color]:
     return [Color.parse(c.strip()) for c in colors_str.split(",")]
 
 
+def _aurora_kwargs(args) -> dict:
+    """Map argparse aurora args to runner kwargs."""
+    return {
+        "duration": args.duration_ms,
+        "update_hz": args.update_hz,
+        "hue_min": args.hue_min,
+        "hue_max": args.hue_max,
+        "saturation": args.saturation,
+        "min_brightness": args.min_brightness,
+        "max_brightness": args.max_brightness,
+        "hue_step": args.hue_step,
+        "brightness_step": args.brightness_step,
+        "tau_ms": args.tau_ms,
+        "gamma": args.gamma,
+    }
+
+
 def _flame_kwargs(args, base_color: Color) -> dict:
     """Map argparse flame args to campfire/candle runner kwargs."""
     return {
@@ -64,6 +81,7 @@ Examples:
     %(prog)s breathing --color red --duration 3000
     %(prog)s campfire --base-color #ff4e04 --duration 30000
     %(prog)s candle --duration 60000
+    %(prog)s aurora --duration 120000
     %(prog)s random --interval 2000
     %(prog)s cycle --colors red,green,blue --duration 2000
     %(prog)s fade --from black --to white --duration 5000
@@ -134,6 +152,12 @@ Examples:
         spark_gain=1.10,
         tau_ms=300,
     )
+
+    # Aurora effect
+    aurora_parser = subparsers.add_parser(
+        "aurora", help="Slow aurora drift (green↔violet)"
+    )
+    _add_aurora_arguments(aurora_parser)
 
     # Cycle effect
     cycle_parser = subparsers.add_parser("cycle", help="Cycle through colors")
@@ -254,6 +278,77 @@ def _add_flame_arguments(
     )
 
 
+def _add_aurora_arguments(subparser: argparse.ArgumentParser) -> None:
+    """Attach aurora drift arguments to a subparser."""
+    subparser.add_argument(
+        "--duration",
+        dest="duration_ms",
+        type=int,
+        default=None,
+        help="Total duration in milliseconds (default: run until interrupted)",
+    )
+    subparser.add_argument(
+        "--update-hz",
+        type=_positive_int,
+        default=60,
+        help="Update rate in Hz (default: 60)",
+    )
+    subparser.add_argument(
+        "--hue-min",
+        type=_unit_float,
+        default=0.33,
+        help="Minimum hue in [0,1] (default: 0.33, green)",
+    )
+    subparser.add_argument(
+        "--hue-max",
+        type=_unit_float,
+        default=0.78,
+        help="Maximum hue in [0,1] (default: 0.78, violet)",
+    )
+    subparser.add_argument(
+        "--saturation",
+        type=_unit_float,
+        default=1.0,
+        help="Saturation 0..1 (default: 1.0)",
+    )
+    subparser.add_argument(
+        "--min-brightness",
+        type=_unit_float,
+        default=0.30,
+        help="Minimum brightness 0..1 (default: 0.30)",
+    )
+    subparser.add_argument(
+        "--max-brightness",
+        type=_unit_float,
+        default=0.90,
+        help="Maximum brightness 0..1 (default: 0.90)",
+    )
+    subparser.add_argument(
+        "--hue-step",
+        type=_unit_float,
+        default=0.01,
+        help="Max hue-target random-walk step per tick (default: 0.01)",
+    )
+    subparser.add_argument(
+        "--brightness-step",
+        type=_unit_float,
+        default=0.08,
+        help="Max brightness-target random-walk step per tick (default: 0.08)",
+    )
+    subparser.add_argument(
+        "--tau-ms",
+        type=_positive_int,
+        default=2500,
+        help="Smoothing time constant in ms (default: 2500)",
+    )
+    subparser.add_argument(
+        "--gamma",
+        type=_positive_float,
+        default=None,
+        help="Perceptual gamma (e.g., 2.2). Default: effect default",
+    )
+
+
 def _run_profile(runner: EffectRunner, args) -> None:
     runner.run_profile_effect(duration=args.duration)
 
@@ -274,6 +369,10 @@ def _run_candle(runner: EffectRunner, args) -> None:
     runner.run_candle_effect(**_flame_kwargs(args, Color.parse(args.base_color)))
 
 
+def _run_aurora(runner: EffectRunner, args) -> None:
+    runner.run_aurora_effect(**_aurora_kwargs(args))
+
+
 def _run_cycle(runner: EffectRunner, args) -> None:
     runner.run_cycle_effect(colors=parse_colors(args.colors), duration=args.duration)
 
@@ -287,6 +386,7 @@ def _run_fade(runner: EffectRunner, args) -> None:
 
 
 _EFFECT_HANDLERS: dict[str, Callable[[EffectRunner, argparse.Namespace], None]] = {
+    "aurora": _run_aurora,
     "breathing": _run_breathing,
     "campfire": _run_campfire,
     "candle": _run_candle,

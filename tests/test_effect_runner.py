@@ -289,3 +289,44 @@ class TestEffectRunner:
         assert kwargs["duration_ms"] == 3000
         assert kwargs["min_brightness"] == pytest.approx(0.4)
         assert kwargs["max_brightness"] == pytest.approx(0.8)
+
+    def test_run_aurora_effect_default_params(
+        self, effect_runner, mock_strip_controller
+    ):
+        effect_runner.run_aurora_effect()
+        mock_strip_controller.run_sequence.assert_called_once()
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert "gamma" not in kwargs  # gamma not passed when None
+        assert kwargs["duration_ms"] is None
+        assert kwargs["hue_min"] == pytest.approx(0.33)
+        assert kwargs["hue_max"] == pytest.approx(0.78)
+
+    def test_run_aurora_effect_with_gamma(self, effect_runner, mock_strip_controller):
+        effect_runner.run_aurora_effect(gamma=2.2)
+        mock_strip_controller.run_sequence.assert_called_once()
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert kwargs["gamma"] == pytest.approx(2.2)
+
+    def test_run_aurora_effect_custom_params(
+        self, effect_runner, mock_strip_controller
+    ):
+        effect_runner.run_aurora_effect(
+            duration=60000,
+            update_hz=30,
+            hue_min=0.5,
+            hue_max=0.7,
+            saturation=0.8,
+            min_brightness=0.2,
+            max_brightness=0.7,
+            hue_step=0.02,
+            brightness_step=0.05,
+            tau_ms=3000,
+        )
+        mock_strip_controller.run_sequence.assert_called_once()
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert kwargs["duration_ms"] == 60000
+        assert kwargs["update_hz"] == 30
+        assert kwargs["hue_min"] == pytest.approx(0.5)
+        assert kwargs["hue_max"] == pytest.approx(0.7)
+        assert kwargs["saturation"] == pytest.approx(0.8)
+        assert kwargs["tau_ms"] == 3000

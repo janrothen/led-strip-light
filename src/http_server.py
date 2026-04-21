@@ -33,6 +33,20 @@ _FLAME_COERCERS = {
     "gamma": float,
 }
 
+_AURORA_COERCERS = {
+    "duration": int,
+    "update_hz": int,
+    "tau_ms": int,
+    "hue_min": float,
+    "hue_max": float,
+    "saturation": float,
+    "min_brightness": float,
+    "max_brightness": float,
+    "hue_step": float,
+    "brightness_step": float,
+    "gamma": float,
+}
+
 
 def _is_led_active(led_controller) -> bool:
     return led_controller.is_on() or led_controller.is_sequence_running()
@@ -40,6 +54,10 @@ def _is_led_active(led_controller) -> bool:
 
 def _parse_flame_kwargs(data: dict) -> dict:
     return {k: coerce(data[k]) for k, coerce in _FLAME_COERCERS.items() if k in data}
+
+
+def _parse_aurora_kwargs(data: dict) -> dict:
+    return {k: coerce(data[k]) for k, coerce in _AURORA_COERCERS.items() if k in data}
 
 
 def _resolve_dependencies(
@@ -97,6 +115,7 @@ def _handle_profile(runner: EffectRunner, data: dict) -> None:
 
 
 _EFFECT_HANDLERS: dict[str, Callable[[EffectRunner, dict], None]] = {
+    "aurora": lambda r, d: r.run_aurora_effect(**_parse_aurora_kwargs(d)),
     "breathing": _handle_breathing,
     "campfire": lambda r, d: r.run_campfire_effect(**_parse_flame_kwargs(d)),
     "candle": lambda r, d: r.run_candle_effect(**_parse_flame_kwargs(d)),
