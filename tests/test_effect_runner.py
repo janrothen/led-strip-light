@@ -400,3 +400,57 @@ class TestEffectRunner:
         assert kwargs["update_hz"] == 30
         assert kwargs["saturation"] == pytest.approx(0.8)
         assert kwargs["brightness"] == pytest.approx(0.5)
+
+    def test_run_lightning_effect_default_params(
+        self, effect_runner, mock_strip_controller
+    ):
+        effect_runner.run_lightning_effect()
+        mock_strip_controller.run_sequence.assert_called_once()
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert "gamma" not in kwargs  # gamma not passed when None
+        assert kwargs["flash_color"] == Color.WHITE
+        assert kwargs["background_color"] == Color.BLACK
+        assert kwargs["min_gap_ms"] == 2000
+        assert kwargs["max_gap_ms"] == 8000
+        assert kwargs["flash_ms"] == 150
+        assert kwargs["intensity_min"] == pytest.approx(0.6)
+        assert kwargs["intensity_max"] == pytest.approx(1.0)
+        assert kwargs["aftershock_chance"] == pytest.approx(0.5)
+        assert kwargs["max_aftershocks"] == 2
+        assert kwargs["duration_ms"] is None
+
+    def test_run_lightning_effect_with_gamma(
+        self, effect_runner, mock_strip_controller
+    ):
+        effect_runner.run_lightning_effect(gamma=2.2)
+        mock_strip_controller.run_sequence.assert_called_once()
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert kwargs["gamma"] == pytest.approx(2.2)
+
+    def test_run_lightning_effect_custom_params(
+        self, effect_runner, mock_strip_controller
+    ):
+        effect_runner.run_lightning_effect(
+            flash_color=Color.CYAN,
+            background_color=Color(10, 0, 20),
+            min_gap_ms=500,
+            max_gap_ms=1500,
+            flash_ms=80,
+            intensity_min=0.4,
+            intensity_max=0.9,
+            aftershock_chance=0.3,
+            max_aftershocks=1,
+            duration=15000,
+        )
+        mock_strip_controller.run_sequence.assert_called_once()
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert kwargs["flash_color"] == Color.CYAN
+        assert kwargs["background_color"] == Color(10, 0, 20)
+        assert kwargs["min_gap_ms"] == 500
+        assert kwargs["max_gap_ms"] == 1500
+        assert kwargs["flash_ms"] == 80
+        assert kwargs["intensity_min"] == pytest.approx(0.4)
+        assert kwargs["intensity_max"] == pytest.approx(0.9)
+        assert kwargs["aftershock_chance"] == pytest.approx(0.3)
+        assert kwargs["max_aftershocks"] == 1
+        assert kwargs["duration_ms"] == 15000

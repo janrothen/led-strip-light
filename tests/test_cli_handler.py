@@ -524,6 +524,76 @@ class TestCLIHandler:
             gamma=None,
         )
 
+    def test_parser_lightning_subcommand(self):
+        parser = create_parser()
+
+        args = parser.parse_args(["lightning"])
+        assert args.effect == "lightning"
+        assert args.flash_color == "white"
+        assert args.background_color == "black"
+        assert args.min_gap_ms == 2000
+        assert args.max_gap_ms == 8000
+        assert args.flash_ms == 150
+        assert args.intensity_min == pytest.approx(0.6)
+        assert args.intensity_max == pytest.approx(1.0)
+        assert args.aftershock_chance == pytest.approx(0.5)
+        assert args.max_aftershocks == 2
+        assert args.duration_ms is None
+        assert args.gamma is None
+
+        args = parser.parse_args(
+            [
+                "lightning",
+                "--flash-color",
+                "cyan",
+                "--max-gap-ms",
+                "5000",
+                "--flash-ms",
+                "80",
+                "--intensity-min",
+                "0.4",
+                "--duration",
+                "20000",
+            ]
+        )
+        assert args.flash_color == "cyan"
+        assert args.max_gap_ms == 5000
+        assert args.flash_ms == 80
+        assert args.intensity_min == pytest.approx(0.4)
+        assert args.duration_ms == 20000
+
+    def test_execute_effect_lightning(self):
+        mock_runner = Mock()
+
+        args = Mock()
+        args.effect = "lightning"
+        args.flash_color = "white"
+        args.background_color = "black"
+        args.min_gap_ms = 2000
+        args.max_gap_ms = 8000
+        args.flash_ms = 150
+        args.intensity_min = 0.6
+        args.intensity_max = 1.0
+        args.aftershock_chance = 0.5
+        args.max_aftershocks = 2
+        args.duration_ms = None
+        args.gamma = None
+
+        execute_effect(mock_runner, args)
+        mock_runner.run_lightning_effect.assert_called_once_with(
+            flash_color=Color.WHITE,
+            background_color=Color.BLACK,
+            min_gap_ms=2000,
+            max_gap_ms=8000,
+            flash_ms=150,
+            intensity_min=0.6,
+            intensity_max=1.0,
+            aftershock_chance=0.5,
+            max_aftershocks=2,
+            duration=None,
+            gamma=None,
+        )
+
     def test_positive_int_valid(self):
         assert _positive_int("5") == 5
         assert _positive_int("1") == 1

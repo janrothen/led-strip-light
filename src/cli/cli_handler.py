@@ -84,6 +84,7 @@ Examples:
     %(prog)s aurora --duration 120000
     %(prog)s heartbeat --color red
     %(prog)s rainbow --period-ms 8000
+    %(prog)s lightning --max-gap-ms 5000
     %(prog)s random --interval 2000
     %(prog)s cycle --colors red,green,blue --duration 2000
     %(prog)s fade --from black --to white --duration 5000
@@ -229,6 +230,76 @@ Examples:
         help="Brightness 0..1 (default: 0.9)",
     )
     rainbow_parser.add_argument(
+        "--gamma",
+        type=_positive_float,
+        default=None,
+        help="Perceptual gamma (e.g., 2.2). Default: effect default",
+    )
+
+    # Lightning effect
+    lightning_parser = subparsers.add_parser(
+        "lightning", help="Random lightning flashes with fast decay"
+    )
+    lightning_parser.add_argument(
+        "--flash-color",
+        default="white",
+        help="Peak color of a strike (name or hex, default: white)",
+    )
+    lightning_parser.add_argument(
+        "--background-color",
+        default="black",
+        help="Resting color between strikes (default: black)",
+    )
+    lightning_parser.add_argument(
+        "--min-gap-ms",
+        type=int,
+        default=2000,
+        help="Minimum delay between strikes in ms (default: 2000)",
+    )
+    lightning_parser.add_argument(
+        "--max-gap-ms",
+        type=int,
+        default=8000,
+        help="Maximum delay between strikes in ms (default: 8000)",
+    )
+    lightning_parser.add_argument(
+        "--flash-ms",
+        type=_positive_int,
+        default=150,
+        help="Decay time of the main flash in ms (default: 150)",
+    )
+    lightning_parser.add_argument(
+        "--intensity-min",
+        type=_unit_float,
+        default=0.6,
+        help="Minimum peak brightness 0..1 (default: 0.6)",
+    )
+    lightning_parser.add_argument(
+        "--intensity-max",
+        type=_unit_float,
+        default=1.0,
+        help="Maximum peak brightness 0..1 (default: 1.0)",
+    )
+    lightning_parser.add_argument(
+        "--aftershock-chance",
+        type=_unit_float,
+        default=0.5,
+        help="Per-aftershock probability 0..1 (default: 0.5)",
+    )
+    lightning_parser.add_argument(
+        "--max-aftershocks",
+        type=int,
+        default=2,
+        help="Maximum aftershocks per strike (default: 2)",
+    )
+    lightning_parser.add_argument(
+        "--duration",
+        dest="duration_ms",
+        type=int,
+        default=None,
+        help="Total duration in milliseconds (default: run until interrupted)",
+    )
+    lightning_parser.add_argument(
         "--gamma",
         type=_positive_float,
         default=None,
@@ -459,6 +530,22 @@ def _run_heartbeat(runner: EffectRunner, args) -> None:
     )
 
 
+def _run_lightning(runner: EffectRunner, args) -> None:
+    runner.run_lightning_effect(
+        flash_color=Color.parse(args.flash_color),
+        background_color=Color.parse(args.background_color),
+        min_gap_ms=args.min_gap_ms,
+        max_gap_ms=args.max_gap_ms,
+        flash_ms=args.flash_ms,
+        intensity_min=args.intensity_min,
+        intensity_max=args.intensity_max,
+        aftershock_chance=args.aftershock_chance,
+        max_aftershocks=args.max_aftershocks,
+        duration=args.duration_ms,
+        gamma=args.gamma,
+    )
+
+
 def _run_rainbow(runner: EffectRunner, args) -> None:
     runner.run_rainbow_effect(
         period_ms=args.period_ms,
@@ -490,6 +577,7 @@ _EFFECT_HANDLERS: dict[str, Callable[[EffectRunner, argparse.Namespace], None]] 
     "cycle": _run_cycle,
     "fade": _run_fade,
     "heartbeat": _run_heartbeat,
+    "lightning": _run_lightning,
     "profile": _run_profile,
     "rainbow": _run_rainbow,
     "random": _run_random,

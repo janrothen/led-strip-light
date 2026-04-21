@@ -56,6 +56,18 @@ _RAINBOW_COERCERS = {
     "gamma": float,
 }
 
+_LIGHTNING_COERCERS = {
+    "min_gap_ms": int,
+    "max_gap_ms": int,
+    "flash_ms": int,
+    "intensity_min": float,
+    "intensity_max": float,
+    "aftershock_chance": float,
+    "max_aftershocks": int,
+    "duration": int,
+    "gamma": float,
+}
+
 
 def _is_led_active(led_controller) -> bool:
     return led_controller.is_on() or led_controller.is_sequence_running()
@@ -71,6 +83,17 @@ def _parse_aurora_kwargs(data: dict) -> dict:
 
 def _parse_rainbow_kwargs(data: dict) -> dict:
     return {k: coerce(data[k]) for k, coerce in _RAINBOW_COERCERS.items() if k in data}
+
+
+def _handle_lightning(runner: EffectRunner, data: dict) -> None:
+    kwargs: dict = {
+        k: coerce(data[k]) for k, coerce in _LIGHTNING_COERCERS.items() if k in data
+    }
+    if "flash_color" in data:
+        kwargs["flash_color"] = Color.parse(data["flash_color"])
+    if "background_color" in data:
+        kwargs["background_color"] = Color.parse(data["background_color"])
+    runner.run_lightning_effect(**kwargs)
 
 
 def _resolve_dependencies(
@@ -148,6 +171,7 @@ _EFFECT_HANDLERS: dict[str, Callable[[EffectRunner, dict], None]] = {
     "cycle": _handle_cycle,
     "fade": _handle_fade,
     "heartbeat": _handle_heartbeat,
+    "lightning": _handle_lightning,
     "profile": _handle_profile,
     "rainbow": lambda r, d: r.run_rainbow_effect(**_parse_rainbow_kwargs(d)),
     "random": _handle_random,

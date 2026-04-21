@@ -13,6 +13,7 @@ from .effects import (
     fade_effect,
     flickering_effect,
     heartbeat_effect,
+    lightning_effect,
     rainbow_effect,
     random_color_effect,
 )
@@ -337,6 +338,66 @@ class EffectRunner:
         if gamma is not None:
             kwargs["gamma"] = gamma
         self.strip.run_sequence(rainbow_effect, self.strip, **kwargs)
+
+    def run_lightning_effect(
+        self,
+        *,
+        flash_color: Color = Color.WHITE,
+        background_color: Color = Color.BLACK,
+        min_gap_ms: int = 2000,
+        max_gap_ms: int = 8000,
+        flash_ms: int = 150,
+        intensity_min: float = 0.6,
+        intensity_max: float = 1.0,
+        aftershock_chance: float = 0.5,
+        max_aftershocks: int = 2,
+        duration: int | None = None,
+        gamma: float | None = None,
+    ) -> None:
+        """Run lightning effect (random bright flashes with fast decay).
+
+        Args:
+            flash_color: Peak color of a strike
+            background_color: Resting color between strikes
+            min_gap_ms / max_gap_ms: Delay range (ms) between strikes
+            flash_ms: Decay time (ms) of the main flash
+            intensity_min / intensity_max: Peak brightness range (0..1)
+            aftershock_chance: Per-aftershock probability (0..1)
+            max_aftershocks: Maximum aftershocks per strike
+            duration: Total run time in ms (None = until interrupted)
+            gamma: Perceptual gamma (None = effect default)
+        """
+        logging.info(
+            "Starting lightning effect: flash=%s bg=%s gap=[%d,%d]ms flash_ms=%d "
+            "intensity=[%.2f,%.2f] aftershock_chance=%.2f max_aftershocks=%d "
+            "duration=%s gamma=%s",
+            flash_color,
+            background_color,
+            min_gap_ms,
+            max_gap_ms,
+            flash_ms,
+            intensity_min,
+            intensity_max,
+            aftershock_chance,
+            max_aftershocks,
+            duration,
+            gamma,
+        )
+        kwargs: dict = {
+            "flash_color": flash_color,
+            "background_color": background_color,
+            "min_gap_ms": min_gap_ms,
+            "max_gap_ms": max_gap_ms,
+            "flash_ms": flash_ms,
+            "intensity_min": intensity_min,
+            "intensity_max": intensity_max,
+            "aftershock_chance": aftershock_chance,
+            "max_aftershocks": max_aftershocks,
+            "duration_ms": duration,
+        }
+        if gamma is not None:
+            kwargs["gamma"] = gamma
+        self.strip.run_sequence(lightning_effect, self.strip, **kwargs)
 
     def run_random_effect(self, interval: int = 2000) -> None:
         """Run random color effect."""
