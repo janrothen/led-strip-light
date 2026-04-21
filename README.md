@@ -16,7 +16,7 @@ Feature-rich Raspberry Pi project for controlling an RGB LED strip light. Includ
 - Web-based interface for manual remote control
 - Homebridge integration for Apple HomeKit and Siri voice control
 - Command-line interface for scripting and manual control
-- Multiple built-in LED effects (breathing, fade, color cycle, random, campfire, candle, aurora, heartbeat, and more)
+- Multiple built-in LED effects (breathing, fade, rainbow, random, campfire, candle, aurora, heartbeat, and more)
 - Time-based color profiles and scheduled automation (systemd, cron)
 - Modular, testable Python codebase with hardware abstraction and full unit test suite
 
@@ -60,7 +60,7 @@ graph TD
         GPIO["GPIOService\n(pigpio PWM)"]
         CTRL["LEDStripLightController\n(color · brightness · thread)"]
         ER["EffectRunner\n(effect dispatch)"]
-        EFX["effects.py\n(breathing · fade · campfire\ncandle · aurora · heartbeat · cycle · random)"]
+        EFX["effects.py\n(breathing · fade · campfire\ncandle · aurora · heartbeat · rainbow · cycle · random)"]
     end
 
     HW["RGB LED Strip\n(hardware)"]
@@ -162,6 +162,9 @@ The application supports multiple effects via command-line arguments:
 # Heartbeat (double-pulse thump-thump-rest)
 ./run.py heartbeat --color red
 
+# Rainbow sweep (continuous HSV hue rotation)
+./run.py rainbow --period-ms 8000
+
 # Get help
 ./run.py --help
 ```
@@ -228,7 +231,7 @@ A responsive web interface is available for controlling the LED strip through yo
   - Power control (On/Off) with visual status indicators
   - Color picker and preset color buttons (Red, Green, Blue, White, Yellow, Magenta, Cyan)
   - Brightness slider with real-time adjustment
-  - Start/stop built‑in effects (breathing, campfire, candle, aurora, heartbeat, random, cycle, fade) with parameter inputs
+  - Start/stop built‑in effects (breathing, campfire, candle, aurora, heartbeat, rainbow, random, fade) with parameter inputs
   - Live status + active effect display and error handling
   - Mobile-friendly responsive design
 
@@ -253,6 +256,7 @@ Effects management:
 * `POST /effects/candle` (same override keys as campfire)
 * `POST /effects/aurora` (optional JSON overrides: duration, update_hz, hue_min, hue_max, saturation, min_brightness, max_brightness, hue_step, brightness_step, tau_ms, gamma)
 * `POST /effects/heartbeat` (optional JSON overrides: color, beat_ms, gap_ms, rest_ms, second_beat_scale)
+* `POST /effects/rainbow` (optional JSON overrides: period_ms, duration, update_hz, saturation, brightness, gamma)
 * `POST /effects/random` JSON: `{ "interval": 2000 }`
 * `POST /effects/cycle` JSON: `{ "duration": 2000, "colors": ["FF0000","00FF00","0000FF"] }`
 * `POST /effects/fade` JSON: `{ "from": "000000", "to": "FFFFFF", "duration": 5000 }`
@@ -287,6 +291,11 @@ curl -X POST -H 'Content-Type: application/json' \
 curl -X POST -H 'Content-Type: application/json' \
   -d '{"color":"FF69B4","second_beat_scale":0.5}' \
   http://localhost:5000/effects/heartbeat
+
+# Rainbow sweep at half-brightness, 5s per rotation
+curl -X POST -H 'Content-Type: application/json' \
+  -d '{"period_ms":5000,"brightness":0.5}' \
+  http://localhost:5000/effects/rainbow
 
 # Breathing effect: blue, 3s cycles
 curl -X POST -H 'Content-Type: application/json' \

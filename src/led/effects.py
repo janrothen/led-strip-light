@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""LED strip effects: fades, breathing, color cycles, flame flicker, aurora drift, heartbeat.
+"""LED strip effects: fades, breathing, color cycles, flame flicker, aurora drift, heartbeat, rainbow.
 
 Exports (grouped):
     Core effects: fade_effect, breathing_effect, color_cycle_effect, random_color_effect
     Flicker engine: flickering_effect (pass campfire/candle presets via kwargs)
     Aurora: aurora_effect (slow HSV drift through green↔violet)
     Heartbeat: heartbeat_effect (double-pulse thump-thump-rest)
+    Rainbow: rainbow_effect (continuous HSV hue sweep across the full spectrum)
     Easing: ease_linear, ease_in_out_sine (default), ease_in_quad, ease_out_quad
     Preset kwargs: FADE_PRESET_SMOOTH, FADE_PRESET_LINEAR, FADE_PRESET_SNAPPY
     Types & constants: StripLike, FADE_STEP_MS, DEFAULT_EFFECT_DURATION_MS, CHANNEL_MAX, SRGB_GAMMA
@@ -544,6 +545,79 @@ def heartbeat_effect(
     logging.debug("Heartbeat stopped")
 
 
+def rainbow_effect(
+    strip: StripLike,
+    *,
+    period_ms: int = 10000,
+    duration_ms: int | None = None,
+    update_hz: int = 60,
+    saturation: float = 1.0,
+    brightness: float = 0.9,
+    gamma: float | None = SRGB_GAMMA,
+) -> None:
+    """Continuous hue sweep across the full HSV spectrum.
+
+    Hue advances linearly with wall time: one full rotation every ``period_ms``.
+    Saturation and brightness stay constant, producing a smooth, saturated
+    gliding rainbow with no color list to maintain.
+
+    Args:
+        strip: Target strip-like object.
+        period_ms: Time (ms) for one full hue rotation (0→1→0).
+        duration_ms: Total run time in ms, or ``None`` to run until interrupted.
+        update_hz: Frame rate. Must be > 0.
+        saturation: Saturation in [0, 1].
+        brightness: Value/brightness in [0, 1].
+        gamma: If set, shapes the brightness scalar perceptually; ``None`` = linear.
+    """
+    if period_ms <= 0:
+        raise ValueError(f"period_ms must be > 0, got {period_ms}")
+    if update_hz <= 0:
+        raise ValueError(f"update_hz must be > 0, got {update_hz}")
+    if not (0.0 <= saturation <= 1.0):
+        raise ValueError(f"saturation must be in [0,1], got {saturation}")
+    if not (0.0 <= brightness <= 1.0):
+        raise ValueError(f"brightness must be in [0,1], got {brightness}")
+
+    s = float(saturation)
+    v = brightness**gamma if (gamma and gamma > 0) else brightness
+
+    period_s = period_ms / 1000.0
+    period = 1.0 / update_hz
+    start = monotonic()
+    end_time = None if duration_ms is None else (start + duration_ms / 1000.0)
+
+    logging.debug(
+        "Rainbow start: period_ms=%d duration_ms=%s update_hz=%d saturation=%.2f "
+        "brightness=%.2f gamma=%s",
+        period_ms,
+        duration_ms,
+        update_hz,
+        saturation,
+        brightness,
+        gamma,
+    )
+
+    while not strip.is_interrupted():
+        now = monotonic()
+        if end_time is not None and now >= end_time:
+            break
+
+        hue = ((now - start) / period_s) % 1.0
+        r_f, g_f, b_f = colorsys.hsv_to_rgb(hue, s, v)
+
+        r = int(round(r_f * CHANNEL_MAX))
+        g = int(round(g_f * CHANNEL_MAX))
+        b = int(round(b_f * CHANNEL_MAX))
+
+        strip.set_color(Color.from_tuple((r, g, b)))
+
+        next_due = now + period
+        sleep(max(0.0, next_due - monotonic()))
+
+    logging.debug("Rainbow stopped")
+
+
 __all__ = [
     "FADE_STEP_MS",
     "DEFAULT_EFFECT_DURATION_MS",
@@ -565,4 +639,5 @@ __all__ = [
     "flickering_effect",
     "aurora_effect",
     "heartbeat_effect",
+    "rainbow_effect",
 ]

@@ -282,6 +282,44 @@ def test_list_effects_includes_heartbeat():
     assert "heartbeat" in payload["available"]
 
 
+def test_start_rainbow_effect_default():
+    client, _, effect_runner = _build_client()
+    response = client.post("/effects/rainbow")
+
+    assert response.status_code == 200
+    effect_runner.run_rainbow_effect.assert_called_once_with()
+
+
+def test_start_rainbow_effect_with_params():
+    client, _, effect_runner = _build_client()
+    response = client.post(
+        "/effects/rainbow",
+        json={
+            "period_ms": 5000,
+            "duration": 30000,
+            "update_hz": 30,
+            "saturation": 0.8,
+            "brightness": 0.5,
+            "gamma": 2.2,
+        },
+    )
+
+    assert response.status_code == 200
+    kwargs = effect_runner.run_rainbow_effect.call_args[1]
+    assert kwargs["period_ms"] == 5000
+    assert kwargs["duration"] == 30000
+    assert kwargs["update_hz"] == 30
+    assert kwargs["saturation"] == 0.8
+    assert kwargs["brightness"] == 0.5
+    assert kwargs["gamma"] == 2.2
+
+
+def test_list_effects_includes_rainbow():
+    client, _, _ = _build_client()
+    payload = client.get("/effects").get_json()
+    assert "rainbow" in payload["available"]
+
+
 def test_start_cycle_effect_with_colors_list():
     client, _, effect_runner = _build_client()
     response = client.post(
