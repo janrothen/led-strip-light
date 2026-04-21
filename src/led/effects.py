@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LED strip effects: fades, breathing, color cycles, flame flicker, aurora drift, heartbeat, rainbow.
+"""LED strip effects: fades, breathing, color cycles, flame flicker, aurora drift, heartbeat, rainbow, lightning.
 
 Exports (grouped):
     Core effects: fade_effect, breathing_effect, color_cycle_effect, random_color_effect
@@ -7,6 +7,7 @@ Exports (grouped):
     Aurora: aurora_effect (slow HSV drift through green↔violet)
     Heartbeat: heartbeat_effect (double-pulse thump-thump-rest)
     Rainbow: rainbow_effect (continuous HSV hue sweep across the full spectrum)
+    Lightning: lightning_effect (random bright flashes with fast decay and aftershocks)
     Easing: ease_linear, ease_in_out_sine (default), ease_in_quad, ease_out_quad
     Preset kwargs: FADE_PRESET_SMOOTH, FADE_PRESET_LINEAR, FADE_PRESET_SNAPPY
     Types & constants: StripLike, FADE_STEP_MS, DEFAULT_EFFECT_DURATION_MS, CHANNEL_MAX, SRGB_GAMMA
@@ -618,6 +619,149 @@ def rainbow_effect(
     logging.debug("Rainbow stopped")
 
 
+def _interruptible_sleep(strip: StripLike, ms: int, chunk_ms: int = 50) -> bool:
+    """Sleep ``ms`` milliseconds in chunks, returning False on interrupt.
+
+    Lets long gaps (e.g. between lightning strikes) abort within ``chunk_ms``
+    instead of running to completion before the next interrupt poll.
+    """
+    if ms <= 0:
+        return not strip.is_interrupted()
+    end = monotonic() + ms / 1000.0
+    chunk_s = chunk_ms / 1000.0
+    while True:
+        if strip.is_interrupted():
+            return False
+        remaining = end - monotonic()
+        if remaining <= 0:
+            return True
+        sleep(min(chunk_s, remaining))
+
+
+def lightning_effect(
+    strip: StripLike,
+    *,
+    flash_color: Color = Color.WHITE,
+    background_color: Color = Color.BLACK,
+    min_gap_ms: int = 2000,
+    max_gap_ms: int = 8000,
+    flash_ms: int = 150,
+    intensity_min: float = 0.6,
+    intensity_max: float = 1.0,
+    aftershock_chance: float = 0.5,
+    max_aftershocks: int = 2,
+    duration_ms: int | None = None,
+    gamma: float | None = SRGB_GAMMA,
+) -> None:
+    """Random lightning strikes: brilliant flash, fast decay, occasional aftershocks.
+
+    The strip rests at ``background_color`` for a random gap in
+    ``[min_gap_ms, max_gap_ms]``, then snaps to a scaled ``flash_color`` and
+    decays back over ``flash_ms`` with a quick-out curve. Each strike may be
+    followed by up to ``max_aftershocks`` dimmer, shorter flickers (each
+    independently fired with probability ``aftershock_chance``).
+
+    Args:
+        strip: Target strip-like object.
+        flash_color: Peak color of a strike (default white; cool tints work too).
+        background_color: Resting color between strikes (default black).
+        min_gap_ms / max_gap_ms: Delay range (ms) between strikes.
+        flash_ms: Decay time (ms) of the main strike's bright tail.
+        intensity_min / intensity_max: Peak brightness scale range (0..1).
+        aftershock_chance: Per-aftershock probability (0..1).
+        max_aftershocks: Maximum aftershocks per strike (>= 0).
+        duration_ms: Total run time in ms, or ``None`` to run until interrupted.
+        gamma: Optional gamma for perceptual fades.
+    """
+    if flash_ms <= 0:
+        raise ValueError(f"flash_ms must be > 0, got {flash_ms}")
+    if min_gap_ms < 0 or max_gap_ms < min_gap_ms:
+        raise ValueError(
+            f"need 0 <= min_gap_ms <= max_gap_ms, got {min_gap_ms}/{max_gap_ms}"
+        )
+    if not (0.0 <= intensity_min <= intensity_max <= 1.0):
+        raise ValueError(
+            "need 0 <= intensity_min <= intensity_max <= 1, "
+            f"got {intensity_min}/{intensity_max}"
+        )
+    if not (0.0 <= aftershock_chance <= 1.0):
+        raise ValueError(f"aftershock_chance must be in [0,1], got {aftershock_chance}")
+    if max_aftershocks < 0:
+        raise ValueError(f"max_aftershocks must be >= 0, got {max_aftershocks}")
+
+    fr, fg, fb = flash_color.rgb
+
+    def _scaled(scale: float) -> Color:
+        return Color.from_tuple(
+            (
+                int(round(fr * scale)),
+                int(round(fg * scale)),
+                int(round(fb * scale)),
+            )
+        )
+
+    end_time = None if duration_ms is None else (monotonic() + duration_ms / 1000.0)
+
+    logging.debug(
+        "Lightning start: flash=%s bg=%s gap=[%d,%d]ms flash_ms=%d duration_ms=%s",
+        flash_color,
+        background_color,
+        min_gap_ms,
+        max_gap_ms,
+        flash_ms,
+        duration_ms,
+    )
+
+    strip.set_color(background_color)
+
+    while not strip.is_interrupted():
+        if end_time is not None and monotonic() >= end_time:
+            break
+
+        gap_ms = (
+            random.randint(min_gap_ms, max_gap_ms)
+            if max_gap_ms > min_gap_ms
+            else min_gap_ms
+        )
+        if not _interruptible_sleep(strip, gap_ms):
+            return
+        if end_time is not None and monotonic() >= end_time:
+            break
+
+        # Main strike: snap to peak, decay to background.
+        intensity = random.uniform(intensity_min, intensity_max)
+        peak = _scaled(intensity)
+        strip.set_color(peak)
+        fade_effect(
+            strip, peak, background_color, flash_ms, ease=ease_out_quad, gamma=gamma
+        )
+        if strip.is_interrupted():
+            return
+
+        # Optional aftershocks — dimmer, shorter, with brief dark gaps between.
+        for _ in range(max_aftershocks):
+            if random.random() >= aftershock_chance:
+                break
+            if not _interruptible_sleep(strip, random.randint(30, 120)):
+                return
+            after_intensity = random.uniform(intensity_min, intensity_max) * 0.5
+            after_ms = max(30, flash_ms // 2 + random.randint(-20, 20))
+            after_peak = _scaled(after_intensity)
+            strip.set_color(after_peak)
+            fade_effect(
+                strip,
+                after_peak,
+                background_color,
+                after_ms,
+                ease=ease_out_quad,
+                gamma=gamma,
+            )
+            if strip.is_interrupted():
+                return
+
+    logging.debug("Lightning stopped")
+
+
 __all__ = [
     "FADE_STEP_MS",
     "DEFAULT_EFFECT_DURATION_MS",
@@ -640,4 +784,5 @@ __all__ = [
     "aurora_effect",
     "heartbeat_effect",
     "rainbow_effect",
+    "lightning_effect",
 ]

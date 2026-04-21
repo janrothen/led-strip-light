@@ -320,6 +320,54 @@ def test_list_effects_includes_rainbow():
     assert "rainbow" in payload["available"]
 
 
+def test_start_lightning_effect_default():
+    client, _, effect_runner = _build_client()
+    response = client.post("/effects/lightning")
+
+    assert response.status_code == 200
+    effect_runner.run_lightning_effect.assert_called_once_with()
+
+
+def test_start_lightning_effect_with_params():
+    client, _, effect_runner = _build_client()
+    response = client.post(
+        "/effects/lightning",
+        json={
+            "flash_color": "00FFFF",
+            "background_color": "0A0014",
+            "min_gap_ms": 500,
+            "max_gap_ms": 1500,
+            "flash_ms": 80,
+            "intensity_min": 0.4,
+            "intensity_max": 0.9,
+            "aftershock_chance": 0.3,
+            "max_aftershocks": 1,
+            "duration": 20000,
+            "gamma": 2.2,
+        },
+    )
+
+    assert response.status_code == 200
+    kwargs = effect_runner.run_lightning_effect.call_args[1]
+    assert kwargs["flash_color"] == Color(0, 255, 255)
+    assert kwargs["background_color"] == Color(0x0A, 0x00, 0x14)
+    assert kwargs["min_gap_ms"] == 500
+    assert kwargs["max_gap_ms"] == 1500
+    assert kwargs["flash_ms"] == 80
+    assert kwargs["intensity_min"] == 0.4
+    assert kwargs["intensity_max"] == 0.9
+    assert kwargs["aftershock_chance"] == 0.3
+    assert kwargs["max_aftershocks"] == 1
+    assert kwargs["duration"] == 20000
+    assert kwargs["gamma"] == 2.2
+
+
+def test_list_effects_includes_lightning():
+    client, _, _ = _build_client()
+    payload = client.get("/effects").get_json()
+    assert "lightning" in payload["available"]
+
+
 def test_start_cycle_effect_with_colors_list():
     client, _, effect_runner = _build_client()
     response = client.post(

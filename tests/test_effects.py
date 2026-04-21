@@ -22,6 +22,7 @@ from led.effects import (
     fade_effect,
     flickering_effect,
     heartbeat_effect,
+    lightning_effect,
     rainbow_effect,
     random_color_effect,
 )
@@ -513,6 +514,106 @@ class TestEffects:
         mock_strip = Mock()
         with pytest.raises(ValueError, match="brightness"):
             rainbow_effect(mock_strip, brightness=-0.1)
+
+    def test_lightning_effect_produces_flash(self):
+        """lightning_effect runs at least one strike then stops on interrupt."""
+        mock_strip = Mock()
+        # Allow several is_interrupted polls before stopping (gap loop + flash).
+        mock_strip.is_interrupted.side_effect = [False] * 200 + [True] * 200
+
+        with patch("led.effects.sleep"):
+            lightning_effect(
+                mock_strip,
+                min_gap_ms=1,
+                max_gap_ms=1,
+                flash_ms=10,
+                aftershock_chance=0.0,
+                gamma=None,
+            )
+
+        # Background + at least one peak set_color call.
+        assert mock_strip.set_color.call_count >= 2
+
+    def test_lightning_effect_with_duration(self):
+        """lightning_effect exits via end_time when duration_ms is set."""
+        mock_strip = Mock()
+        mock_strip.is_interrupted.return_value = False
+
+        with patch("led.effects.sleep"):
+            lightning_effect(mock_strip, duration_ms=1, gamma=None)
+
+    def test_lightning_effect_with_gamma(self):
+        mock_strip = Mock()
+        mock_strip.is_interrupted.side_effect = [False] * 100 + [True] * 100
+
+        with patch("led.effects.sleep"):
+            lightning_effect(
+                mock_strip,
+                min_gap_ms=1,
+                max_gap_ms=1,
+                flash_ms=10,
+                aftershock_chance=0.0,
+                gamma=2.2,
+            )
+
+    def test_lightning_effect_aftershock_path(self):
+        """With aftershock_chance=1.0, max_aftershocks > 0 fires extra flashes."""
+        mock_strip = Mock()
+        mock_strip.is_interrupted.side_effect = [False] * 400 + [True] * 400
+
+        with patch("led.effects.sleep"):
+            lightning_effect(
+                mock_strip,
+                min_gap_ms=1,
+                max_gap_ms=1,
+                flash_ms=10,
+                aftershock_chance=1.0,
+                max_aftershocks=2,
+                gamma=None,
+            )
+
+    def test_lightning_effect_rejects_bad_flash_ms(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="flash_ms"):
+            lightning_effect(mock_strip, flash_ms=0)
+
+    def test_lightning_effect_rejects_bad_gap_range(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="min_gap_ms"):
+            lightning_effect(mock_strip, min_gap_ms=5000, max_gap_ms=2000)
+
+    def test_lightning_effect_rejects_bad_intensity(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="intensity_min"):
+            lightning_effect(mock_strip, intensity_min=0.8, intensity_max=0.4)
+
+    def test_lightning_effect_rejects_bad_aftershock_chance(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="aftershock_chance"):
+            lightning_effect(mock_strip, aftershock_chance=1.5)
+
+    def test_lightning_effect_rejects_negative_max_aftershocks(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="max_aftershocks"):
+            lightning_effect(mock_strip, max_aftershocks=-1)
+
+    def test_lightning_effect_interruptible_during_gap(self):
+        """A long gap aborts cleanly via _interruptible_sleep."""
+        mock_strip = Mock()
+        # First poll (top of while) False; next poll (in _interruptible_sleep) True.
+        mock_strip.is_interrupted.side_effect = [False, True]
+
+        with patch("led.effects.sleep"):
+            lightning_effect(
+                mock_strip,
+                min_gap_ms=10000,  # long gap, but should abort instantly
+                max_gap_ms=10000,
+                flash_ms=10,
+                gamma=None,
+            )
+
+        # Only the initial background frame should have been emitted.
+        assert mock_strip.set_color.call_count == 1
 
 
 class TestEasingFunctions:
