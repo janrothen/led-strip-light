@@ -151,7 +151,7 @@ The application supports multiple effects via command-line arguments:
 ./run.py random --interval 2000
 
 # Campfire effect (dynamic warm flicker)
-./run.py campfire --duration 60000 --base-color "#FF9329"
+./run.py campfire --duration 60000 --base-color "#FF4E04"
 
 # Candle effect (gentler, slower flicker)
 ./run.py candle --duration 60000

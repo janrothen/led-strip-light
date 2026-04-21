@@ -14,7 +14,7 @@ from .effects import (
     random_color_effect,
 )
 
-_DEFAULT_FLAME_COLOR = Color(255, 147, 41)
+_DEFAULT_FLAME_COLOR = Color.FLAME
 
 
 class SequencedStrip(Protocol):

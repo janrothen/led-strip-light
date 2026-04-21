@@ -43,7 +43,7 @@ class Color:
     ORANGE: ClassVar["Color"]
     PURPLE: ClassVar["Color"]
     PINK: ClassVar["Color"]
-    FLAME: ClassVar["Color"]  # Warm candle / flame amber (255,147,41)
+    FLAME: ClassVar["Color"]  # Deep candle / flame amber (255,78,4)
 
     def __post_init__(self):
         object.__setattr__(self, "r", self._clamp(self.r))
@@ -157,7 +157,7 @@ Color.MAGENTA = Color(255, 0, 255)
 Color.ORANGE = Color(255, 165, 0)
 Color.PURPLE = Color(128, 0, 128)
 Color.PINK = Color(255, 192, 203)
-Color.FLAME = Color(255, 147, 41)
+Color.FLAME = Color(255, 78, 4)
 
 _NAMED_COLORS: dict[str, Color] = {
     "black": Color.BLACK,
