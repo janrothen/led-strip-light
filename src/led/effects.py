@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""LED strip effects: fades, breathing, color cycles, and flame-style flicker.
+"""LED strip effects: fades, breathing, color cycles, flame-style flicker, aurora drift.
 
 Exports (grouped):
     Core effects: fade_effect, breathing_effect, color_cycle_effect, random_color_effect
     Flicker engine: flickering_effect (pass campfire/candle presets via kwargs)
+    Aurora: aurora_effect (slow HSV drift through green↔violet)
     Easing: ease_linear, ease_in_out_sine (default), ease_in_quad, ease_out_quad
     Preset kwargs: FADE_PRESET_SMOOTH, FADE_PRESET_LINEAR, FADE_PRESET_SNAPPY
     Types & constants: StripLike, FADE_STEP_MS, DEFAULT_EFFECT_DURATION_MS, CHANNEL_MAX, SRGB_GAMMA
@@ -355,6 +356,106 @@ def flickering_effect(
     logging.debug("Flickering stopped")
 
 
+def aurora_effect(
+    strip: StripLike,
+    *,
+    duration_ms: int | None = None,
+    update_hz: int = 60,
+    hue_min: float = 0.33,
+    hue_max: float = 0.78,
+    saturation: float = 1.0,
+    min_brightness: float = 0.30,
+    max_brightness: float = 0.90,
+    hue_step: float = 0.01,
+    brightness_step: float = 0.08,
+    tau_ms: int = 2500,
+    gamma: float | None = SRGB_GAMMA,
+) -> None:
+    """Slow HSV drift through a hue range (aurora-like: green↔teal↔blue↔violet).
+
+    Hue random-walks across ``[hue_min, hue_max]`` reflecting at the bounds, and
+    brightness random-walks between ``[min_brightness, max_brightness]``. Both
+    are low-pass-filtered with time constant ``tau_ms`` for heavy smoothing.
+    No sparks — this is meant to be calm.
+
+    Args:
+        strip: Target strip-like object.
+        duration_ms: Total run time in ms, or ``None`` to run until interrupted.
+        update_hz: Frame rate. Must be > 0.
+        hue_min / hue_max: Hue bounds in [0, 1] HSV units (defaults cover green→violet).
+        saturation: Saturation in [0, 1].
+        min_brightness / max_brightness: Brightness bounds in [0, 1].
+        hue_step: Max hue-target random-walk step per tick.
+        brightness_step: Max brightness-target random-walk step per tick.
+        tau_ms: Low-pass filter time constant; larger = slower/smoother drift.
+        gamma: If set, shapes the brightness curve perceptually. ``None`` = linear.
+    """
+    if update_hz <= 0:
+        raise ValueError(f"update_hz must be > 0, got {update_hz}")
+    if not (0.0 <= hue_min <= 1.0) or not (0.0 <= hue_max <= 1.0):
+        raise ValueError(f"hue_min/hue_max must be in [0,1], got {hue_min}/{hue_max}")
+    if hue_min >= hue_max:
+        raise ValueError(f"hue_min ({hue_min}) must be < hue_max ({hue_max})")
+
+    s = max(0.0, min(1.0, float(saturation)))
+
+    current_h = target_h = 0.5 * (hue_min + hue_max)
+    current_v = target_v = 0.5 * (min_brightness + max_brightness)
+
+    period = 1.0 / update_hz
+    end_time = None if duration_ms is None else (monotonic() + duration_ms / 1000.0)
+    last = monotonic()
+
+    logging.debug(
+        "Aurora start: duration_ms=%s update_hz=%d hue=[%.2f,%.2f] tau_ms=%d gamma=%s",
+        duration_ms,
+        update_hz,
+        hue_min,
+        hue_max,
+        tau_ms,
+        gamma,
+    )
+
+    while not strip.is_interrupted():
+        if end_time is not None and monotonic() >= end_time:
+            break
+
+        now = monotonic()
+        dt = now - last
+        last = now
+
+        # Random walk target hue, reflect at bounds so motion stays in [hue_min, hue_max]
+        target_h += random.uniform(-hue_step, hue_step)
+        if target_h < hue_min:
+            target_h = hue_min + (hue_min - target_h)
+        elif target_h > hue_max:
+            target_h = hue_max - (target_h - hue_max)
+
+        # Random walk target brightness, clamp to bounds
+        target_v += random.uniform(-brightness_step, brightness_step)
+        target_v = max(min_brightness, min(max_brightness, target_v))
+
+        # Low-pass filter toward targets
+        alpha = 1.0 - math.exp(-dt / max(1e-6, (tau_ms / 1000.0)))
+        current_h += (target_h - current_h) * alpha
+        current_v += (target_v - current_v) * alpha
+
+        # Apply gamma to brightness scalar only, preserving hue and saturation.
+        brightness = current_v**gamma if (gamma and gamma > 0) else current_v
+        r_f, g_f, b_f = colorsys.hsv_to_rgb(current_h, s, brightness)
+
+        r = int(round(r_f * CHANNEL_MAX))
+        g = int(round(g_f * CHANNEL_MAX))
+        b = int(round(b_f * CHANNEL_MAX))
+
+        strip.set_color(Color.from_tuple((r, g, b)))
+
+        next_due = now + period
+        sleep(max(0.0, next_due - monotonic()))
+
+    logging.debug("Aurora stopped")
+
+
 __all__ = [
     "FADE_STEP_MS",
     "DEFAULT_EFFECT_DURATION_MS",
@@ -374,4 +475,5 @@ __all__ = [
     "color_cycle_effect",
     "random_color_effect",
     "flickering_effect",
+    "aurora_effect",
 ]

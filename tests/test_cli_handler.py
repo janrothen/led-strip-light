@@ -377,6 +377,55 @@ class TestCLIHandler:
         assert args.duration_ms is None
         assert args.update_hz == 40
 
+    def test_parser_aurora_subcommand(self):
+        parser = create_parser()
+
+        args = parser.parse_args(["aurora"])
+        assert args.effect == "aurora"
+        assert args.duration_ms is None
+        assert args.update_hz == 60
+        assert args.hue_min == pytest.approx(0.33)
+        assert args.hue_max == pytest.approx(0.78)
+        assert args.tau_ms == 2500
+
+        args = parser.parse_args(
+            [
+                "aurora",
+                "--duration",
+                "60000",
+                "--hue-min",
+                "0.5",
+                "--hue-max",
+                "0.7",
+                "--tau-ms",
+                "3000",
+            ]
+        )
+        assert args.duration_ms == 60000
+        assert args.hue_min == pytest.approx(0.5)
+        assert args.hue_max == pytest.approx(0.7)
+        assert args.tau_ms == 3000
+
+    def test_execute_effect_aurora(self):
+        mock_runner = Mock()
+
+        args = Mock()
+        args.effect = "aurora"
+        args.duration_ms = None
+        args.update_hz = 60
+        args.hue_min = 0.33
+        args.hue_max = 0.78
+        args.saturation = 1.0
+        args.min_brightness = 0.30
+        args.max_brightness = 0.90
+        args.hue_step = 0.01
+        args.brightness_step = 0.08
+        args.tau_ms = 2500
+        args.gamma = None
+
+        execute_effect(mock_runner, args)
+        mock_runner.run_aurora_effect.assert_called_once()
+
     def test_positive_int_valid(self):
         assert _positive_int("5") == 5
         assert _positive_int("1") == 1

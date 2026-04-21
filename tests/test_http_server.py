@@ -206,6 +206,46 @@ def test_start_candle_effect():
     effect_runner.run_candle_effect.assert_called_once()
 
 
+def test_start_aurora_effect_default():
+    client, _, effect_runner = _build_client()
+    response = client.post("/effects/aurora")
+
+    assert response.status_code == 200
+    effect_runner.run_aurora_effect.assert_called_once_with()
+
+
+def test_start_aurora_effect_with_params():
+    client, _, effect_runner = _build_client()
+    response = client.post(
+        "/effects/aurora",
+        json={
+            "duration": 60000,
+            "update_hz": 30,
+            "hue_min": 0.4,
+            "hue_max": 0.7,
+            "saturation": 0.8,
+            "tau_ms": 3000,
+            "gamma": 2.2,
+        },
+    )
+
+    assert response.status_code == 200
+    kwargs = effect_runner.run_aurora_effect.call_args[1]
+    assert kwargs["duration"] == 60000
+    assert kwargs["update_hz"] == 30
+    assert kwargs["hue_min"] == 0.4
+    assert kwargs["hue_max"] == 0.7
+    assert kwargs["saturation"] == 0.8
+    assert kwargs["tau_ms"] == 3000
+    assert kwargs["gamma"] == 2.2
+
+
+def test_list_effects_includes_aurora():
+    client, _, _ = _build_client()
+    payload = client.get("/effects").get_json()
+    assert "aurora" in payload["available"]
+
+
 def test_start_cycle_effect_with_colors_list():
     client, _, effect_runner = _build_client()
     response = client.post(

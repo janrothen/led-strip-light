@@ -7,6 +7,7 @@ from typing import Protocol
 from .color import Color
 from .effects import (
     FADE_PRESET_SMOOTH,
+    aurora_effect,
     breathing_effect,
     color_cycle_effect,
     fade_effect,
@@ -196,6 +197,66 @@ class EffectRunner:
         if gamma is not None:
             kwargs["gamma"] = gamma
         self.strip.run_sequence(effect_func, self.strip, **kwargs)
+
+    def run_aurora_effect(
+        self,
+        *,
+        duration: int | None = None,
+        update_hz: int = 60,
+        hue_min: float = 0.33,
+        hue_max: float = 0.78,
+        saturation: float = 1.0,
+        min_brightness: float = 0.30,
+        max_brightness: float = 0.90,
+        hue_step: float = 0.01,
+        brightness_step: float = 0.08,
+        tau_ms: int = 2500,
+        gamma: float | None = None,
+    ) -> None:
+        """Run aurora drift effect (slow HSV wander through green↔violet).
+
+        Args:
+            duration: Total run time in ms (None = until interrupted)
+            update_hz: Update frequency
+            hue_min / hue_max: Hue bounds in [0, 1] HSV units
+            saturation: Saturation in [0, 1]
+            min_brightness / max_brightness: Brightness bounds in [0, 1]
+            hue_step: Max hue-target random-walk step per tick
+            brightness_step: Max brightness-target random-walk step per tick
+            tau_ms: Smoothing time constant (larger = slower)
+            gamma: Perceptual gamma (None = effect default)
+        """
+        logging.info(
+            "Starting aurora effect: duration=%s update_hz=%d hue=[%.2f,%.2f] "
+            "saturation=%.2f min_brightness=%.2f max_brightness=%.2f "
+            "hue_step=%.3f brightness_step=%.3f tau_ms=%d gamma=%s",
+            duration,
+            update_hz,
+            hue_min,
+            hue_max,
+            saturation,
+            min_brightness,
+            max_brightness,
+            hue_step,
+            brightness_step,
+            tau_ms,
+            gamma,
+        )
+        kwargs: dict = {
+            "duration_ms": duration,
+            "update_hz": update_hz,
+            "hue_min": hue_min,
+            "hue_max": hue_max,
+            "saturation": saturation,
+            "min_brightness": min_brightness,
+            "max_brightness": max_brightness,
+            "hue_step": hue_step,
+            "brightness_step": brightness_step,
+            "tau_ms": tau_ms,
+        }
+        if gamma is not None:
+            kwargs["gamma"] = gamma
+        self.strip.run_sequence(aurora_effect, self.strip, **kwargs)
 
     def run_random_effect(self, interval: int = 2000) -> None:
         """Run random color effect."""

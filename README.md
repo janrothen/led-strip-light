@@ -16,7 +16,7 @@ Feature-rich Raspberry Pi project for controlling an RGB LED strip light. Includ
 - Web-based interface for manual remote control
 - Homebridge integration for Apple HomeKit and Siri voice control
 - Command-line interface for scripting and manual control
-- Multiple built-in LED effects (breathing, fade, color cycle, random, campfire, candle, and more)
+- Multiple built-in LED effects (breathing, fade, color cycle, random, campfire, candle, aurora, and more)
 - Time-based color profiles and scheduled automation (systemd, cron)
 - Modular, testable Python codebase with hardware abstraction and full unit test suite
 
@@ -60,7 +60,7 @@ graph TD
         GPIO["GPIOService\n(pigpio PWM)"]
         CTRL["LEDStripLightController\n(color · brightness · thread)"]
         ER["EffectRunner\n(effect dispatch)"]
-        EFX["effects.py\n(breathing · fade · campfire\ncandle · cycle · random)"]
+        EFX["effects.py\n(breathing · fade · campfire\ncandle · aurora · cycle · random)"]
     end
 
     HW["RGB LED Strip\n(hardware)"]
@@ -156,6 +156,9 @@ The application supports multiple effects via command-line arguments:
 # Candle effect (gentler, slower flicker)
 ./run.py candle --duration 60000
 
+# Aurora drift (slow HSV wander, green↔violet by default)
+./run.py aurora --duration 120000
+
 # Get help
 ./run.py --help
 ```
@@ -195,7 +198,7 @@ led-strip-light/
 │   ├── led/
 │   │   ├── color.py
 │   │   ├── effect_runner.py
-│   │   ├── effects.py           # LED effects (breathing, fade, campfire, …)
+│   │   ├── effects.py           # LED effects (breathing, fade, campfire, aurora, …)
 │   │   ├── gpio_service.py      # pigpio PWM interface
 │   │   ├── led_strip_light_controller.py
 │   │   └── profile_manager.py   # Time-based color profiles
@@ -222,7 +225,7 @@ A responsive web interface is available for controlling the LED strip through yo
   - Power control (On/Off) with visual status indicators
   - Color picker and preset color buttons (Red, Green, Blue, White, Yellow, Magenta, Cyan)
   - Brightness slider with real-time adjustment
-  - Start/stop built‑in effects (breathing, campfire, candle, random, cycle, fade) with parameter inputs
+  - Start/stop built‑in effects (breathing, campfire, candle, aurora, random, cycle, fade) with parameter inputs
   - Live status + active effect display and error handling
   - Mobile-friendly responsive design
 
@@ -245,6 +248,7 @@ Effects management:
 * `POST /effects/breathing` JSON: `{ "color": "FF0000", "duration": 2000 }`
 * `POST /effects/campfire` (optional JSON overrides: duration, update_hz, min_brightness, max_brightness, hue_jitter, saturation, spark_chance, spark_gain, tau_ms, gamma)
 * `POST /effects/candle` (same override keys as campfire)
+* `POST /effects/aurora` (optional JSON overrides: duration, update_hz, hue_min, hue_max, saturation, min_brightness, max_brightness, hue_step, brightness_step, tau_ms, gamma)
 * `POST /effects/random` JSON: `{ "interval": 2000 }`
 * `POST /effects/cycle` JSON: `{ "duration": 2000, "colors": ["FF0000","00FF00","0000FF"] }`
 * `POST /effects/fade` JSON: `{ "from": "000000", "to": "FFFFFF", "duration": 5000 }`
@@ -269,6 +273,11 @@ curl -X POST http://localhost:5000/effects/campfire
 # Start candle effect for 30s
 curl -X POST -H 'Content-Type: application/json' \
   -d '{"duration":30000}' http://localhost:5000/effects/candle
+
+# Start aurora drift with a narrower hue range (teal→violet)
+curl -X POST -H 'Content-Type: application/json' \
+  -d '{"hue_min":0.45,"hue_max":0.78,"tau_ms":3000}' \
+  http://localhost:5000/effects/aurora
 
 # Breathing effect: blue, 3s cycles
 curl -X POST -H 'Content-Type: application/json' \
