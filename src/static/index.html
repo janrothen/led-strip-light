@@ -742,6 +742,10 @@
                     <span class="effect-icon">💓</span>
                     <span>Heartbeat</span>
                 </button>
+                <button class="effect-btn" onclick="startEffect('lightning')">
+                    <span class="effect-icon">⚡</span>
+                    <span>Lightning</span>
+                </button>
                 <button class="effect-btn" onclick="stopEffect()" style="color: var(--accent-danger);">
                     <span class="effect-icon">⏹️</span>
                     <span>Stop</span>
@@ -865,6 +869,43 @@
                     </div>
                     <div class="field-group">
                         <button class="btn btn-primary btn-sm" onclick="startHeartbeat()">Start</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lightning Effect -->
+            <div class="effect-card" id="lightningCard">
+                <div class="effect-card-header">
+                    <span class="effect-card-title">Lightning</span>
+                    <span class="effect-card-badge">random bright flashes</span>
+                </div>
+                <div class="effect-card-fields">
+                    <div class="field-group">
+                        <label for="lightningFlashColor">Flash color</label>
+                        <input type="color" id="lightningFlashColor" value="#ffffff">
+                    </div>
+                    <div class="field-group">
+                        <label for="lightningBgColor">Background</label>
+                        <input type="color" id="lightningBgColor" value="#000000">
+                    </div>
+                    <div class="field-group">
+                        <label for="lightningMinGap">Min gap (ms)</label>
+                        <input type="number" id="lightningMinGap" value="2000" min="0" step="100">
+                    </div>
+                    <div class="field-group">
+                        <label for="lightningMaxGap">Max gap (ms)</label>
+                        <input type="number" id="lightningMaxGap" value="8000" min="0" step="100">
+                    </div>
+                    <div class="field-group">
+                        <label for="lightningFlashMs">Flash (ms)</label>
+                        <input type="number" id="lightningFlashMs" value="150" min="10" step="10">
+                    </div>
+                    <div class="field-group">
+                        <label for="lightningAftershockChance">Aftershock chance</label>
+                        <input type="number" id="lightningAftershockChance" value="0.5" min="0" max="1" step="0.05">
+                    </div>
+                    <div class="field-group">
+                        <button class="btn btn-primary btn-sm" onclick="startLightning()">Start</button>
                     </div>
                 </div>
             </div>
@@ -1156,6 +1197,27 @@
             const rest_ms = Number.parseInt(document.getElementById('heartbeatRest').value, 10) || 500;
             const second_beat_scale = Number.parseFloat(document.getElementById('heartbeatScale').value) || 0.7;
             startEffect('heartbeat', { color, beat_ms, gap_ms, rest_ms, second_beat_scale });
+        }
+
+        function startLightning() {
+            const flash_color = document.getElementById('lightningFlashColor').value.replace('#', '');
+            const background_color = document.getElementById('lightningBgColor').value.replace('#', '');
+            const min_gap_ms = Number.parseInt(document.getElementById('lightningMinGap').value, 10) || 2000;
+            const max_gap_ms = Number.parseInt(document.getElementById('lightningMaxGap').value, 10) || 8000;
+            const flash_ms = Number.parseInt(document.getElementById('lightningFlashMs').value, 10) || 150;
+            const aftershock_chance = Number.parseFloat(document.getElementById('lightningAftershockChance').value);
+            if (max_gap_ms < min_gap_ms) {
+                alert('Lightning max gap must be >= min gap.');
+                return;
+            }
+            startEffect('lightning', {
+                flash_color,
+                background_color,
+                min_gap_ms,
+                max_gap_ms,
+                flash_ms,
+                aftershock_chance,
+            });
         }
 
         function startAurora() {
