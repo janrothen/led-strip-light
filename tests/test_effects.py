@@ -21,6 +21,7 @@ from led.effects import (
     ease_out_quad,
     fade_effect,
     flickering_effect,
+    heartbeat_effect,
     random_color_effect,
 )
 
@@ -364,6 +365,84 @@ class TestEffects:
         mock_strip = Mock()
         with pytest.raises(ValueError, match=r"hue_min/hue_max"):
             aurora_effect(mock_strip, hue_min=-0.1, hue_max=0.5)
+
+    def test_heartbeat_effect_runs_one_cycle(self):
+        """heartbeat_effect runs the 4 fades of a cycle then stops on interrupt."""
+        mock_strip = Mock()
+        call_count = 0
+
+        def mock_interrupted():
+            nonlocal call_count
+            call_count += 1
+            # Let the full double-pulse cycle run, then break the while loop
+            return call_count > 6
+
+        mock_strip.is_interrupted.side_effect = mock_interrupted
+
+        from led import effects
+
+        with (
+            patch.object(effects, "fade_effect") as mock_fade,
+            patch("led.effects.sleep"),
+        ):
+            heartbeat_effect(mock_strip, Color.RED)
+
+        # Four fades per cycle: up/down for beat1, up/down for beat2
+        assert mock_fade.call_count >= 4
+
+    def test_heartbeat_effect_second_beat_scaled(self):
+        """heartbeat_effect's second beat uses a scaled color."""
+        mock_strip = Mock()
+        mock_strip.is_interrupted.side_effect = [False, False, False, False, False, True]
+
+        from led import effects
+
+        fade_call_colors: list[Color] = []
+
+        def capture_fade(strip, c_from, c_to, duration, **kwargs):
+            fade_call_colors.append(c_to)
+
+        with (
+            patch.object(effects, "fade_effect", side_effect=capture_fade),
+            patch("led.effects.sleep"),
+        ):
+            heartbeat_effect(
+                mock_strip, Color(200, 0, 0), second_beat_scale=0.5
+            )
+
+        # First non-black fade target = full color; third = scaled second beat
+        targets = [c for c in fade_call_colors if c != Color.BLACK]
+        assert targets[0] == Color(200, 0, 0)
+        assert targets[1] == Color(100, 0, 0)
+
+    def test_heartbeat_effect_rejects_bad_beat_ms(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="beat_ms"):
+            heartbeat_effect(mock_strip, beat_ms=0)
+
+    def test_heartbeat_effect_rejects_negative_gap(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="gap_ms"):
+            heartbeat_effect(mock_strip, gap_ms=-1)
+
+    def test_heartbeat_effect_rejects_bad_scale(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="second_beat_scale"):
+            heartbeat_effect(mock_strip, second_beat_scale=1.5)
+
+    def test_heartbeat_effect_interrupt_after_first_fade(self):
+        """heartbeat returns early when interrupted right after the first fade-in."""
+        mock_strip = Mock()
+        # while=False, then True right after the first fade
+        mock_strip.is_interrupted.side_effect = [False, True, True, True, True, True]
+
+        from led import effects
+
+        with (
+            patch.object(effects, "fade_effect"),
+            patch("led.effects.sleep"),
+        ):
+            heartbeat_effect(mock_strip, Color.RED)
 
 
 class TestEasingFunctions:

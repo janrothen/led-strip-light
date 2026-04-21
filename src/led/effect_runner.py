@@ -12,6 +12,7 @@ from .effects import (
     color_cycle_effect,
     fade_effect,
     flickering_effect,
+    heartbeat_effect,
     random_color_effect,
 )
 
@@ -257,6 +258,43 @@ class EffectRunner:
         if gamma is not None:
             kwargs["gamma"] = gamma
         self.strip.run_sequence(aurora_effect, self.strip, **kwargs)
+
+    def run_heartbeat_effect(
+        self,
+        color: Color = Color.RED,
+        *,
+        beat_ms: int = 180,
+        gap_ms: int = 120,
+        rest_ms: int = 600,
+        second_beat_scale: float = 0.65,
+    ) -> None:
+        """Run heartbeat (double-pulse thump-thump-rest) effect.
+
+        Args:
+            color: Peak color of the primary beat
+            beat_ms: Duration (ms) of one full up+down pulse
+            gap_ms: Dark gap (ms) between the two beats in a cycle
+            rest_ms: Rest (ms) at black after the second beat before repeating
+            second_beat_scale: Peak scale for the second beat (0..1 of color)
+        """
+        logging.info(
+            "Starting heartbeat effect: color=%s beat_ms=%d gap_ms=%d "
+            "rest_ms=%d second_beat_scale=%.2f",
+            color,
+            beat_ms,
+            gap_ms,
+            rest_ms,
+            second_beat_scale,
+        )
+        self.strip.run_sequence(
+            heartbeat_effect,
+            self.strip,
+            color,
+            beat_ms=beat_ms,
+            gap_ms=gap_ms,
+            rest_ms=rest_ms,
+            second_beat_scale=second_beat_scale,
+        )
 
     def run_random_effect(self, interval: int = 2000) -> None:
         """Run random color effect."""

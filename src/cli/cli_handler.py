@@ -82,6 +82,7 @@ Examples:
     %(prog)s campfire --base-color #ff4e04 --duration 30000
     %(prog)s candle --duration 60000
     %(prog)s aurora --duration 120000
+    %(prog)s heartbeat --color red
     %(prog)s random --interval 2000
     %(prog)s cycle --colors red,green,blue --duration 2000
     %(prog)s fade --from black --to white --duration 5000
@@ -158,6 +159,38 @@ Examples:
         "aurora", help="Slow aurora drift (green↔violet)"
     )
     _add_aurora_arguments(aurora_parser)
+
+    # Heartbeat effect
+    heartbeat_parser = subparsers.add_parser(
+        "heartbeat", help="Double-pulse heartbeat (thump-thump-rest)"
+    )
+    heartbeat_parser.add_argument(
+        "--color", default="red", help="Peak color (default: red)"
+    )
+    heartbeat_parser.add_argument(
+        "--beat-ms",
+        type=_positive_int,
+        default=180,
+        help="Duration (ms) of one up+down pulse (default: 180)",
+    )
+    heartbeat_parser.add_argument(
+        "--gap-ms",
+        type=int,
+        default=120,
+        help="Dark gap (ms) between the two beats (default: 120)",
+    )
+    heartbeat_parser.add_argument(
+        "--rest-ms",
+        type=int,
+        default=600,
+        help="Rest (ms) at black after the second beat (default: 600)",
+    )
+    heartbeat_parser.add_argument(
+        "--second-beat-scale",
+        type=_unit_float,
+        default=0.65,
+        help="Peak scale for the second beat 0..1 (default: 0.65)",
+    )
 
     # Cycle effect
     cycle_parser = subparsers.add_parser("cycle", help="Cycle through colors")
@@ -373,6 +406,16 @@ def _run_aurora(runner: EffectRunner, args) -> None:
     runner.run_aurora_effect(**_aurora_kwargs(args))
 
 
+def _run_heartbeat(runner: EffectRunner, args) -> None:
+    runner.run_heartbeat_effect(
+        color=Color.parse(args.color),
+        beat_ms=args.beat_ms,
+        gap_ms=args.gap_ms,
+        rest_ms=args.rest_ms,
+        second_beat_scale=args.second_beat_scale,
+    )
+
+
 def _run_cycle(runner: EffectRunner, args) -> None:
     runner.run_cycle_effect(colors=parse_colors(args.colors), duration=args.duration)
 
@@ -392,6 +435,7 @@ _EFFECT_HANDLERS: dict[str, Callable[[EffectRunner, argparse.Namespace], None]] 
     "candle": _run_candle,
     "cycle": _run_cycle,
     "fade": _run_fade,
+    "heartbeat": _run_heartbeat,
     "profile": _run_profile,
     "random": _run_random,
 }

@@ -426,6 +426,52 @@ class TestCLIHandler:
         execute_effect(mock_runner, args)
         mock_runner.run_aurora_effect.assert_called_once()
 
+    def test_parser_heartbeat_subcommand(self):
+        parser = create_parser()
+
+        args = parser.parse_args(["heartbeat"])
+        assert args.effect == "heartbeat"
+        assert args.color == "red"
+        assert args.beat_ms == 180
+        assert args.gap_ms == 120
+        assert args.rest_ms == 600
+        assert args.second_beat_scale == pytest.approx(0.65)
+
+        args = parser.parse_args(
+            [
+                "heartbeat",
+                "--color",
+                "pink",
+                "--beat-ms",
+                "220",
+                "--second-beat-scale",
+                "0.5",
+            ]
+        )
+        assert args.color == "pink"
+        assert args.beat_ms == 220
+        assert args.second_beat_scale == pytest.approx(0.5)
+
+    def test_execute_effect_heartbeat(self):
+        mock_runner = Mock()
+
+        args = Mock()
+        args.effect = "heartbeat"
+        args.color = "red"
+        args.beat_ms = 180
+        args.gap_ms = 120
+        args.rest_ms = 600
+        args.second_beat_scale = 0.65
+
+        execute_effect(mock_runner, args)
+        mock_runner.run_heartbeat_effect.assert_called_once_with(
+            color=Color.RED,
+            beat_ms=180,
+            gap_ms=120,
+            rest_ms=600,
+            second_beat_scale=0.65,
+        )
+
     def test_positive_int_valid(self):
         assert _positive_int("5") == 5
         assert _positive_int("1") == 1

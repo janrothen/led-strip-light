@@ -246,6 +246,42 @@ def test_list_effects_includes_aurora():
     assert "aurora" in payload["available"]
 
 
+def test_start_heartbeat_effect_default():
+    client, _, effect_runner = _build_client()
+    response = client.post("/effects/heartbeat")
+
+    assert response.status_code == 200
+    effect_runner.run_heartbeat_effect.assert_called_once_with(color=Color(255, 0, 0))
+
+
+def test_start_heartbeat_effect_with_params():
+    client, _, effect_runner = _build_client()
+    response = client.post(
+        "/effects/heartbeat",
+        json={
+            "color": "FF69B4",
+            "beat_ms": 220,
+            "gap_ms": 100,
+            "rest_ms": 400,
+            "second_beat_scale": 0.5,
+        },
+    )
+
+    assert response.status_code == 200
+    kwargs = effect_runner.run_heartbeat_effect.call_args[1]
+    assert kwargs["color"] == Color(0xFF, 0x69, 0xB4)
+    assert kwargs["beat_ms"] == 220
+    assert kwargs["gap_ms"] == 100
+    assert kwargs["rest_ms"] == 400
+    assert kwargs["second_beat_scale"] == 0.5
+
+
+def test_list_effects_includes_heartbeat():
+    client, _, _ = _build_client()
+    payload = client.get("/effects").get_json()
+    assert "heartbeat" in payload["available"]
+
+
 def test_start_cycle_effect_with_colors_list():
     client, _, effect_runner = _build_client()
     response = client.post(

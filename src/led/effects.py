@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""LED strip effects: fades, breathing, color cycles, flame-style flicker, aurora drift.
+"""LED strip effects: fades, breathing, color cycles, flame flicker, aurora drift, heartbeat.
 
 Exports (grouped):
     Core effects: fade_effect, breathing_effect, color_cycle_effect, random_color_effect
     Flicker engine: flickering_effect (pass campfire/candle presets via kwargs)
     Aurora: aurora_effect (slow HSV drift through green↔violet)
+    Heartbeat: heartbeat_effect (double-pulse thump-thump-rest)
     Easing: ease_linear, ease_in_out_sine (default), ease_in_quad, ease_out_quad
     Preset kwargs: FADE_PRESET_SMOOTH, FADE_PRESET_LINEAR, FADE_PRESET_SNAPPY
     Types & constants: StripLike, FADE_STEP_MS, DEFAULT_EFFECT_DURATION_MS, CHANNEL_MAX, SRGB_GAMMA
@@ -456,6 +457,93 @@ def aurora_effect(
     logging.debug("Aurora stopped")
 
 
+def heartbeat_effect(
+    strip: StripLike,
+    color: Color = Color.RED,
+    *,
+    beat_ms: int = 180,
+    gap_ms: int = 120,
+    rest_ms: int = 600,
+    second_beat_scale: float = 0.65,
+    ease: Callable[[float], float] = ease_out_quad,
+    gamma: float | None = SRGB_GAMMA,
+) -> None:
+    """Double-pulse heartbeat: thump-thump-rest, looped until interrupted.
+
+    Each cycle fades up+down to ``color`` (first beat, full strength), pauses
+    for ``gap_ms`` at black, fades up+down to ``color`` scaled by
+    ``second_beat_scale`` (softer second beat), then rests at black for
+    ``rest_ms`` before repeating.
+
+    Args:
+        strip: Target strip-like object.
+        color: Peak color of the primary beat.
+        beat_ms: Duration (ms) of one full up+down pulse.
+        gap_ms: Dark gap (ms) between the two beats in a cycle.
+        rest_ms: Rest (ms) at black after the second beat before repeating.
+        second_beat_scale: Peak scale for the second beat (0..1 of ``color``).
+        ease: Easing applied to each fade; a quick-settling curve
+            (``ease_out_quad`` by default) reads more like a real pulse.
+        gamma: Optional gamma for perceptual fades.
+    """
+    if beat_ms <= 0:
+        raise ValueError(f"beat_ms must be > 0, got {beat_ms}")
+    if gap_ms < 0 or rest_ms < 0:
+        raise ValueError(
+            f"gap_ms and rest_ms must be >= 0, got gap_ms={gap_ms} rest_ms={rest_ms}"
+        )
+    if not (0.0 <= second_beat_scale <= 1.0):
+        raise ValueError(
+            f"second_beat_scale must be in [0,1], got {second_beat_scale}"
+        )
+
+    half = max(1, beat_ms // 2)
+    r, g, b = color.rgb
+    color_second = Color.from_tuple(
+        (
+            int(round(r * second_beat_scale)),
+            int(round(g * second_beat_scale)),
+            int(round(b * second_beat_scale)),
+        )
+    )
+
+    logging.debug(
+        "Heartbeat start: color=%s beat_ms=%d gap_ms=%d rest_ms=%d second=%.2f",
+        color,
+        beat_ms,
+        gap_ms,
+        rest_ms,
+        second_beat_scale,
+    )
+
+    while not strip.is_interrupted():
+        # First beat — strong
+        fade_effect(strip, Color.BLACK, color, half, ease=ease, gamma=gamma)
+        if strip.is_interrupted():
+            return
+        fade_effect(strip, color, Color.BLACK, half, ease=ease, gamma=gamma)
+        if strip.is_interrupted():
+            return
+
+        if gap_ms:
+            sleep(gap_ms / 1000.0)
+        if strip.is_interrupted():
+            return
+
+        # Second beat — softer
+        fade_effect(strip, Color.BLACK, color_second, half, ease=ease, gamma=gamma)
+        if strip.is_interrupted():
+            return
+        fade_effect(strip, color_second, Color.BLACK, half, ease=ease, gamma=gamma)
+        if strip.is_interrupted():
+            return
+
+        if rest_ms:
+            sleep(rest_ms / 1000.0)
+
+    logging.debug("Heartbeat stopped")
+
+
 __all__ = [
     "FADE_STEP_MS",
     "DEFAULT_EFFECT_DURATION_MS",
@@ -476,4 +564,5 @@ __all__ = [
     "random_color_effect",
     "flickering_effect",
     "aurora_effect",
+    "heartbeat_effect",
 ]

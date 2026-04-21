@@ -88,6 +88,19 @@ def _handle_breathing(runner: EffectRunner, data: dict) -> None:
     )
 
 
+def _handle_heartbeat(runner: EffectRunner, data: dict) -> None:
+    kwargs: dict = {"color": Color.parse(data.get("color", "FF0000"))}
+    if "beat_ms" in data:
+        kwargs["beat_ms"] = int(data["beat_ms"])
+    if "gap_ms" in data:
+        kwargs["gap_ms"] = int(data["gap_ms"])
+    if "rest_ms" in data:
+        kwargs["rest_ms"] = int(data["rest_ms"])
+    if "second_beat_scale" in data:
+        kwargs["second_beat_scale"] = float(data["second_beat_scale"])
+    runner.run_heartbeat_effect(**kwargs)
+
+
 def _handle_random(runner: EffectRunner, data: dict) -> None:
     runner.run_random_effect(interval=int(data.get("interval", 2000)))
 
@@ -121,6 +134,7 @@ _EFFECT_HANDLERS: dict[str, Callable[[EffectRunner, dict], None]] = {
     "candle": lambda r, d: r.run_candle_effect(**_parse_flame_kwargs(d)),
     "cycle": _handle_cycle,
     "fade": _handle_fade,
+    "heartbeat": _handle_heartbeat,
     "profile": _handle_profile,
     "random": _handle_random,
 }
