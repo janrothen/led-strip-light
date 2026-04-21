@@ -472,6 +472,58 @@ class TestCLIHandler:
             second_beat_scale=0.65,
         )
 
+    def test_parser_rainbow_subcommand(self):
+        parser = create_parser()
+
+        args = parser.parse_args(["rainbow"])
+        assert args.effect == "rainbow"
+        assert args.period_ms == 10000
+        assert args.duration_ms is None
+        assert args.update_hz == 60
+        assert args.saturation == pytest.approx(1.0)
+        assert args.brightness == pytest.approx(0.9)
+        assert args.gamma is None
+
+        args = parser.parse_args(
+            [
+                "rainbow",
+                "--period-ms",
+                "5000",
+                "--duration",
+                "30000",
+                "--saturation",
+                "0.8",
+                "--brightness",
+                "0.5",
+            ]
+        )
+        assert args.period_ms == 5000
+        assert args.duration_ms == 30000
+        assert args.saturation == pytest.approx(0.8)
+        assert args.brightness == pytest.approx(0.5)
+
+    def test_execute_effect_rainbow(self):
+        mock_runner = Mock()
+
+        args = Mock()
+        args.effect = "rainbow"
+        args.period_ms = 10000
+        args.duration_ms = None
+        args.update_hz = 60
+        args.saturation = 1.0
+        args.brightness = 0.9
+        args.gamma = None
+
+        execute_effect(mock_runner, args)
+        mock_runner.run_rainbow_effect.assert_called_once_with(
+            period_ms=10000,
+            duration=None,
+            update_hz=60,
+            saturation=1.0,
+            brightness=0.9,
+            gamma=None,
+        )
+
     def test_positive_int_valid(self):
         assert _positive_int("5") == 5
         assert _positive_int("1") == 1

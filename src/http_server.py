@@ -47,6 +47,15 @@ _AURORA_COERCERS = {
     "gamma": float,
 }
 
+_RAINBOW_COERCERS = {
+    "period_ms": int,
+    "duration": int,
+    "update_hz": int,
+    "saturation": float,
+    "brightness": float,
+    "gamma": float,
+}
+
 
 def _is_led_active(led_controller) -> bool:
     return led_controller.is_on() or led_controller.is_sequence_running()
@@ -58,6 +67,10 @@ def _parse_flame_kwargs(data: dict) -> dict:
 
 def _parse_aurora_kwargs(data: dict) -> dict:
     return {k: coerce(data[k]) for k, coerce in _AURORA_COERCERS.items() if k in data}
+
+
+def _parse_rainbow_kwargs(data: dict) -> dict:
+    return {k: coerce(data[k]) for k, coerce in _RAINBOW_COERCERS.items() if k in data}
 
 
 def _resolve_dependencies(
@@ -136,6 +149,7 @@ _EFFECT_HANDLERS: dict[str, Callable[[EffectRunner, dict], None]] = {
     "fade": _handle_fade,
     "heartbeat": _handle_heartbeat,
     "profile": _handle_profile,
+    "rainbow": lambda r, d: r.run_rainbow_effect(**_parse_rainbow_kwargs(d)),
     "random": _handle_random,
 }
 

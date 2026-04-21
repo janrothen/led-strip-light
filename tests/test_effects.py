@@ -22,6 +22,7 @@ from led.effects import (
     fade_effect,
     flickering_effect,
     heartbeat_effect,
+    rainbow_effect,
     random_color_effect,
 )
 
@@ -443,6 +444,75 @@ class TestEffects:
             patch("led.effects.sleep"),
         ):
             heartbeat_effect(mock_strip, Color.RED)
+
+    def test_rainbow_effect_interrupt_after_one_iteration(self):
+        """rainbow_effect renders one frame then stops on interrupt."""
+        mock_strip = Mock()
+        mock_strip.is_interrupted.side_effect = [False, True]
+
+        with patch("led.effects.sleep"):
+            rainbow_effect(mock_strip, gamma=None)
+
+        assert mock_strip.set_color.call_count >= 1
+
+    def test_rainbow_effect_with_gamma(self):
+        """rainbow_effect uses gamma path when gamma is set."""
+        mock_strip = Mock()
+        mock_strip.is_interrupted.side_effect = [False, True]
+
+        with patch("led.effects.sleep"):
+            rainbow_effect(mock_strip, gamma=2.2)
+
+        assert mock_strip.set_color.call_count >= 1
+
+    def test_rainbow_effect_with_duration(self):
+        """rainbow_effect exits via end_time when duration_ms is set."""
+        mock_strip = Mock()
+        mock_strip.is_interrupted.return_value = False
+
+        with patch("led.effects.sleep"):
+            rainbow_effect(mock_strip, duration_ms=1, gamma=None)
+
+    def test_rainbow_effect_hue_progresses(self):
+        """rainbow_effect yields different hues over consecutive frames."""
+        import colorsys
+
+        mock_strip = Mock()
+        # Render 3 frames then stop
+        mock_strip.is_interrupted.side_effect = [False, False, False, True]
+
+        seen: list[tuple[float, float, float]] = []
+        mock_strip.set_color.side_effect = lambda c: seen.append(
+            colorsys.rgb_to_hsv(*(x / 255.0 for x in c.rgb))
+        )
+
+        # Very short period so hue clearly advances across ticks.
+        with patch("led.effects.sleep"):
+            rainbow_effect(mock_strip, period_ms=1, update_hz=60, gamma=None)
+
+        hues = [h for h, s, v in seen if s > 0 and v > 0]
+        assert len(hues) >= 2
+        assert len({round(h, 3) for h in hues}) > 1
+
+    def test_rainbow_effect_rejects_bad_period_ms(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="period_ms"):
+            rainbow_effect(mock_strip, period_ms=0)
+
+    def test_rainbow_effect_rejects_bad_update_hz(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="update_hz"):
+            rainbow_effect(mock_strip, update_hz=0)
+
+    def test_rainbow_effect_rejects_bad_saturation(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="saturation"):
+            rainbow_effect(mock_strip, saturation=1.5)
+
+    def test_rainbow_effect_rejects_bad_brightness(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="brightness"):
+            rainbow_effect(mock_strip, brightness=-0.1)
 
 
 class TestEasingFunctions:

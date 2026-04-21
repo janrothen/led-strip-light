@@ -13,6 +13,7 @@ from .effects import (
     fade_effect,
     flickering_effect,
     heartbeat_effect,
+    rainbow_effect,
     random_color_effect,
 )
 
@@ -295,6 +296,47 @@ class EffectRunner:
             rest_ms=rest_ms,
             second_beat_scale=second_beat_scale,
         )
+
+    def run_rainbow_effect(
+        self,
+        *,
+        period_ms: int = 10000,
+        duration: int | None = None,
+        update_hz: int = 60,
+        saturation: float = 1.0,
+        brightness: float = 0.9,
+        gamma: float | None = None,
+    ) -> None:
+        """Run rainbow sweep effect (continuous HSV hue rotation).
+
+        Args:
+            period_ms: Time (ms) for one full hue rotation
+            duration: Total run time in ms (None = until interrupted)
+            update_hz: Update frequency
+            saturation: Saturation in [0, 1]
+            brightness: Brightness in [0, 1]
+            gamma: Perceptual gamma (None = effect default)
+        """
+        logging.info(
+            "Starting rainbow effect: period_ms=%d duration=%s update_hz=%d "
+            "saturation=%.2f brightness=%.2f gamma=%s",
+            period_ms,
+            duration,
+            update_hz,
+            saturation,
+            brightness,
+            gamma,
+        )
+        kwargs: dict = {
+            "period_ms": period_ms,
+            "duration_ms": duration,
+            "update_hz": update_hz,
+            "saturation": saturation,
+            "brightness": brightness,
+        }
+        if gamma is not None:
+            kwargs["gamma"] = gamma
+        self.strip.run_sequence(rainbow_effect, self.strip, **kwargs)
 
     def run_random_effect(self, interval: int = 2000) -> None:
         """Run random color effect."""

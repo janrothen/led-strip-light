@@ -83,6 +83,7 @@ Examples:
     %(prog)s candle --duration 60000
     %(prog)s aurora --duration 120000
     %(prog)s heartbeat --color red
+    %(prog)s rainbow --period-ms 8000
     %(prog)s random --interval 2000
     %(prog)s cycle --colors red,green,blue --duration 2000
     %(prog)s fade --from black --to white --duration 5000
@@ -190,6 +191,48 @@ Examples:
         type=_unit_float,
         default=0.65,
         help="Peak scale for the second beat 0..1 (default: 0.65)",
+    )
+
+    # Rainbow sweep effect
+    rainbow_parser = subparsers.add_parser(
+        "rainbow", help="Continuous rainbow hue sweep"
+    )
+    rainbow_parser.add_argument(
+        "--period-ms",
+        type=_positive_int,
+        default=10000,
+        help="Time (ms) for one full hue rotation (default: 10000)",
+    )
+    rainbow_parser.add_argument(
+        "--duration",
+        dest="duration_ms",
+        type=int,
+        default=None,
+        help="Total duration in milliseconds (default: run until interrupted)",
+    )
+    rainbow_parser.add_argument(
+        "--update-hz",
+        type=_positive_int,
+        default=60,
+        help="Update rate in Hz (default: 60)",
+    )
+    rainbow_parser.add_argument(
+        "--saturation",
+        type=_unit_float,
+        default=1.0,
+        help="Saturation 0..1 (default: 1.0)",
+    )
+    rainbow_parser.add_argument(
+        "--brightness",
+        type=_unit_float,
+        default=0.9,
+        help="Brightness 0..1 (default: 0.9)",
+    )
+    rainbow_parser.add_argument(
+        "--gamma",
+        type=_positive_float,
+        default=None,
+        help="Perceptual gamma (e.g., 2.2). Default: effect default",
     )
 
     # Cycle effect
@@ -416,6 +459,17 @@ def _run_heartbeat(runner: EffectRunner, args) -> None:
     )
 
 
+def _run_rainbow(runner: EffectRunner, args) -> None:
+    runner.run_rainbow_effect(
+        period_ms=args.period_ms,
+        duration=args.duration_ms,
+        update_hz=args.update_hz,
+        saturation=args.saturation,
+        brightness=args.brightness,
+        gamma=args.gamma,
+    )
+
+
 def _run_cycle(runner: EffectRunner, args) -> None:
     runner.run_cycle_effect(colors=parse_colors(args.colors), duration=args.duration)
 
@@ -437,6 +491,7 @@ _EFFECT_HANDLERS: dict[str, Callable[[EffectRunner, argparse.Namespace], None]] 
     "fade": _run_fade,
     "heartbeat": _run_heartbeat,
     "profile": _run_profile,
+    "rainbow": _run_rainbow,
     "random": _run_random,
 }
 

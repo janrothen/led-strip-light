@@ -363,3 +363,40 @@ class TestEffectRunner:
         assert kwargs["gap_ms"] == 100
         assert kwargs["rest_ms"] == 400
         assert kwargs["second_beat_scale"] == pytest.approx(0.5)
+
+    def test_run_rainbow_effect_default_params(
+        self, effect_runner, mock_strip_controller
+    ):
+        effect_runner.run_rainbow_effect()
+        mock_strip_controller.run_sequence.assert_called_once()
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert "gamma" not in kwargs  # gamma not passed when None
+        assert kwargs["period_ms"] == 10000
+        assert kwargs["duration_ms"] is None
+        assert kwargs["update_hz"] == 60
+        assert kwargs["saturation"] == pytest.approx(1.0)
+        assert kwargs["brightness"] == pytest.approx(0.9)
+
+    def test_run_rainbow_effect_with_gamma(self, effect_runner, mock_strip_controller):
+        effect_runner.run_rainbow_effect(gamma=2.2)
+        mock_strip_controller.run_sequence.assert_called_once()
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert kwargs["gamma"] == pytest.approx(2.2)
+
+    def test_run_rainbow_effect_custom_params(
+        self, effect_runner, mock_strip_controller
+    ):
+        effect_runner.run_rainbow_effect(
+            period_ms=5000,
+            duration=30000,
+            update_hz=30,
+            saturation=0.8,
+            brightness=0.5,
+        )
+        mock_strip_controller.run_sequence.assert_called_once()
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert kwargs["period_ms"] == 5000
+        assert kwargs["duration_ms"] == 30000
+        assert kwargs["update_hz"] == 30
+        assert kwargs["saturation"] == pytest.approx(0.8)
+        assert kwargs["brightness"] == pytest.approx(0.5)
