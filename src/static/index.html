@@ -738,6 +738,10 @@
                     <span class="effect-icon">⏱️</span>
                     <span>Profile</span>
                 </button>
+                <button class="effect-btn" onclick="startEffect('heartbeat')">
+                    <span class="effect-icon">💓</span>
+                    <span>Heartbeat</span>
+                </button>
                 <button class="effect-btn" onclick="stopEffect()" style="color: var(--accent-danger);">
                     <span class="effect-icon">⏹️</span>
                     <span>Stop</span>
@@ -803,6 +807,39 @@
                     </div>
                     <div class="field-group">
                         <button class="btn btn-primary btn-sm" onclick="startProfile()">Start</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heartbeat Effect -->
+            <div class="effect-card" id="heartbeatCard">
+                <div class="effect-card-header">
+                    <span class="effect-card-title">Heartbeat</span>
+                    <span class="effect-card-badge">lub-dub rhythm</span>
+                </div>
+                <div class="effect-card-fields">
+                    <div class="field-group">
+                        <label for="heartbeatColor">Color</label>
+                        <input type="color" id="heartbeatColor" value="#ff0000">
+                    </div>
+                    <div class="field-group">
+                        <label for="heartbeatBeat">Beat (ms)</label>
+                        <input type="number" id="heartbeatBeat" value="180" min="50" step="10">
+                    </div>
+                    <div class="field-group">
+                        <label for="heartbeatGap">Gap (ms)</label>
+                        <input type="number" id="heartbeatGap" value="120" min="0" step="10">
+                    </div>
+                    <div class="field-group">
+                        <label for="heartbeatRest">Rest (ms)</label>
+                        <input type="number" id="heartbeatRest" value="500" min="0" step="10">
+                    </div>
+                    <div class="field-group">
+                        <label for="heartbeatScale">2nd scale</label>
+                        <input type="number" id="heartbeatScale" value="0.7" min="0" max="1" step="0.05">
+                    </div>
+                    <div class="field-group">
+                        <button class="btn btn-primary btn-sm" onclick="startHeartbeat()">Start</button>
                     </div>
                 </div>
             </div>
@@ -1078,6 +1115,15 @@
             hue = hue / 6;
             if (hue < 0) hue += 1;
             return hue;
+        }
+
+        function startHeartbeat() {
+            const color = document.getElementById('heartbeatColor').value.replace('#', '');
+            const beat_ms = Number.parseInt(document.getElementById('heartbeatBeat').value, 10) || 180;
+            const gap_ms = Number.parseInt(document.getElementById('heartbeatGap').value, 10) || 120;
+            const rest_ms = Number.parseInt(document.getElementById('heartbeatRest').value, 10) || 500;
+            const second_beat_scale = Number.parseFloat(document.getElementById('heartbeatScale').value) || 0.7;
+            startEffect('heartbeat', { color, beat_ms, gap_ms, rest_ms, second_beat_scale });
         }
 
         function startAurora() {

@@ -330,3 +330,36 @@ class TestEffectRunner:
         assert kwargs["hue_max"] == pytest.approx(0.7)
         assert kwargs["saturation"] == pytest.approx(0.8)
         assert kwargs["tau_ms"] == 3000
+
+    def test_run_heartbeat_effect_default_params(
+        self, effect_runner, mock_strip_controller
+    ):
+        effect_runner.run_heartbeat_effect()
+        mock_strip_controller.run_sequence.assert_called_once()
+        # Positional args: (heartbeat_effect, strip, color)
+        args = mock_strip_controller.run_sequence.call_args[0]
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert args[2] == Color.RED
+        assert kwargs["beat_ms"] == 180
+        assert kwargs["gap_ms"] == 120
+        assert kwargs["rest_ms"] == 600
+        assert kwargs["second_beat_scale"] == pytest.approx(0.65)
+
+    def test_run_heartbeat_effect_custom_params(
+        self, effect_runner, mock_strip_controller
+    ):
+        effect_runner.run_heartbeat_effect(
+            color=Color.PINK,
+            beat_ms=220,
+            gap_ms=100,
+            rest_ms=400,
+            second_beat_scale=0.5,
+        )
+        mock_strip_controller.run_sequence.assert_called_once()
+        args = mock_strip_controller.run_sequence.call_args[0]
+        kwargs = mock_strip_controller.run_sequence.call_args[1]
+        assert args[2] == Color.PINK
+        assert kwargs["beat_ms"] == 220
+        assert kwargs["gap_ms"] == 100
+        assert kwargs["rest_ms"] == 400
+        assert kwargs["second_beat_scale"] == pytest.approx(0.5)
