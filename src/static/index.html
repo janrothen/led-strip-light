@@ -730,9 +730,9 @@
                     <span class="effect-icon">🎲</span>
                     <span>Random</span>
                 </button>
-                <button class="effect-btn" onclick="startEffect('cycle')">
+                <button class="effect-btn" onclick="startEffect('rainbow')">
                     <span class="effect-icon">🌈</span>
-                    <span>Cycle</span>
+                    <span>Rainbow</span>
                 </button>
                 <button class="effect-btn" onclick="startEffect('profile')">
                     <span class="effect-icon">⏱️</span>
@@ -807,6 +807,31 @@
                     </div>
                     <div class="field-group">
                         <button class="btn btn-primary btn-sm" onclick="startProfile()">Start</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rainbow Sweep -->
+            <div class="effect-card" id="rainbowCard">
+                <div class="effect-card-header">
+                    <span class="effect-card-title">Rainbow Sweep</span>
+                    <span class="effect-card-badge">continuous hue rotation</span>
+                </div>
+                <div class="effect-card-fields">
+                    <div class="field-group">
+                        <label for="rainbowPeriod">Period (ms)</label>
+                        <input type="number" id="rainbowPeriod" value="10000" min="200" step="500">
+                    </div>
+                    <div class="field-group">
+                        <label for="rainbowSaturation">Saturation</label>
+                        <input type="number" id="rainbowSaturation" value="1.0" min="0" max="1" step="0.05">
+                    </div>
+                    <div class="field-group">
+                        <label for="rainbowBrightness">Brightness</label>
+                        <input type="number" id="rainbowBrightness" value="0.9" min="0" max="1" step="0.05">
+                    </div>
+                    <div class="field-group">
+                        <button class="btn btn-primary btn-sm" onclick="startRainbow()">Start</button>
                     </div>
                 </div>
             </div>
@@ -1115,6 +1140,13 @@
             hue = hue / 6;
             if (hue < 0) hue += 1;
             return hue;
+        }
+
+        function startRainbow() {
+            const period_ms = Number.parseInt(document.getElementById('rainbowPeriod').value, 10) || 10000;
+            const saturation = Number.parseFloat(document.getElementById('rainbowSaturation').value);
+            const brightness = Number.parseFloat(document.getElementById('rainbowBrightness').value);
+            startEffect('rainbow', { period_ms, saturation, brightness });
         }
 
         function startHeartbeat() {
