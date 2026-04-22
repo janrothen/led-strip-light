@@ -579,6 +579,48 @@
             }
         }
 
+        /* Toasts */
+        #toastContainer {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+            max-width: calc(100vw - 32px);
+        }
+
+        .toast {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            font-size: 13px;
+            max-width: 320px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+            animation: toastIn 0.2s ease;
+            pointer-events: auto;
+        }
+
+        .toast.toast-error {
+            border-color: var(--accent-danger);
+            color: var(--accent-danger);
+        }
+
+        .toast.toast-success {
+            border-color: var(--accent-success);
+            color: var(--accent-success);
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* Mobile optimizations */
         @media (max-width: 380px) {
             .color-presets {
@@ -614,14 +656,14 @@
                 </div>
             </div>
             <div class="power-controls">
-                <button class="btn btn-on" onclick="turnOn()">
+                <button class="btn btn-on" data-action="turnOn">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10"/>
                         <polygon points="10 8 16 12 10 16 10 8"/>
                     </svg>
                     Turn On
                 </button>
-                <button class="btn btn-off" onclick="turnOff()">
+                <button class="btn btn-off" data-action="turnOff">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10"/>
                         <rect x="9" y="9" width="6" height="6"/>
@@ -647,21 +689,21 @@
             </div>
             <div class="color-picker-container">
                 <div class="color-input-wrapper">
-                    <input type="color" id="colorPicker" value="#ffffff" onchange="setColor()">
+                    <input type="color" id="colorPicker" value="#ffffff">
                 </div>
                 <div class="color-value">
                     <span class="color-hex" id="currentColor">#ffffff</span>
-                    <button class="btn btn-primary btn-sm" onclick="setColor()">Apply</button>
+                    <button class="btn btn-primary btn-sm" data-action="applyPickerColor">Apply</button>
                 </div>
             </div>
             <div class="color-presets">
-                <button class="color-preset" style="background: #ef4444;" onclick="setColor('#ef4444')" title="Red"></button>
-                <button class="color-preset" style="background: #f97316;" onclick="setColor('#f97316')" title="Orange"></button>
-                <button class="color-preset" style="background: #eab308;" onclick="setColor('#eab308')" title="Yellow"></button>
-                <button class="color-preset" style="background: #22c55e;" onclick="setColor('#22c55e')" title="Green"></button>
-                <button class="color-preset" style="background: #3b82f6;" onclick="setColor('#3b82f6')" title="Blue"></button>
-                <button class="color-preset" style="background: #a855f7;" onclick="setColor('#a855f7')" title="Purple"></button>
-                <button class="color-preset" style="background: #ffffff; border: 1px solid #333;" onclick="setColor('#ffffff')" title="White"></button>
+                <button class="color-preset" style="background: #ef4444;" data-color="#ef4444" title="Red"></button>
+                <button class="color-preset" style="background: #f97316;" data-color="#f97316" title="Orange"></button>
+                <button class="color-preset" style="background: #eab308;" data-color="#eab308" title="Yellow"></button>
+                <button class="color-preset" style="background: #22c55e;" data-color="#22c55e" title="Green"></button>
+                <button class="color-preset" style="background: #3b82f6;" data-color="#3b82f6" title="Blue"></button>
+                <button class="color-preset" style="background: #a855f7;" data-color="#a855f7" title="Purple"></button>
+                <button class="color-preset" style="background: #ffffff; border: 1px solid #333;" data-color="#ffffff" title="White"></button>
             </div>
         </section>
 
@@ -687,7 +729,7 @@
                 <div class="brightness-header">
                     <span class="brightness-value"><span id="brightnessValue">100</span><span>%</span></span>
                 </div>
-                <input type="range" id="brightnessSlider" min="0" max="100" value="100" oninput="updateBrightnessDisplay()" onchange="setBrightness()">
+                <input type="range" id="brightnessSlider" min="0" max="100" value="100">
             </div>
         </section>
 
@@ -714,39 +756,39 @@
             </div>
 
             <div class="effect-grid">
-                <button class="effect-btn" onclick="startEffect('campfire')">
+                <button class="effect-btn" data-effect="campfire">
                     <span class="effect-icon">🔥</span>
                     <span>Campfire</span>
                 </button>
-                <button class="effect-btn" onclick="startEffect('candle')">
+                <button class="effect-btn" data-effect="candle">
                     <span class="effect-icon">🕯️</span>
                     <span>Candle</span>
                 </button>
-                <button class="effect-btn" onclick="startEffect('aurora')">
+                <button class="effect-btn" data-effect="aurora">
                     <span class="effect-icon">🌌</span>
                     <span>Aurora</span>
                 </button>
-                <button class="effect-btn" onclick="startEffect('random')">
+                <button class="effect-btn" data-effect="random">
                     <span class="effect-icon">🎲</span>
                     <span>Random</span>
                 </button>
-                <button class="effect-btn" onclick="startEffect('rainbow')">
+                <button class="effect-btn" data-effect="rainbow">
                     <span class="effect-icon">🌈</span>
                     <span>Rainbow</span>
                 </button>
-                <button class="effect-btn" onclick="startEffect('profile')">
+                <button class="effect-btn" data-effect="profile">
                     <span class="effect-icon">⏱️</span>
                     <span>Profile</span>
                 </button>
-                <button class="effect-btn" onclick="startEffect('heartbeat')">
+                <button class="effect-btn" data-effect="heartbeat">
                     <span class="effect-icon">💓</span>
                     <span>Heartbeat</span>
                 </button>
-                <button class="effect-btn" onclick="startEffect('lightning')">
+                <button class="effect-btn" data-effect="lightning">
                     <span class="effect-icon">⚡</span>
                     <span>Lightning</span>
                 </button>
-                <button class="effect-btn" onclick="stopEffect()" style="color: var(--accent-danger);">
+                <button class="effect-btn" data-action="stopEffect" style="color: var(--accent-danger);">
                     <span class="effect-icon">⏹️</span>
                     <span>Stop</span>
                 </button>
@@ -768,7 +810,7 @@
                         <input type="number" id="breathingDuration" value="2000" min="100" step="100">
                     </div>
                     <div class="field-group">
-                        <button class="btn btn-primary btn-sm" onclick="startBreathing()">Start</button>
+                        <button class="btn btn-primary btn-sm" data-card-start="breathing">Start</button>
                     </div>
                 </div>
             </div>
@@ -793,7 +835,7 @@
                         <input type="number" id="fadeDuration" value="5000" min="100" step="100">
                     </div>
                     <div class="field-group">
-                        <button class="btn btn-primary btn-sm" onclick="startFade()">Start</button>
+                        <button class="btn btn-primary btn-sm" data-card-start="fade">Start</button>
                     </div>
                 </div>
             </div>
@@ -810,7 +852,7 @@
                         <input type="number" id="profileDuration" value="10000" min="500" step="500">
                     </div>
                     <div class="field-group">
-                        <button class="btn btn-primary btn-sm" onclick="startProfile()">Start</button>
+                        <button class="btn btn-primary btn-sm" data-card-start="profile">Start</button>
                     </div>
                 </div>
             </div>
@@ -835,7 +877,7 @@
                         <input type="number" id="rainbowBrightness" value="0.9" min="0" max="1" step="0.05">
                     </div>
                     <div class="field-group">
-                        <button class="btn btn-primary btn-sm" onclick="startRainbow()">Start</button>
+                        <button class="btn btn-primary btn-sm" data-card-start="rainbow">Start</button>
                     </div>
                 </div>
             </div>
@@ -868,7 +910,7 @@
                         <input type="number" id="heartbeatScale" value="0.7" min="0" max="1" step="0.05">
                     </div>
                     <div class="field-group">
-                        <button class="btn btn-primary btn-sm" onclick="startHeartbeat()">Start</button>
+                        <button class="btn btn-primary btn-sm" data-card-start="heartbeat">Start</button>
                     </div>
                 </div>
             </div>
@@ -905,7 +947,7 @@
                         <input type="number" id="lightningAftershockChance" value="0.5" min="0" max="1" step="0.05">
                     </div>
                     <div class="field-group">
-                        <button class="btn btn-primary btn-sm" onclick="startLightning()">Start</button>
+                        <button class="btn btn-primary btn-sm" data-card-start="lightning">Start</button>
                     </div>
                 </div>
             </div>
@@ -934,7 +976,111 @@
                         <input type="number" id="auroraTau" value="2500" min="100" step="100">
                     </div>
                     <div class="field-group">
-                        <button class="btn btn-primary btn-sm" onclick="startAurora()">Start</button>
+                        <button class="btn btn-primary btn-sm" data-card-start="aurora">Start</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campfire Effect -->
+            <div class="effect-card" id="campfireCard">
+                <div class="effect-card-header">
+                    <span class="effect-card-title">Campfire</span>
+                    <span class="effect-card-badge">warm flickering flame</span>
+                </div>
+                <div class="effect-card-fields">
+                    <div class="field-group">
+                        <label for="campfireDuration">Duration (ms)</label>
+                        <input type="number" id="campfireDuration" min="0" step="1000" placeholder="∞">
+                    </div>
+                    <div class="field-group">
+                        <label for="campfireMinBrightness">Min brightness</label>
+                        <input type="number" id="campfireMinBrightness" value="0.15" min="0" max="1" step="0.05">
+                    </div>
+                    <div class="field-group">
+                        <label for="campfireMaxBrightness">Max brightness</label>
+                        <input type="number" id="campfireMaxBrightness" value="1.0" min="0" max="1" step="0.05">
+                    </div>
+                    <div class="field-group">
+                        <label for="campfireSparkChance">Spark chance</label>
+                        <input type="number" id="campfireSparkChance" value="0.02" min="0" max="1" step="0.01">
+                    </div>
+                    <div class="field-group">
+                        <label for="campfireTau">Smoothness (ms)</label>
+                        <input type="number" id="campfireTau" value="120" min="10" step="10">
+                    </div>
+                    <div class="field-group">
+                        <button class="btn btn-primary btn-sm" data-card-start="campfire">Start</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Candle Effect -->
+            <div class="effect-card" id="candleCard">
+                <div class="effect-card-header">
+                    <span class="effect-card-title">Candle</span>
+                    <span class="effect-card-badge">gentle flame</span>
+                </div>
+                <div class="effect-card-fields">
+                    <div class="field-group">
+                        <label for="candleDuration">Duration (ms)</label>
+                        <input type="number" id="candleDuration" min="0" step="1000" placeholder="∞">
+                    </div>
+                    <div class="field-group">
+                        <label for="candleMinBrightness">Min brightness</label>
+                        <input type="number" id="candleMinBrightness" value="0.35" min="0" max="1" step="0.05">
+                    </div>
+                    <div class="field-group">
+                        <label for="candleMaxBrightness">Max brightness</label>
+                        <input type="number" id="candleMaxBrightness" value="0.85" min="0" max="1" step="0.05">
+                    </div>
+                    <div class="field-group">
+                        <label for="candleSparkChance">Spark chance</label>
+                        <input type="number" id="candleSparkChance" value="0.005" min="0" max="1" step="0.005">
+                    </div>
+                    <div class="field-group">
+                        <label for="candleTau">Smoothness (ms)</label>
+                        <input type="number" id="candleTau" value="300" min="10" step="10">
+                    </div>
+                    <div class="field-group">
+                        <button class="btn btn-primary btn-sm" data-card-start="candle">Start</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Random Effect -->
+            <div class="effect-card" id="randomCard">
+                <div class="effect-card-header">
+                    <span class="effect-card-title">Random Color</span>
+                    <span class="effect-card-badge">surprise palette</span>
+                </div>
+                <div class="effect-card-fields">
+                    <div class="field-group">
+                        <label for="randomInterval">Interval (ms)</label>
+                        <input type="number" id="randomInterval" value="2000" min="100" step="100">
+                    </div>
+                    <div class="field-group">
+                        <button class="btn btn-primary btn-sm" data-card-start="random">Start</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cycle Effect -->
+            <div class="effect-card" id="cycleCard">
+                <div class="effect-card-header">
+                    <span class="effect-card-title">Color Cycle</span>
+                    <span class="effect-card-badge">fade through a palette</span>
+                </div>
+                <div class="effect-card-fields">
+                    <div class="field-group">
+                        <label for="cycleColors">Colors (hex, comma-separated)</label>
+                        <input type="text" id="cycleColors" placeholder="#ff0000, #00ff00, #0000ff" style="width: 240px; padding: 8px 10px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-primary); font-family: inherit; font-size: 13px;">
+                    </div>
+                    <div class="field-group">
+                        <label for="cycleDuration">Duration (ms)</label>
+                        <input type="number" id="cycleDuration" value="2000" min="100" step="100">
+                    </div>
+                    <div class="field-group">
+                        <button class="btn btn-primary btn-sm" data-card-start="cycle">Start</button>
                     </div>
                 </div>
             </div>
@@ -954,290 +1100,395 @@
                 <h2 class="section-title">Refresh</h2>
             </div>
             <div class="footer-actions">
-                <button class="btn btn-secondary" onclick="refreshStatus()">Refresh Status</button>
-                <button class="btn btn-primary" onclick="refreshAll()">Refresh All</button>
+                <button class="btn btn-secondary" id="refreshStatusBtn">Refresh Status</button>
+                <button class="btn btn-primary" id="refreshAllBtn">Refresh All</button>
             </div>
         </section>
     </div>
 
+    <div id="toastContainer" aria-live="polite"></div>
+
     <script>
-        // API base URL - adjust if your server runs on a different port
-        const API_BASE = '';
+        (() => {
+            const POLL_INTERVAL_MS = 3000;
+            const TOAST_DURATION_MS = 4000;
+            const $ = (id) => document.getElementById(id);
 
-        // Turn LED strip on
-        async function turnOn() {
-            try {
-                const response = await fetch('/on', { method: 'POST' });
-                if (response.ok) {
-                    updateStatus();
-                } else {
-                    alert('Failed to turn on LED strip');
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
+            const intOr = (value, fallback) => {
+                const n = Number.parseInt(value, 10);
+                return Number.isFinite(n) ? n : fallback;
+            };
+            const floatOr = (value, fallback) => {
+                const n = Number.parseFloat(value);
+                return Number.isFinite(n) ? n : fallback;
+            };
+
+            function showToast(message, type = 'info') {
+                const container = $('toastContainer');
+                if (!container) return;
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                toast.textContent = message;
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), TOAST_DURATION_MS);
             }
-        }
 
-        // Turn LED strip off
-        async function turnOff() {
-            try {
-                const response = await fetch('/off', { method: 'POST' });
-                if (response.ok) {
-                    updateStatus();
-                } else {
-                    alert('Failed to turn off LED strip');
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-
-        // Set color from color picker or preset
-        async function setColor(hexColor = null) {
-            const color = hexColor || document.getElementById('colorPicker').value;
-            const colorValue = color.replace('#', '');
-            
-            try {
-                const response = await fetch(`/color/${colorValue}`, { method: 'POST' });
-                if (response.ok) {
-                    updateColorDisplay(color);
-                } else {
-                    alert('Failed to set color');
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-
-        // Set brightness
-        async function setBrightness() {
-            const brightness = document.getElementById('brightnessSlider').value;
-            
-            try {
-                const response = await fetch(`/brightness/${brightness}`, { method: 'POST' });
-                if (!response.ok) {
-                    alert('Failed to set brightness');
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-
-        // Update brightness display
-        function updateBrightnessDisplay() {
-            const brightness = document.getElementById('brightnessSlider').value;
-            document.getElementById('brightnessValue').textContent = brightness;
-        }
-
-        // Update color display
-        function updateColorDisplay(color) {
-            document.getElementById('colorPicker').value = color;
-            document.getElementById('currentColor').textContent = color;
-        }
-
-        // Get and update status
-        async function updateStatus() {
-            try {
-                const response = await fetch('/status');
-                if (response.ok) {
-                    const status = await response.text();
-                    const isOn = status === '1';
-                    const statusElement = document.getElementById('status');
-                    statusElement.innerHTML = `<span class="status-dot"></span><span class="status-text">${isOn ? 'ON' : 'OFF'}</span>`;
-                    statusElement.className = `status-inline ${isOn ? 'status-on' : 'status-off'}`;
-                }
-            } catch (error) {
-                console.error('Failed to get status:', error);
-                const statusElement = document.getElementById('status');
-                statusElement.innerHTML = '<span class="status-dot"></span><span class="status-text">--</span>';
-                statusElement.className = 'status-inline status-unknown';
-            }
-        }
-
-        // Get and update current color
-        async function updateCurrentColor() {
-            try {
-                const response = await fetch('/color');
-                if (response.ok) {
-                    const color = await response.text();
-                    updateColorDisplay(color);
-                }
-            } catch (error) {
-                console.log('Error getting current color:', error);
-            }
-        }
-
-        // Get and update current brightness
-        async function updateCurrentBrightness() {
-            try {
-                const response = await fetch('/brightness');
-                if (response.ok) {
-                    const brightness = await response.text();
-                    document.getElementById('brightnessSlider').value = brightness;
-                    document.getElementById('brightnessValue').textContent = brightness;
-                }
-            } catch (error) {
-                console.log('Error getting current brightness:', error);
-            }
-        }
-
-        // Refresh status only
-        function refreshStatus() {
-            updateStatus();
-        }
-
-        // Refresh all values
-        function refreshAll() {
-            updateStatus();
-            updateCurrentColor();
-            updateCurrentBrightness();
-            updateActiveEffect();
-        }
-
-        // Initialize page
-        window.onload = function() {
-            refreshAll();
-        };
-
-        // --- Effects API integration ------------------------------------
-        async function updateActiveEffect() {
-            try {
-                const res = await fetch('/effects');
-                if (!res.ok) return;
-                const data = await res.json();
-                const active = data.active || 'none';
-                const el = document.getElementById('activeEffect');
-                const isRunning = active !== 'none';
-                el.innerHTML = `
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"/>
-                    </svg>
-                    <span>${isRunning ? 'Active: ' + active : 'No active effect'}</span>
-                `;
-                el.className = `active-effect-badge ${isRunning ? 'running' : ''}`;
-            } catch (e) {
-                console.debug('Failed to get active effect:', e);
-            }
-        }
-
-        async function startEffect(name, params={}) {
-            try {
-                const res = await fetch(`/effects/${name}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: Object.keys(params).length ? JSON.stringify(params) : '{}'
-                });
+            async function apiRequest(path, options = {}) {
+                const res = await fetch(path, options);
                 if (!res.ok) {
-                    const err = await res.text();
-                    alert('Failed to start effect: ' + err);
+                    const body = await res.text().catch(() => '');
+                    throw new Error(body || `Request failed (${res.status})`);
                 }
+                return res;
+            }
+
+            // --- Power / color / brightness --------------------------------
+            async function turnOn() {
+                try {
+                    await apiRequest('/on', { method: 'POST' });
+                    updateStatus();
+                } catch (e) {
+                    showToast('Failed to turn on: ' + e.message, 'error');
+                }
+            }
+
+            async function turnOff() {
+                try {
+                    await apiRequest('/off', { method: 'POST' });
+                    updateStatus();
+                    updateActiveEffect();
+                } catch (e) {
+                    showToast('Failed to turn off: ' + e.message, 'error');
+                }
+            }
+
+            async function setColor(hexColor) {
+                const color = hexColor || $('colorPicker').value;
+                const colorValue = color.replace('#', '');
+                try {
+                    await apiRequest(`/color/${colorValue}`, { method: 'POST' });
+                    updateColorDisplay(color);
+                } catch (e) {
+                    showToast('Failed to set color: ' + e.message, 'error');
+                }
+            }
+
+            async function setBrightness() {
+                const brightness = $('brightnessSlider').value;
+                try {
+                    await apiRequest(`/brightness/${brightness}`, { method: 'POST' });
+                } catch (e) {
+                    showToast('Failed to set brightness: ' + e.message, 'error');
+                }
+            }
+
+            function updateBrightnessDisplay() {
+                $('brightnessValue').textContent = $('brightnessSlider').value;
+            }
+
+            function updateColorDisplay(color) {
+                $('colorPicker').value = color;
+                $('currentColor').textContent = color;
+            }
+
+            async function updateStatus() {
+                const statusElement = $('status');
+                const dot = statusElement.querySelector('.status-dot');
+                const text = statusElement.querySelector('.status-text');
+                try {
+                    const res = await fetch('/status');
+                    if (!res.ok) throw new Error(String(res.status));
+                    const body = await res.text();
+                    const isOn = body === '1';
+                    text.textContent = isOn ? 'ON' : 'OFF';
+                    statusElement.className = `status-inline ${isOn ? 'status-on' : 'status-off'}`;
+                    if (dot) dot.hidden = false;
+                } catch (e) {
+                    console.error('Failed to get status:', e);
+                    text.textContent = '--';
+                    statusElement.className = 'status-inline status-unknown';
+                }
+            }
+
+            async function updateCurrentColor() {
+                try {
+                    const res = await fetch('/color');
+                    if (!res.ok) return;
+                    updateColorDisplay(await res.text());
+                } catch (e) {
+                    console.debug('Error getting current color:', e);
+                }
+            }
+
+            async function updateCurrentBrightness() {
+                try {
+                    const res = await fetch('/brightness');
+                    if (!res.ok) return;
+                    const brightness = await res.text();
+                    $('brightnessSlider').value = brightness;
+                    $('brightnessValue').textContent = brightness;
+                } catch (e) {
+                    console.debug('Error getting current brightness:', e);
+                }
+            }
+
+            // --- Effects --------------------------------------------------
+            let activeEffectPollTimer = null;
+
+            function setActiveGridButton(name) {
+                document.querySelectorAll('.effect-btn[data-effect]').forEach((btn) => {
+                    btn.classList.toggle('active', btn.dataset.effect === name);
+                });
+            }
+
+            async function updateActiveEffect() {
+                try {
+                    const res = await fetch('/effects');
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    const active = data.active || null;
+                    const isRunning = Boolean(active);
+                    const el = $('activeEffect');
+                    const label = el.querySelector('span');
+                    if (label) label.textContent = isRunning ? `Active: ${active}` : 'No active effect';
+                    el.className = `active-effect-badge ${isRunning ? 'running' : ''}`;
+                    setActiveGridButton(isRunning ? active : null);
+
+                    if (activeEffectPollTimer) {
+                        clearTimeout(activeEffectPollTimer);
+                        activeEffectPollTimer = null;
+                    }
+                    if (isRunning) {
+                        activeEffectPollTimer = setTimeout(updateActiveEffect, POLL_INTERVAL_MS);
+                    }
+                } catch (e) {
+                    console.debug('Failed to get active effect:', e);
+                }
+            }
+
+            async function startEffect(name, params = {}) {
+                try {
+                    await apiRequest(`/effects/${name}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(params),
+                    });
+                } catch (e) {
+                    showToast(`Failed to start ${name}: ${e.message}`, 'error');
+                } finally {
+                    updateActiveEffect();
+                }
+            }
+
+            async function stopEffect() {
+                try {
+                    await apiRequest('/effects/stop', { method: 'POST' });
+                } catch (e) {
+                    showToast('Failed to stop effect: ' + e.message, 'error');
+                } finally {
+                    updateActiveEffect();
+                }
+            }
+
+            // Convert #RRGGBB to HSV hue in [0, 1].
+            function hexToHue(hex) {
+                const h = hex.replace('#', '');
+                const r = Number.parseInt(h.slice(0, 2), 16) / 255;
+                const g = Number.parseInt(h.slice(2, 4), 16) / 255;
+                const b = Number.parseInt(h.slice(4, 6), 16) / 255;
+                const max = Math.max(r, g, b);
+                const min = Math.min(r, g, b);
+                const d = max - min;
+                if (d === 0) return 0;
+                let hue;
+                if (max === r) hue = ((g - b) / d) % 6;
+                else if (max === g) hue = (b - r) / d + 2;
+                else hue = (r - g) / d + 4;
+                hue = hue / 6;
+                if (hue < 0) hue += 1;
+                return hue;
+            }
+
+            // --- Card starters -------------------------------------------
+            function startBreathing() {
+                const color = $('breathingColor').value.replace('#', '');
+                const duration = intOr($('breathingDuration').value, 2000);
+                startEffect('breathing', { color, duration });
+            }
+
+            function startFade() {
+                const from = $('fadeFrom').value.replace('#', '');
+                const to = $('fadeTo').value.replace('#', '');
+                const duration = intOr($('fadeDuration').value, 5000);
+                startEffect('fade', { from, to, duration });
+            }
+
+            function startProfile() {
+                const duration = intOr($('profileDuration').value, 10000);
+                startEffect('profile', { duration });
+            }
+
+            function startRainbow() {
+                startEffect('rainbow', {
+                    period_ms: intOr($('rainbowPeriod').value, 10000),
+                    saturation: floatOr($('rainbowSaturation').value, 1.0),
+                    brightness: floatOr($('rainbowBrightness').value, 0.9),
+                });
+            }
+
+            function startHeartbeat() {
+                startEffect('heartbeat', {
+                    color: $('heartbeatColor').value.replace('#', ''),
+                    beat_ms: intOr($('heartbeatBeat').value, 180),
+                    gap_ms: intOr($('heartbeatGap').value, 120),
+                    rest_ms: intOr($('heartbeatRest').value, 500),
+                    second_beat_scale: floatOr($('heartbeatScale').value, 0.7),
+                });
+            }
+
+            function startLightning() {
+                const min_gap_ms = intOr($('lightningMinGap').value, 2000);
+                const max_gap_ms = intOr($('lightningMaxGap').value, 8000);
+                if (max_gap_ms < min_gap_ms) {
+                    showToast('Lightning max gap must be >= min gap.', 'error');
+                    return;
+                }
+                startEffect('lightning', {
+                    flash_color: $('lightningFlashColor').value.replace('#', ''),
+                    background_color: $('lightningBgColor').value.replace('#', ''),
+                    min_gap_ms,
+                    max_gap_ms,
+                    flash_ms: intOr($('lightningFlashMs').value, 150),
+                    aftershock_chance: floatOr($('lightningAftershockChance').value, 0.5),
+                });
+            }
+
+            function startAurora() {
+                // The server aurora effect random-walks within [hue_min, hue_max] in [0, 1]
+                // HSV units; wrap-around past hue=1.0 is not supported, so two nearby reds
+                // on opposite sides of the wheel will always give the "long way" range.
+                const fromHue = hexToHue($('auroraFrom').value);
+                const toHue = hexToHue($('auroraTo').value);
+                const hue_min = Math.min(fromHue, toHue);
+                const hue_max = Math.max(fromHue, toHue);
+                if (hue_max - hue_min < 0.01) {
+                    showToast('Aurora hue range is too narrow — pick two more-different colors.', 'error');
+                    return;
+                }
+                const params = {
+                    hue_min,
+                    hue_max,
+                    tau_ms: intOr($('auroraTau').value, 2500),
+                };
+                const durationRaw = $('auroraDuration').value.trim();
+                if (durationRaw) {
+                    const d = Number.parseInt(durationRaw, 10);
+                    if (Number.isFinite(d) && d > 0) params.duration = d;
+                }
+                startEffect('aurora', params);
+            }
+
+            function flameParams(prefix) {
+                const params = {
+                    min_brightness: floatOr($(`${prefix}MinBrightness`).value, NaN),
+                    max_brightness: floatOr($(`${prefix}MaxBrightness`).value, NaN),
+                    spark_chance: floatOr($(`${prefix}SparkChance`).value, NaN),
+                    tau_ms: intOr($(`${prefix}Tau`).value, NaN),
+                };
+                // Only forward values the user actually provided; let the server apply
+                // per-effect defaults for any field left blank.
+                for (const key of Object.keys(params)) {
+                    if (!Number.isFinite(params[key])) delete params[key];
+                }
+                const durationRaw = $(`${prefix}Duration`).value.trim();
+                if (durationRaw) {
+                    const d = Number.parseInt(durationRaw, 10);
+                    if (Number.isFinite(d) && d > 0) params.duration = d;
+                }
+                return params;
+            }
+
+            function startCampfire() { startEffect('campfire', flameParams('campfire')); }
+            function startCandle() { startEffect('candle', flameParams('candle')); }
+
+            function startRandom() {
+                startEffect('random', { interval: intOr($('randomInterval').value, 2000) });
+            }
+
+            function startCycle() {
+                const params = { duration: intOr($('cycleDuration').value, 2000) };
+                const raw = $('cycleColors').value.trim();
+                if (raw) {
+                    const colors = raw.split(',').map((s) => s.trim()).filter(Boolean);
+                    if (colors.length) params.colors = colors;
+                }
+                startEffect('cycle', params);
+            }
+
+            const cardStarters = {
+                breathing: startBreathing,
+                fade: startFade,
+                profile: startProfile,
+                rainbow: startRainbow,
+                heartbeat: startHeartbeat,
+                lightning: startLightning,
+                aurora: startAurora,
+                campfire: startCampfire,
+                candle: startCandle,
+                random: startRandom,
+                cycle: startCycle,
+            };
+
+            function refreshStatus() { updateStatus(); }
+            function refreshAll() {
+                updateStatus();
+                updateCurrentColor();
+                updateCurrentBrightness();
                 updateActiveEffect();
-            } catch (e) {
-                alert('Error: ' + e.message);
             }
-        }
 
-        async function stopEffect() {
-            try {
-                await fetch('/effects/stop', { method: 'POST' });
-                updateActiveEffect();
-            } catch (e) {
-                alert('Error: ' + e.message);
+            function init() {
+                document.body.addEventListener('click', (e) => {
+                    const target = e.target.closest('[data-action], [data-effect], [data-color], [data-card-start]');
+                    if (!target) return;
+                    if (target.dataset.color) {
+                        setColor(target.dataset.color);
+                        return;
+                    }
+                    if (target.dataset.cardStart) {
+                        const starter = cardStarters[target.dataset.cardStart];
+                        if (starter) starter();
+                        return;
+                    }
+                    if (target.dataset.action) {
+                        switch (target.dataset.action) {
+                            case 'turnOn': turnOn(); return;
+                            case 'turnOff': turnOff(); return;
+                            case 'applyPickerColor': setColor(); return;
+                            case 'stopEffect': stopEffect(); return;
+                        }
+                    }
+                    if (target.dataset.effect) {
+                        startEffect(target.dataset.effect);
+                    }
+                });
+
+                $('colorPicker').addEventListener('change', () => setColor());
+                const slider = $('brightnessSlider');
+                slider.addEventListener('input', updateBrightnessDisplay);
+                slider.addEventListener('change', setBrightness);
+                $('refreshStatusBtn').addEventListener('click', refreshStatus);
+                $('refreshAllBtn').addEventListener('click', refreshAll);
+
+                refreshAll();
             }
-        }
 
-        function startBreathing() {
-            const color = document.getElementById('breathingColor').value.replace('#','');
-            const duration = Number.parseInt(document.getElementById('breathingDuration').value, 10) || 2000;
-            startEffect('breathing', { color, duration });
-        }
-
-        function startFade() {
-            const from = document.getElementById('fadeFrom').value.replace('#','');
-            const to = document.getElementById('fadeTo').value.replace('#','');
-            const duration = Number.parseInt(document.getElementById('fadeDuration').value, 10) || 5000;
-            startEffect('fade', { from, to, duration });
-        }
-
-        function startProfile() {
-            const duration = Number.parseInt(document.getElementById('profileDuration').value, 10) || 10000;
-            startEffect('profile', { duration });
-        }
-
-        // Convert #RRGGBB to HSV hue in [0, 1].
-        function hexToHue(hex) {
-            const h = hex.replace('#', '');
-            const r = Number.parseInt(h.slice(0, 2), 16) / 255;
-            const g = Number.parseInt(h.slice(2, 4), 16) / 255;
-            const b = Number.parseInt(h.slice(4, 6), 16) / 255;
-            const max = Math.max(r, g, b);
-            const min = Math.min(r, g, b);
-            const d = max - min;
-            if (d === 0) return 0;
-            let hue;
-            if (max === r) hue = ((g - b) / d) % 6;
-            else if (max === g) hue = (b - r) / d + 2;
-            else hue = (r - g) / d + 4;
-            hue = hue / 6;
-            if (hue < 0) hue += 1;
-            return hue;
-        }
-
-        function startRainbow() {
-            const period_ms = Number.parseInt(document.getElementById('rainbowPeriod').value, 10) || 10000;
-            const saturation = Number.parseFloat(document.getElementById('rainbowSaturation').value);
-            const brightness = Number.parseFloat(document.getElementById('rainbowBrightness').value);
-            startEffect('rainbow', { period_ms, saturation, brightness });
-        }
-
-        function startHeartbeat() {
-            const color = document.getElementById('heartbeatColor').value.replace('#', '');
-            const beat_ms = Number.parseInt(document.getElementById('heartbeatBeat').value, 10) || 180;
-            const gap_ms = Number.parseInt(document.getElementById('heartbeatGap').value, 10) || 120;
-            const rest_ms = Number.parseInt(document.getElementById('heartbeatRest').value, 10) || 500;
-            const second_beat_scale = Number.parseFloat(document.getElementById('heartbeatScale').value) || 0.7;
-            startEffect('heartbeat', { color, beat_ms, gap_ms, rest_ms, second_beat_scale });
-        }
-
-        function startLightning() {
-            const flash_color = document.getElementById('lightningFlashColor').value.replace('#', '');
-            const background_color = document.getElementById('lightningBgColor').value.replace('#', '');
-            const min_gap_ms = Number.parseInt(document.getElementById('lightningMinGap').value, 10) || 2000;
-            const max_gap_ms = Number.parseInt(document.getElementById('lightningMaxGap').value, 10) || 8000;
-            const flash_ms = Number.parseInt(document.getElementById('lightningFlashMs').value, 10) || 150;
-            const aftershock_chance = Number.parseFloat(document.getElementById('lightningAftershockChance').value);
-            if (max_gap_ms < min_gap_ms) {
-                alert('Lightning max gap must be >= min gap.');
-                return;
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
             }
-            startEffect('lightning', {
-                flash_color,
-                background_color,
-                min_gap_ms,
-                max_gap_ms,
-                flash_ms,
-                aftershock_chance,
-            });
-        }
-
-        function startAurora() {
-            const fromHue = hexToHue(document.getElementById('auroraFrom').value);
-            const toHue = hexToHue(document.getElementById('auroraTo').value);
-            let hue_min = Math.min(fromHue, toHue);
-            let hue_max = Math.max(fromHue, toHue);
-            if (hue_max - hue_min < 0.01) {
-                alert('Aurora hue range is too narrow — pick two more-different colors.');
-                return;
-            }
-            const tau_ms = Number.parseInt(document.getElementById('auroraTau').value, 10) || 2500;
-            const params = { hue_min, hue_max, tau_ms };
-            const durationRaw = document.getElementById('auroraDuration').value.trim();
-            if (durationRaw) {
-                const d = Number.parseInt(durationRaw, 10);
-                if (d > 0) params.duration = d;
-            }
-            startEffect('aurora', params);
-        }
+        })();
     </script>
 </body>
 </html>
