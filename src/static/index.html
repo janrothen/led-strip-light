@@ -1390,10 +1390,10 @@
 
             function flameParams(prefix) {
                 const params = {
-                    min_brightness: floatOr($(`${prefix}MinBrightness`).value, NaN),
-                    max_brightness: floatOr($(`${prefix}MaxBrightness`).value, NaN),
-                    spark_chance: floatOr($(`${prefix}SparkChance`).value, NaN),
-                    tau_ms: intOr($(`${prefix}Tau`).value, NaN),
+                    min_brightness: floatOr($(`${prefix}MinBrightness`).value, Number.NaN),
+                    max_brightness: floatOr($(`${prefix}MaxBrightness`).value, Number.NaN),
+                    spark_chance: floatOr($(`${prefix}SparkChance`).value, Number.NaN),
+                    tau_ms: intOr($(`${prefix}Tau`).value, Number.NaN),
                 };
                 // Only forward values the user actually provided; let the server apply
                 // per-effect defaults for any field left blank.
