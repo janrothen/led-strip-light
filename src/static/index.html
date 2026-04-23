@@ -484,6 +484,15 @@
             color: var(--accent-primary);
         }
 
+        .active-effect-badge .stop-effect-btn {
+            display: none;
+            margin-left: auto;
+        }
+
+        .active-effect-badge.running .stop-effect-btn {
+            display: inline-flex;
+        }
+
         /* Effect Cards */
         .effect-card {
             background: var(--bg-elevated);
@@ -753,6 +762,13 @@
                     <circle cx="12" cy="12" r="10"/>
                 </svg>
                 <span>No active effect</span>
+                <button class="btn btn-sm stop-effect-btn" data-action="stopEffect" style="color: var(--accent-danger); background: transparent; border-color: var(--accent-danger);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <rect x="9" y="9" width="6" height="6"/>
+                    </svg>
+                    Stop
+                </button>
             </div>
 
             <div class="effect-grid">
@@ -787,10 +803,6 @@
                 <button class="effect-btn" data-effect="lightning">
                     <span class="effect-icon">⚡</span>
                     <span>Lightning</span>
-                </button>
-                <button class="effect-btn" data-action="stopEffect" style="color: var(--accent-danger);">
-                    <span class="effect-icon">⏹️</span>
-                    <span>Stop</span>
                 </button>
             </div>
 
