@@ -1277,6 +1277,7 @@
                     showToast(`Failed to start ${name}: ${e.message}`, 'error');
                 } finally {
                     updateActiveEffect();
+                    updateStatus();
                 }
             }
 
@@ -1331,7 +1332,7 @@
             function startRainbow() {
                 startEffect('rainbow', {
                     period_ms: intOr($('rainbowPeriod').value, 10000),
-                    saturation: floatOr($('rainbowSaturation').value, 1.0),
+                    saturation: floatOr($('rainbowSaturation').value, 1),
                     brightness: floatOr($('rainbowBrightness').value, 0.9),
                 });
             }
