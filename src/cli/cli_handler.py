@@ -7,6 +7,10 @@ from led.color import Color
 from led.effect_runner import EffectRunner
 
 
+_GAMMA_HELP = "Perceptual gamma (e.g., 2.2). Default: effect default"
+_DURATION_HELP = "Total duration in milliseconds (default: run until interrupted)"
+
+
 def _positive_int(value):
     """argparse type: integer > 0."""
     v = int(value)
@@ -209,7 +213,7 @@ Examples:
         dest="duration_ms",
         type=int,
         default=None,
-        help="Total duration in milliseconds (default: run until interrupted)",
+        help=_DURATION_HELP,
     )
     rainbow_parser.add_argument(
         "--update-hz",
@@ -233,7 +237,7 @@ Examples:
         "--gamma",
         type=_positive_float,
         default=None,
-        help="Perceptual gamma (e.g., 2.2). Default: effect default",
+        help=_GAMMA_HELP,
     )
 
     # Lightning effect
@@ -297,13 +301,13 @@ Examples:
         dest="duration_ms",
         type=int,
         default=None,
-        help="Total duration in milliseconds (default: run until interrupted)",
+        help=_DURATION_HELP,
     )
     lightning_parser.add_argument(
         "--gamma",
         type=_positive_float,
         default=None,
-        help="Perceptual gamma (e.g., 2.2). Default: effect default",
+        help=_GAMMA_HELP,
     )
 
     # Cycle effect
@@ -367,7 +371,7 @@ def _add_flame_arguments(
         dest="duration_ms",
         type=int,
         default=None,
-        help="Total duration in milliseconds (default: run until interrupted)",
+        help=_DURATION_HELP,
     )
     subparser.add_argument(
         "--update-hz",
@@ -421,7 +425,7 @@ def _add_flame_arguments(
         "--gamma",
         type=_positive_float,
         default=None,
-        help="Perceptual gamma (e.g., 2.2). Default: effect default",
+        help=_GAMMA_HELP,
     )
 
 
@@ -432,7 +436,7 @@ def _add_aurora_arguments(subparser: argparse.ArgumentParser) -> None:
         dest="duration_ms",
         type=int,
         default=None,
-        help="Total duration in milliseconds (default: run until interrupted)",
+        help=_DURATION_HELP,
     )
     subparser.add_argument(
         "--update-hz",
@@ -492,7 +496,7 @@ def _add_aurora_arguments(subparser: argparse.ArgumentParser) -> None:
         "--gamma",
         type=_positive_float,
         default=None,
-        help="Perceptual gamma (e.g., 2.2). Default: effect default",
+        help=_GAMMA_HELP,
     )
 
 
