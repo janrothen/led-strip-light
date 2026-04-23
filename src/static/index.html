@@ -456,41 +456,23 @@
         }
 
         .effect-btn.active {
-            background: var(--accent-glow);
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
+            background: rgba(34, 197, 94, 0.1);
+            border-color: var(--accent-success);
+            color: var(--accent-success);
+            animation: effect-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes effect-pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45);
+            }
+            50% {
+                box-shadow: 0 0 16px 4px rgba(34, 197, 94, 0.55);
+            }
         }
 
         .effect-icon {
             font-size: 20px;
-        }
-
-        .active-effect-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 14px;
-            background: var(--bg-elevated);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-        }
-
-        .active-effect-badge.running {
-            background: var(--accent-glow);
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
-        }
-
-        .active-effect-badge .stop-effect-btn {
-            display: none;
-            margin-left: auto;
-        }
-
-        .active-effect-badge.running .stop-effect-btn {
-            display: inline-flex;
         }
 
         /* Effect Cards */
@@ -755,20 +737,10 @@
                     </svg>
                 </div>
                 <h2 class="section-title">Effects</h2>
-            </div>
-            
-            <div id="activeEffect" class="active-effect-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                </svg>
-                <span>No active effect</span>
-                <button class="btn btn-sm stop-effect-btn" data-action="stopEffect" style="color: var(--accent-danger); background: transparent; border-color: var(--accent-danger);">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"/>
-                        <rect x="9" y="9" width="6" height="6"/>
-                    </svg>
-                    Stop
-                </button>
+                <div id="activeEffect" class="status-inline status-off">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Active: None</span>
+                </div>
             </div>
 
             <div class="effect-grid">
@@ -1246,11 +1218,16 @@
 
             // --- Effects --------------------------------------------------
             let activeEffectPollTimer = null;
+            let currentActiveEffect = null;
 
             function setActiveGridButton(name) {
                 document.querySelectorAll('.effect-btn[data-effect]').forEach((btn) => {
                     btn.classList.toggle('active', btn.dataset.effect === name);
                 });
+            }
+
+            function formatEffectName(name) {
+                return name.charAt(0).toUpperCase() + name.slice(1);
             }
 
             async function updateActiveEffect() {
@@ -1260,10 +1237,11 @@
                     const data = await res.json();
                     const active = data.active || null;
                     const isRunning = Boolean(active);
+                    currentActiveEffect = isRunning ? active : null;
                     const el = $('activeEffect');
-                    const label = el.querySelector('span');
-                    if (label) label.textContent = isRunning ? `Active: ${active}` : 'No active effect';
-                    el.className = `active-effect-badge ${isRunning ? 'running' : ''}`;
+                    const text = el.querySelector('.status-text');
+                    if (text) text.textContent = isRunning ? `Active: ${formatEffectName(active)}` : 'Active: None';
+                    el.className = `status-inline ${isRunning ? 'status-on' : 'status-off'}`;
                     setActiveGridButton(isRunning ? active : null);
 
                     if (activeEffectPollTimer) {
@@ -1478,11 +1456,15 @@
                             case 'turnOn': turnOn(); return;
                             case 'turnOff': turnOff(); return;
                             case 'applyPickerColor': setColor(); return;
-                            case 'stopEffect': stopEffect(); return;
                         }
                     }
                     if (target.dataset.effect) {
-                        startEffect(target.dataset.effect);
+                        const name = target.dataset.effect;
+                        if (currentActiveEffect === name) {
+                            stopEffect();
+                        } else {
+                            startEffect(name);
+                        }
                     }
                 });
 
