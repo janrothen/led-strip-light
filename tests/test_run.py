@@ -81,8 +81,10 @@ def test_switch_off_called_on_startup(m):
     # verify it's called before execute_effect
     startup_off = m.controller.switch_off.call_args_list[0]
     execute_call = m.mock_execute_effect.call_args_list[0]
-    assert m.controller.switch_off.call_args_list.index(startup_off) < \
-           m.mock_execute_effect.call_args_list.index(execute_call) + 1
+    assert (
+        m.controller.switch_off.call_args_list.index(startup_off)
+        < m.mock_execute_effect.call_args_list.index(execute_call) + 1
+    )
 
 
 def test_execute_effect_called_with_runner_and_args(m):

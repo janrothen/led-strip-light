@@ -152,7 +152,9 @@ def test_get_color():
 
 def test_get_color_when_off_returns_last_known_color():
     client, led_controller, _ = _build_client()
-    led_controller.get_display_color.return_value = Color(255, 147, 41)  # WARM_YELLOW fallback
+    led_controller.get_display_color.return_value = Color(
+        255, 147, 41
+    )  # WARM_YELLOW fallback
 
     response = client.get("/color")
 

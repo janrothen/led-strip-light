@@ -495,9 +495,7 @@ def heartbeat_effect(
             f"gap_ms and rest_ms must be >= 0, got gap_ms={gap_ms} rest_ms={rest_ms}"
         )
     if not (0.0 <= second_beat_scale <= 1.0):
-        raise ValueError(
-            f"second_beat_scale must be in [0,1], got {second_beat_scale}"
-        )
+        raise ValueError(f"second_beat_scale must be in [0,1], got {second_beat_scale}")
 
     half = max(1, beat_ms // 2)
     r, g, b = color.rgb

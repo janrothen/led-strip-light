@@ -15,7 +15,10 @@ class GPIOService:
     """
 
     def __init__(
-        self, red_pin: int | None = None, green_pin: int | None = None, blue_pin: int | None = None
+        self,
+        red_pin: int | None = None,
+        green_pin: int | None = None,
+        blue_pin: int | None = None,
     ) -> None:
         self.pi = pigpio.pi()
         if not self.pi.connected:

@@ -365,7 +365,9 @@ class TestCLIHandler:
         assert args.duration_ms is None
         assert args.update_hz == 60
 
-        args = parser.parse_args(["campfire", "--duration", "30000", "--update-hz", "30"])
+        args = parser.parse_args(
+            ["campfire", "--duration", "30000", "--update-hz", "30"]
+        )
         assert args.duration_ms == 30000
         assert args.update_hz == 30
 

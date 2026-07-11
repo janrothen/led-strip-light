@@ -142,7 +142,10 @@ class TestEffects:
 
         from led import effects
 
-        with patch.object(effects, "fade_effect"), patch("led.effects.sleep") as mock_sleep:
+        with (
+            patch.object(effects, "fade_effect"),
+            patch("led.effects.sleep") as mock_sleep,
+        ):
             breathing_effect(mock_strip, Color.RED, duration=100, hold_ms=50)
 
         mock_sleep.assert_called()
@@ -395,7 +398,14 @@ class TestEffects:
     def test_heartbeat_effect_second_beat_scaled(self):
         """heartbeat_effect's second beat uses a scaled color."""
         mock_strip = Mock()
-        mock_strip.is_interrupted.side_effect = [False, False, False, False, False, True]
+        mock_strip.is_interrupted.side_effect = [
+            False,
+            False,
+            False,
+            False,
+            False,
+            True,
+        ]
 
         from led import effects
 
@@ -408,9 +418,7 @@ class TestEffects:
             patch.object(effects, "fade_effect", side_effect=capture_fade),
             patch("led.effects.sleep"),
         ):
-            heartbeat_effect(
-                mock_strip, Color(200, 0, 0), second_beat_scale=0.5
-            )
+            heartbeat_effect(mock_strip, Color(200, 0, 0), second_beat_scale=0.5)
 
         # First non-black fade target = full color; third = scaled second beat
         targets = [c for c in fade_call_colors if c != Color.BLACK]

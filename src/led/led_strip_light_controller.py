@@ -145,7 +145,9 @@ class LEDStripLightController:
         """Start ``func`` in a background thread without stopping the current sequence."""
         with self._lock:
             logging.debug(f"Starting sequence: {func.__name__}")
-            self._sequence = Thread(target=self._run_sequence, args=(func, args, kwargs))
+            self._sequence = Thread(
+                target=self._run_sequence, args=(func, args, kwargs)
+            )
             self.resume()
             self._sequence.start()
 
