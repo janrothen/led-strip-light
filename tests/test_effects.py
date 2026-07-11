@@ -6,6 +6,7 @@ Tests for LED effects.
 Tests various LED effects with mocked strip controller.
 """
 
+from time import monotonic
 from unittest.mock import Mock, patch
 
 import pytest
@@ -126,6 +127,28 @@ class TestEffects:
         with patch("led.effects.sleep"):
             random_color_effect(mock_strip, interval=100)
 
+        assert mock_strip.set_color.call_count == 1
+
+    def test_random_color_effect_rejects_non_positive_interval(self):
+        """Interval must be > 0 so the effect thread cannot die in sleep()."""
+        mock_strip = Mock()
+
+        with pytest.raises(ValueError, match="interval"):
+            random_color_effect(mock_strip, interval=0)
+        with pytest.raises(ValueError, match="interval"):
+            random_color_effect(mock_strip, interval=-1)
+
+    def test_random_color_effect_interrupts_during_long_interval(self):
+        """A long interval sleep must abort promptly once interrupted."""
+        mock_strip = Mock()
+        # while: False → set_color → interruptible sleep polls: True → return
+        mock_strip.is_interrupted.side_effect = [False, True]
+
+        start = monotonic()
+        random_color_effect(mock_strip, interval=60000)
+        elapsed = monotonic() - start
+
+        assert elapsed < 1.0
         assert mock_strip.set_color.call_count == 1
 
     def test_breathing_effect_with_hold_ms(self):
@@ -374,23 +397,22 @@ class TestEffects:
     def test_heartbeat_effect_runs_one_cycle(self):
         """heartbeat_effect runs the 4 fades of a cycle then stops on interrupt."""
         mock_strip = Mock()
-        call_count = 0
+        interrupted = False
+        fade_count = 0
 
-        def mock_interrupted():
-            nonlocal call_count
-            call_count += 1
-            # Let the full double-pulse cycle run, then break the while loop
-            return call_count > 6
+        def fake_fade(strip, c_from, c_to, duration, **kwargs):
+            nonlocal interrupted, fade_count
+            fade_count += 1
+            if fade_count >= 4:
+                # Full double-pulse done — interrupt so the while loop exits
+                interrupted = True
 
-        mock_strip.is_interrupted.side_effect = mock_interrupted
+        mock_strip.is_interrupted.side_effect = lambda: interrupted
 
         from led import effects
 
-        with (
-            patch.object(effects, "fade_effect") as mock_fade,
-            patch("led.effects.sleep"),
-        ):
-            heartbeat_effect(mock_strip, Color.RED)
+        with patch.object(effects, "fade_effect", side_effect=fake_fade) as mock_fade:
+            heartbeat_effect(mock_strip, Color.RED, gap_ms=0, rest_ms=0)
 
         # Four fades per cycle: up/down for beat1, up/down for beat2
         assert mock_fade.call_count >= 4
@@ -398,29 +420,25 @@ class TestEffects:
     def test_heartbeat_effect_second_beat_scaled(self):
         """heartbeat_effect's second beat uses a scaled color."""
         mock_strip = Mock()
-        mock_strip.is_interrupted.side_effect = [
-            False,
-            False,
-            False,
-            False,
-            False,
-            True,
-        ]
-
-        from led import effects
-
+        interrupted = False
         fade_call_colors: list[Color] = []
 
         def capture_fade(strip, c_from, c_to, duration, **kwargs):
+            nonlocal interrupted
             fade_call_colors.append(c_to)
+            if len(fade_call_colors) >= 4:
+                interrupted = True
 
-        with (
-            patch.object(effects, "fade_effect", side_effect=capture_fade),
-            patch("led.effects.sleep"),
-        ):
-            heartbeat_effect(mock_strip, Color(200, 0, 0), second_beat_scale=0.5)
+        mock_strip.is_interrupted.side_effect = lambda: interrupted
 
-        # First non-black fade target = full color; third = scaled second beat
+        from led import effects
+
+        with patch.object(effects, "fade_effect", side_effect=capture_fade):
+            heartbeat_effect(
+                mock_strip, Color(200, 0, 0), gap_ms=0, rest_ms=0, second_beat_scale=0.5
+            )
+
+        # First non-black fade target = full color; next = scaled second beat
         targets = [c for c in fade_call_colors if c != Color.BLACK]
         assert targets[0] == Color(200, 0, 0)
         assert targets[1] == Color(100, 0, 0)

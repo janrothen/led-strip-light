@@ -121,10 +121,8 @@ def breathing_effect(
     while not strip.is_interrupted():
         for c_from, c_to in ((Color.BLACK, color), (color, Color.BLACK)):
             fade_effect(strip, c_from, c_to, duration, ease=ease, gamma=gamma)
-            if strip.is_interrupted():
+            if not _interruptible_sleep(strip, hold_ms):
                 return
-            if hold_ms:
-                sleep(hold_ms / 1000.0)
 
 
 def random_color_effect(
@@ -134,11 +132,14 @@ def random_color_effect(
 
     Args:
         strip: Target strip-like object.
-        interval: Time between random color changes (ms).
+        interval: Time between random color changes (ms). Must be > 0.
     """
+    if interval <= 0:
+        raise ValueError(f"interval must be > 0, got {interval}")
     while not strip.is_interrupted():
         strip.set_color(Color.random_pastel())
-        sleep(interval / 1000.0)
+        if not _interruptible_sleep(strip, interval):
+            return
 
 
 def color_cycle_effect(
@@ -177,10 +178,8 @@ def color_cycle_effect(
             fade_effect(
                 strip, current_color, next_color, duration, ease=ease, gamma=gamma
             )
-            if strip.is_interrupted():
+            if not _interruptible_sleep(strip, hold_ms):
                 return
-            if hold_ms:
-                sleep(hold_ms / 1000.0)
 
 
 def fade_effect(
@@ -525,9 +524,7 @@ def heartbeat_effect(
         if strip.is_interrupted():
             return
 
-        if gap_ms:
-            sleep(gap_ms / 1000.0)
-        if strip.is_interrupted():
+        if not _interruptible_sleep(strip, gap_ms):
             return
 
         # Second beat — softer
@@ -538,8 +535,8 @@ def heartbeat_effect(
         if strip.is_interrupted():
             return
 
-        if rest_ms:
-            sleep(rest_ms / 1000.0)
+        if not _interruptible_sleep(strip, rest_ms):
+            return
 
     logging.debug("Heartbeat stopped")
 
