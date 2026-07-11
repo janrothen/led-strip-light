@@ -20,3 +20,11 @@ The official Homebridge apt package bundles a Node.js binary compiled for ARMv7+
 On a Pi Zero W (ARMv6) this causes a `SIGILL` crash at startup, so the npm install
 method must be used there instead. The Pi Zero 2 W and later models use a
 Cortex-A53 (ARMv7/ARM64) and fully support the apt package.
+
+## Running more than one bridge?
+
+Both `config.json` files ship the same bridge `username` (a virtual MAC address)
+and `pin`. That is fine when you run **either** setup, but HomeKit identifies
+bridges by that username — if you ever run two Pis at the same time, change the
+`username` (and ideally the `pin`) in one of the configs so the bridges don't
+collide.
