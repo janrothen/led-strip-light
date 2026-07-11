@@ -320,3 +320,35 @@ class TestLEDStripLightController:
 
         assert not led_controller.is_sequence_running()
         assert led_controller._sequence is None
+
+    def test_concurrent_run_sequence_never_overlaps_effects(self, led_controller):
+        """Two run_sequence() racers must never have two effect threads live."""
+        import threading
+
+        overlap = []
+        active = 0
+        active_lock = threading.Lock()
+
+        def effect():
+            nonlocal active
+            with active_lock:
+                active += 1
+                if active > 1:
+                    overlap.append(active)
+            while not led_controller.is_interrupted():
+                pass
+            with active_lock:
+                active -= 1
+
+        racers = [
+            threading.Thread(target=led_controller.run_sequence, args=(effect,))
+            for _ in range(4)
+        ]
+        for racer in racers:
+            racer.start()
+        for racer in racers:
+            racer.join(timeout=5)
+
+        led_controller.stop_current_sequence()
+        assert not overlap, f"effect threads overlapped: {overlap}"
+        assert not led_controller.is_sequence_running()
