@@ -312,6 +312,7 @@ def create_app(
         Returns {"status": "started", "effect": ..., "params": ...} on success.
         Returns 404 {"error": ...} for unknown effect names.
         Returns 400 {"error": ...} for invalid parameters.
+        Returns 503 {"error": ...} if the previous effect refuses to stop.
         """
         data = request.get_json(silent=True) or {}
         with state_lock:
@@ -321,6 +322,13 @@ def create_app(
                 return jsonify({"error": f"unknown effect '{effect_name}'"}), 404
             except (ValueError, TypeError) as e:
                 return jsonify({"error": str(e)}), 400
+            except TimeoutError:
+                # The running effect did not stop in time; its interrupt flag
+                # stays set, so it will exit on its next poll. Tell the client
+                # to retry rather than reporting a server bug.
+                return jsonify(
+                    {"error": "previous effect is still stopping, retry shortly"}
+                ), 503
             active_effect["name"] = effect_name
         return jsonify({"status": "started", "effect": effect_name, "params": data})
 
