@@ -6,14 +6,15 @@ from pathlib import Path
 from .color_profile import ColorProfile
 from .pin_assignment import PinAssignment
 
-# Prefer config.toml next to the current working directory (production: the
-# systemd WorkingDirectory). Fall back to src/ for development.
-_REPO_CONFIG = Path(__file__).parents[1] / "config.toml"
+# Prefer config.toml in the current working directory (production: the
+# systemd WorkingDirectory is src/). Fall back to the src/ directory this
+# package lives in, so imports from the repo root also find it.
+_SRC_DIR_CONFIG = Path(__file__).parents[1] / "config.toml"
 
 
 def _default_config_path() -> Path:
     cwd_config = Path.cwd() / "config.toml"
-    return cwd_config if cwd_config.exists() else _REPO_CONFIG
+    return cwd_config if cwd_config.exists() else _SRC_DIR_CONFIG
 
 
 PINS = "pins"
