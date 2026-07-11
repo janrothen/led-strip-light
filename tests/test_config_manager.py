@@ -86,6 +86,24 @@ class TestConfigManager:
         with pytest.raises(FileNotFoundError):
             ConfigManager("nonexistent_config.toml")
 
+    def test_default_path_prefers_cwd_config(self, tmp_path, monkeypatch):
+        """With no explicit path, a config.toml in the CWD is used."""
+        (tmp_path / "config.toml").write_text(VALID_CONFIG)
+        monkeypatch.chdir(tmp_path)
+
+        config = ConfigManager()
+
+        assert config.get_pin_assignment().red == 18
+
+    def test_default_path_falls_back_to_src_config(self, tmp_path, monkeypatch):
+        """With no CWD config, resolution falls back to the packaged src/ config."""
+        monkeypatch.chdir(tmp_path)  # no config.toml here
+
+        config = ConfigManager()
+
+        # The repo's src/config.toml uses BCM pins 27/17/22.
+        assert config.get_pin_assignment().red == 27
+
     def test_invalid_pin_config(self):
         """Test error handling for invalid pin configuration."""
         config_content = """
