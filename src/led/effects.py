@@ -292,6 +292,11 @@ def flickering_effect(
     """
     if update_hz <= 0:
         raise ValueError(f"update_hz must be > 0, got {update_hz}")
+    if not (0.0 <= min_brightness <= max_brightness <= 1.0):
+        raise ValueError(
+            "need 0 <= min_brightness <= max_brightness <= 1, "
+            f"got {min_brightness}/{max_brightness}"
+        )
 
     # Convert base color to HSV in 0..1
     r0, g0, b0 = base_color.rgb
@@ -398,6 +403,11 @@ def aurora_effect(
         raise ValueError(f"hue_min/hue_max must be in [0,1], got {hue_min}/{hue_max}")
     if hue_min >= hue_max:
         raise ValueError(f"hue_min ({hue_min}) must be < hue_max ({hue_max})")
+    if not (0.0 <= min_brightness <= max_brightness <= 1.0):
+        raise ValueError(
+            "need 0 <= min_brightness <= max_brightness <= 1, "
+            f"got {min_brightness}/{max_brightness}"
+        )
 
     s = max(0.0, min(1.0, float(saturation)))
 
