@@ -70,6 +70,16 @@ class LEDStripLightController:
             self.set_color(Color.BLACK)
             self.resume()
 
+    def shutdown(self) -> None:
+        """Stop any running sequence, turn the strip off, and release GPIO.
+
+        Intended for process teardown (SIGTERM/SIGINT): after this call the
+        controller must not be used again. switch_off already tolerates a
+        worker that refuses to stop, so this never raises on the stop path.
+        """
+        self.switch_off()
+        self._gpio_service.stop()
+
     def interrupt(self) -> None:
         """Signal any running effect thread to stop at its next poll."""
         self._interrupt.set()

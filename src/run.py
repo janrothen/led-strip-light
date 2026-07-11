@@ -48,8 +48,8 @@ def main() -> None:
         logging.info("Running...")
         time.sleep(1)
 
-    # Cleanup — switch_off stops any running sequence before turning off.
-    led_controller.switch_off()
+    # Cleanup — stops any running sequence, turns off, and releases GPIO.
+    led_controller.shutdown()
     logging.info("App exited cleanly.")
 
 

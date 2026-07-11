@@ -26,3 +26,14 @@ class TestGPIOService:
         """Test setting and getting basic colors."""
         gpio_service.set_color(color)
         assert gpio_service.get_color() == color
+
+    def test_stop_releases_pigpio_connection(self, gpio_service, patch_pigpio):
+        """stop() releases the pigpio client connection."""
+        gpio_service.stop()
+        patch_pigpio.stop.assert_called_once()
+
+    def test_stop_is_noop_when_disconnected(self, gpio_service, patch_pigpio):
+        """stop() after the connection is gone must not call pi.stop again."""
+        patch_pigpio.connected = False
+        gpio_service.stop()
+        patch_pigpio.stop.assert_not_called()

@@ -321,6 +321,15 @@ class TestLEDStripLightController:
         assert not led_controller.is_sequence_running()
         assert led_controller._sequence is None
 
+    def test_shutdown_switches_off_and_releases_gpio(
+        self, led_controller, mock_gpio_service
+    ):
+        """shutdown() turns the strip off and releases the pigpio connection."""
+        led_controller.shutdown()
+
+        mock_gpio_service.set_color.assert_called_with(Color.BLACK)
+        mock_gpio_service.stop.assert_called_once()
+
     def test_concurrent_run_sequence_never_overlaps_effects(self, led_controller):
         """Two run_sequence() racers must never have two effect threads live."""
         import threading
