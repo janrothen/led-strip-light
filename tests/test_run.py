@@ -92,10 +92,11 @@ def test_execute_effect_called_with_runner_and_args(m):
     m.mock_execute_effect.assert_called_once_with(m.effect_runner, m.args)
 
 
-def test_cleanup_switches_off_on_exit(m):
+def test_cleanup_shuts_down_on_exit(m):
     main()
-    # called at startup AND at cleanup; switch_off itself stops any sequence
-    assert m.controller.switch_off.call_count == 2
+    # switch_off at startup; shutdown (off + GPIO release) at cleanup
+    assert m.controller.switch_off.call_count == 1
+    m.controller.shutdown.assert_called_once()
 
 
 def test_loop_sleeps_while_kill_now_false(m):

@@ -8,6 +8,7 @@ all dependencies can be injected for testing without real hardware.
 
 import contextlib
 import os
+import signal
 import threading
 from collections.abc import Callable
 
@@ -329,7 +330,26 @@ def create_app(
     return app
 
 
+def _run_server(app: Flask, host: str, port: int) -> None:
+    """Serve ``app`` until SIGTERM/SIGINT, then turn the strip off.
+
+    systemd stops the unit with SIGTERM; without cleanup the pigpio daemon
+    keeps the last PWM duty cycles and the LEDs stay lit after the service
+    exits. Convert the signal to SystemExit so the finally-block runs.
+    """
+
+    def _terminate(signum: int, frame: object) -> None:
+        raise SystemExit(0)
+
+    signal.signal(signal.SIGTERM, _terminate)
+    signal.signal(signal.SIGINT, _terminate)
+    try:
+        app.run(host=host, port=port)
+    finally:
+        app.config["LED_CONTROLLER"].shutdown()
+
+
 if __name__ == "__main__":
     host = os.environ.get("FLASK_HOST", "127.0.0.1")
     port = int(os.environ.get("FLASK_PORT", "5000"))
-    create_app().run(host=host, port=port)
+    _run_server(create_app(), host, port)

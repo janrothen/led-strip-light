@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import werkzeug
 
@@ -473,3 +473,20 @@ def test_start_effect_exception_returns_400():
 
     assert response.status_code == 400
     assert "bad param" in response.get_json()["error"]
+
+
+def test_run_server_shuts_down_controller_on_exit():
+    """_run_server must turn the strip off even when the server loop exits."""
+    import pytest
+
+    from http_server import _run_server
+
+    app = Mock()
+    controller = Mock()
+    app.config = {"LED_CONTROLLER": controller}
+    app.run.side_effect = SystemExit(0)
+
+    with patch("http_server.signal.signal"), pytest.raises(SystemExit):
+        _run_server(app, "127.0.0.1", 5000)
+
+    controller.shutdown.assert_called_once()

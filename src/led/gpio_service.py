@@ -43,3 +43,8 @@ class GPIOService:
         self.pi.set_PWM_dutycycle(self._red_pin, color.r)
         self.pi.set_PWM_dutycycle(self._green_pin, color.g)
         self.pi.set_PWM_dutycycle(self._blue_pin, color.b)
+
+    def stop(self) -> None:
+        """Release the connection to the pigpio daemon. Safe to call twice."""
+        if self.pi.connected:
+            self.pi.stop()
