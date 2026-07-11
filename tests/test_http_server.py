@@ -172,6 +172,16 @@ def test_set_color():
     led_controller.set_color.assert_called_once_with(Color(255, 0, 0))
 
 
+def test_set_color_invalid_returns_400():
+    client, led_controller, _ = _build_client()
+
+    response = client.post("/color/notacolor")
+
+    assert response.status_code == 400
+    assert "Unknown color" in response.get_json()["error"]
+    led_controller.set_color.assert_not_called()
+
+
 def test_get_brightness():
     client, led_controller, _ = _build_client()
     led_controller.get_brightness_percentage.return_value = 75
