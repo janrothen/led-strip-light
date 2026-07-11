@@ -484,11 +484,15 @@ def test_run_server_shuts_down_controller_on_exit():
     app = Mock()
     controller = Mock()
     app.config = {"LED_CONTROLLER": controller}
-    app.run.side_effect = SystemExit(0)
 
-    with patch("http_server.signal.signal"), pytest.raises(SystemExit):
+    with (
+        patch("http_server.signal.signal"),
+        patch("http_server.serve", side_effect=SystemExit(0)) as mock_serve,
+        pytest.raises(SystemExit),
+    ):
         _run_server(app, "127.0.0.1", 5000)
 
+    mock_serve.assert_called_once_with(app, host="127.0.0.1", port=5000)
     controller.shutdown.assert_called_once()
 
 

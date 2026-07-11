@@ -13,6 +13,7 @@ import threading
 from collections.abc import Callable
 
 from flask import Flask, Response, jsonify, request, send_from_directory
+from waitress import serve
 
 from config.config_manager import ConfigManager
 from led.color import Color
@@ -343,7 +344,10 @@ def create_app(
 
 
 def _run_server(app: Flask, host: str, port: int) -> None:
-    """Serve ``app`` until SIGTERM/SIGINT, then turn the strip off.
+    """Serve ``app`` with waitress until SIGTERM/SIGINT, then turn the strip off.
+
+    waitress is a production WSGI server; Flask's built-in dev server is
+    single-purpose debug tooling and warns against production use.
 
     systemd stops the unit with SIGTERM; without cleanup the pigpio daemon
     keeps the last PWM duty cycles and the LEDs stay lit after the service
@@ -356,7 +360,7 @@ def _run_server(app: Flask, host: str, port: int) -> None:
     signal.signal(signal.SIGTERM, _terminate)
     signal.signal(signal.SIGINT, _terminate)
     try:
-        app.run(host=host, port=port)
+        serve(app, host=host, port=port)
     finally:
         app.config["LED_CONTROLLER"].shutdown()
 

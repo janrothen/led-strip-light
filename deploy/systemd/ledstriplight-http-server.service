@@ -33,7 +33,6 @@ StandardError=journal
 Restart=on-failure
 RestartSec=10
 SyslogIdentifier=ledstriplight
-Environment=FLASK_DEBUG=0
 Environment=FLASK_HOST=0.0.0.0
 Environment=FLASK_PORT=5000
 
