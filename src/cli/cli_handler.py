@@ -125,7 +125,8 @@ Examples:
         "--duration",
         type=_positive_int,
         default=2000,
-        help="Breathing cycle duration in milliseconds (default: 2000)",
+        help="Fade duration in ms for each half-cycle, i.e. one fade-in or "
+        "fade-out (default: 2000)",
     )
 
     # Random effect
