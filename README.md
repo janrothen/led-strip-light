@@ -332,6 +332,20 @@ You can integrate the LED strip with Homebridge for Apple HomeKit support. All i
 
 See [`README.md`](deploy/homebridge/README.md) for details on how to set up Homebridge integration and connect it to the Flask server endpoints.
 
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `OSError: Cannot connect to pigpio daemon` on startup | `pigpiod` isn't running | `sudo systemctl enable --now pigpiod` |
+| App starts but the strip never lights up | Wrong GPIO pins, or wiring doesn't match `config.toml` | Verify the `[pins]` **BCM** numbers against your wiring (see the [wiring guide](https://janrothen.github.io/led-strip-light/pi-zero-w-rgb-led-strip-control.html)) |
+| `BCM pin number N is out of range (0-27)` | A `[pins]` value uses a physical-header number instead of a BCM GPIO number | Use BCM numbering (0–27) in `config.toml` |
+| `No [profile.*] sections found` / `Duplicate profile start_hour values` | `config.toml` has no profiles, or two share a `start_hour` | Define at least one `[profile.NAME]` and give each a distinct `start_hour` (0–23) |
+| `POST /color` or `/effects/*` returns **400** `Unknown color` | Color name/hex isn't recognized | Use a known name or 6-digit hex (e.g. `red`, `FF6347`) |
+| `POST /effects/*` returns **503** `previous effect is still stopping` | The prior effect hasn't stopped yet | Retry after a moment; the running effect exits on its next interrupt poll |
+| Server unreachable from other devices | Bound to localhost, or blocked by the firewall | Set `FLASK_HOST=0.0.0.0` and allow the port (see [`deploy/ufw/`](deploy/ufw/README.md)) |
+| LEDs stay lit after `systemctl stop` | Old build without SIGTERM cleanup | Update to a build where `http_server` turns the strip off on shutdown |
+| Homebridge crashes with `SIGILL` on a Pi Zero W | apt package ships an ARMv7+ Node.js binary | Use the ARMv6 npm install method in [`deploy/homebridge/armv6/`](deploy/homebridge/armv6/README.md) |
+
 ## Contributing
 
 Found a bug or have an idea? Open an issue or send a PR.
