@@ -202,6 +202,18 @@ def test_set_brightness():
     led_controller.set_brightness.assert_called_once_with(80)
 
 
+def test_set_brightness_out_of_range_returns_400():
+    client, led_controller, _ = _build_client()
+    led_controller.set_brightness.side_effect = ValueError(
+        "Brightness must be between 0 and 100"
+    )
+
+    response = client.post("/brightness/150")
+
+    assert response.status_code == 400
+    assert "Brightness" in response.get_json()["error"]
+
+
 def test_start_campfire_effect():
     client, _, effect_runner = _build_client()
     response = client.post("/effects/campfire", json={"duration": 5000})

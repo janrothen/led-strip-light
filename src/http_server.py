@@ -281,7 +281,10 @@ def create_app(
     def set_brightness(value):
         """Set brightness percentage (0–100), preserving hue. 400 if out of range."""
         _stop_active_effect()
-        led_controller.set_brightness(value)
+        try:
+            led_controller.set_brightness(value)
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
         return Response(status=200)
 
     # --- Effect management ----------------------------------------------------
