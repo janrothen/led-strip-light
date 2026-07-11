@@ -73,7 +73,9 @@ class TestLEDStripLightController:
 
         assert controller.get_display_color() == test_color
 
-    def test_get_display_color_falls_back_to_last_known_when_black(self, mock_gpio_service):
+    def test_get_display_color_falls_back_to_last_known_when_black(
+        self, mock_gpio_service
+    ):
         """get_display_color returns last known color instead of black to avoid NaN hue."""
         last_color = Color(255, 0, 0)
         mock_gpio_service.get_color.return_value = last_color
@@ -83,7 +85,9 @@ class TestLEDStripLightController:
         mock_gpio_service.get_color.return_value = Color.BLACK
         assert controller.get_display_color() == last_color
 
-    def test_get_display_color_falls_back_to_warm_yellow_with_no_history(self, mock_gpio_service):
+    def test_get_display_color_falls_back_to_warm_yellow_with_no_history(
+        self, mock_gpio_service
+    ):
         """get_display_color falls back to WARM_YELLOW when no color has ever been set."""
         mock_gpio_service.get_color.return_value = Color.BLACK
         controller = LEDStripLightController(gpio_service=mock_gpio_service)
@@ -174,7 +178,10 @@ class TestLEDStripLightController:
         controller = LEDStripLightController(gpio_service=mock_gpio_service)
         mock_thread = Mock()
         mock_thread.name = "test_sequence"
-        mock_thread.is_alive.side_effect = [True, False]  # alive then stopped after join
+        mock_thread.is_alive.side_effect = [
+            True,
+            False,
+        ]  # alive then stopped after join
         mock_thread_class.return_value = mock_thread
 
         def dummy_effect():

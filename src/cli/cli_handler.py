@@ -6,7 +6,6 @@ from collections.abc import Callable
 from led.color import Color
 from led.effect_runner import EffectRunner
 
-
 _GAMMA_HELP = "Perceptual gamma (e.g., 2.2). Default: effect default"
 _DURATION_HELP = "Total duration in milliseconds (default: run until interrupted)"
 
@@ -146,9 +145,7 @@ Examples:
     )
 
     # Candle effect (gentler flicker)
-    candle_parser = subparsers.add_parser(
-        "candle", help="Gentle candle flame flicker"
-    )
+    candle_parser = subparsers.add_parser("candle", help="Gentle candle flame flicker")
     _add_flame_arguments(
         candle_parser,
         update_hz=40,

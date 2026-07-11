@@ -26,7 +26,9 @@ class SequencedStrip(Protocol):
 
     def set_color(self, color: Color) -> None: ...
     def is_interrupted(self) -> bool: ...
-    def run_sequence(self, func: Callable, /, *args: object, **kwargs: object) -> None: ...
+    def run_sequence(
+        self, func: Callable, /, *args: object, **kwargs: object
+    ) -> None: ...
 
 
 class ProfileManagerLike(Protocol):
@@ -44,7 +46,9 @@ class EffectRunner:
     """
 
     def __init__(
-        self, strip_controller: SequencedStrip, profile_manager: ProfileManagerLike | None = None
+        self,
+        strip_controller: SequencedStrip,
+        profile_manager: ProfileManagerLike | None = None,
     ) -> None:
         self.strip = strip_controller
         self.profile_manager = profile_manager
