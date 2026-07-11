@@ -506,3 +506,22 @@ def test_start_effect_timeout_returns_503():
 
     assert response.status_code == 503
     assert "still stopping" in response.get_json()["error"]
+
+
+def test_start_campfire_effect_with_base_color():
+    client, _, effect_runner = _build_client()
+
+    response = client.post("/effects/campfire", json={"base_color": "FF4E04"})
+
+    assert response.status_code == 200
+    kwargs = effect_runner.run_campfire_effect.call_args[1]
+    assert kwargs["base_color"] == Color(255, 78, 4)
+
+
+def test_start_candle_effect_with_invalid_base_color_returns_400():
+    client, _, _ = _build_client()
+
+    response = client.post("/effects/candle", json={"base_color": "notacolor"})
+
+    assert response.status_code == 400
+    assert "Unknown color" in response.get_json()["error"]

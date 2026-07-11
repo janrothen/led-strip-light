@@ -77,7 +77,10 @@ def _is_led_active(led_controller) -> bool:
 
 
 def _parse_flame_kwargs(data: dict) -> dict:
-    return {k: coerce(data[k]) for k, coerce in _FLAME_COERCERS.items() if k in data}
+    kwargs = {k: coerce(data[k]) for k, coerce in _FLAME_COERCERS.items() if k in data}
+    if "base_color" in data:
+        kwargs["base_color"] = Color.parse(data["base_color"])
+    return kwargs
 
 
 def _parse_aurora_kwargs(data: dict) -> dict:
