@@ -136,6 +136,13 @@ class ConfigManager:
         self._validate_pin(pin)
         return pin
 
+    # Broadcom (BCM) GPIO numbers exposed on the Raspberry Pi 40-pin header.
+    _MIN_BCM_PIN = 0
+    _MAX_BCM_PIN = 27
+
     def _validate_pin(self, pin: int) -> None:
-        if not (1 <= pin <= 40):
-            raise ValueError(f"Pin number {pin} is out of range (1-40)")
+        if not (self._MIN_BCM_PIN <= pin <= self._MAX_BCM_PIN):
+            raise ValueError(
+                f"BCM pin number {pin} is out of range "
+                f"({self._MIN_BCM_PIN}-{self._MAX_BCM_PIN})"
+            )
