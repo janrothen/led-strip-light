@@ -11,15 +11,21 @@ MAX_COLOR_VALUE: int = 255
 @dataclass(frozen=True, eq=True)
 class Color:
     """
-    Represents an RGB color with validation and utility methods.
+    Represents an RGB color with clamping and utility methods.
 
-    Provides a clean interface for working with RGB colors, including
-    predefined color constants, validation, and conversion methods.
+    Channel values are coerced, not validated: out-of-range inputs are
+    clamped into 0-255 and floats are truncated to int, so a Color always
+    holds a valid PWM duty cycle. Callers that need to detect out-of-range
+    inputs must check before constructing.
+
+    Provides predefined color constants, parsing (names/hex), and
+    conversion methods.
 
     Usage:
         red = Color(255, 0, 0)
         green = Color.GREEN
         custom = Color.from_hex("#FF5733")
+        clamped = Color(300, -5, 0)  # == Color(255, 0, 0)
         r, g, b = red
     """
 
@@ -52,7 +58,7 @@ class Color:
 
     @staticmethod
     def _clamp(value: Any) -> int:
-        """Clamp color value between MIN and MAX."""
+        """Truncate to int and clamp into [MIN_COLOR_VALUE, MAX_COLOR_VALUE]."""
         return max(MIN_COLOR_VALUE, min(MAX_COLOR_VALUE, int(value)))
 
     @property
