@@ -32,7 +32,7 @@ The guide [How to control a RGB LED Strip Light with a Raspberry Pi Zero W](http
 
 **Software**
 - Python 3.13+
-- pip dependencies: `flask`, `pigpio` (see [pyproject.toml](pyproject.toml))
+- pip dependencies: `flask`, `waitress`, `pigpio` (see [pyproject.toml](pyproject.toml))
 
 ## Architecture
 
@@ -243,7 +243,7 @@ A responsive web interface is available for controlling the LED strip through yo
 **Endpoints:**
 
 Core control:
-* `POST /on` — Turn the light on (white)
+* `POST /on` — Turn the light on (restores last color; warm yellow by default)
 * `POST /off` — Turn the light off (black)
 * `GET /status` — Get on/off state (1/0)
 * `GET /color` — Get current color (hex with #)
@@ -255,7 +255,7 @@ Effects management:
 * `GET /effects` — List available effects + currently active
 * `POST /effects/stop` — Stop any running effect
 * `POST /effects/breathing` JSON: `{ "color": "FF0000", "duration": 2000 }`
-* `POST /effects/campfire` (optional JSON overrides: duration, update_hz, min_brightness, max_brightness, hue_jitter, saturation, spark_chance, spark_gain, tau_ms, gamma)
+* `POST /effects/campfire` (optional JSON overrides: base_color, duration, update_hz, min_brightness, max_brightness, hue_jitter, saturation, spark_chance, spark_gain, tau_ms, gamma)
 * `POST /effects/candle` (same override keys as campfire)
 * `POST /effects/aurora` (optional JSON overrides: duration, update_hz, hue_min, hue_max, saturation, min_brightness, max_brightness, hue_step, brightness_step, tau_ms, gamma)
 * `POST /effects/heartbeat` (optional JSON overrides: color, beat_ms, gap_ms, rest_ms, second_beat_scale)
