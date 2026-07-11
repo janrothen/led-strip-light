@@ -259,9 +259,15 @@ def create_app(
 
     @app.route("/color/<value>", methods=["POST"])
     def set_color(value):
-        """Set the strip to a color (name or hex RRGGBB, with or without '#'). 200 on success."""
+        """Set the strip to a color (name or hex RRGGBB, with or without '#').
+
+        200 on success, 400 for an unknown name or malformed hex value.
+        """
+        try:
+            color = Color.parse(value)
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
         _stop_active_effect()
-        color = Color.parse(value)
         led_controller.set_color(color)
         return Response(status=200)
 
