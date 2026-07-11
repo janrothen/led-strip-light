@@ -246,6 +246,7 @@ class TestLEDStripLightController:
         mock_thread_class.assert_called_once_with(
             target=led_controller._run_sequence,
             args=(dummy_effect, ("arg1", "arg2"), {"kwarg1": "value1"}),
+            name="effect-dummy_effect",
         )
         mock_thread.start.assert_called_once()
         assert led_controller._sequence == mock_thread
@@ -309,7 +310,9 @@ class TestLEDStripLightController:
         led_controller.run_sequence(dummy_effect, "test_arg")
 
         mock_thread_class.assert_called_once_with(
-            target=led_controller._run_sequence, args=(dummy_effect, ("test_arg",), {})
+            target=led_controller._run_sequence,
+            args=(dummy_effect, ("test_arg",), {}),
+            name="effect-dummy_effect",
         )
         mock_thread.start.assert_called_once()
 

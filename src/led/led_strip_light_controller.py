@@ -170,7 +170,9 @@ class LEDStripLightController:
         with self._lifecycle_lock, self._lock:
             logging.debug(f"Starting sequence: {func.__name__}")
             self._sequence = Thread(
-                target=self._run_sequence, args=(func, args, kwargs)
+                target=self._run_sequence,
+                args=(func, args, kwargs),
+                name=f"effect-{func.__name__}",
             )
             self.resume()
             self._sequence.start()
