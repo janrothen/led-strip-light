@@ -384,6 +384,21 @@ class TestEffects:
         with pytest.raises(ValueError, match="update_hz"):
             aurora_effect(mock_strip, update_hz=0)
 
+    def test_aurora_effect_rejects_inverted_brightness_bounds(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="min_brightness"):
+            aurora_effect(mock_strip, min_brightness=0.9, max_brightness=0.2)
+
+    def test_flickering_effect_rejects_inverted_brightness_bounds(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="min_brightness"):
+            flickering_effect(mock_strip, min_brightness=0.9, max_brightness=0.2)
+
+    def test_flickering_effect_rejects_out_of_unit_brightness(self):
+        mock_strip = Mock()
+        with pytest.raises(ValueError, match="min_brightness"):
+            flickering_effect(mock_strip, min_brightness=-0.1, max_brightness=1.5)
+
     def test_aurora_effect_rejects_bad_hue_range(self):
         mock_strip = Mock()
         with pytest.raises(ValueError, match="hue_min"):
