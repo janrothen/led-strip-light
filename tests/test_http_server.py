@@ -490,3 +490,15 @@ def test_run_server_shuts_down_controller_on_exit():
         _run_server(app, "127.0.0.1", 5000)
 
     controller.shutdown.assert_called_once()
+
+
+def test_start_effect_timeout_returns_503():
+    client, _, effect_runner = _build_client()
+    effect_runner.run_breathing_effect.side_effect = TimeoutError(
+        "Sequence did not stop within 5s"
+    )
+
+    response = client.post("/effects/breathing", json={"color": "FF0000"})
+
+    assert response.status_code == 503
+    assert "still stopping" in response.get_json()["error"]
