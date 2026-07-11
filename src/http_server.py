@@ -15,6 +15,7 @@ from collections.abc import Callable
 from flask import Flask, Response, jsonify, request, send_from_directory
 from waitress import serve
 
+from bootstrap import build_dependencies
 from config.config_manager import ConfigManager
 from led.color import Color
 from led.effect_runner import EffectRunner
@@ -96,27 +97,6 @@ def _handle_lightning(runner: EffectRunner, data: dict) -> None:
     if "background_color" in data:
         kwargs["background_color"] = Color.parse(data["background_color"])
     runner.run_lightning_effect(**kwargs)
-
-
-def _resolve_dependencies(
-    config_manager, gpio_service, led_controller, profile_manager, effect_runner
-):
-    if config_manager is None:
-        config_manager = ConfigManager()
-    if led_controller is None:
-        if gpio_service is None:
-            pin_assignment = config_manager.get_pin_assignment()
-            gpio_service = GPIOService(
-                red_pin=pin_assignment.red,
-                green_pin=pin_assignment.green,
-                blue_pin=pin_assignment.blue,
-            )
-        led_controller = LEDStripLightController(gpio_service=gpio_service)
-    if profile_manager is None:
-        profile_manager = ProfileManager(config_manager)
-    if effect_runner is None:
-        effect_runner = EffectRunner(led_controller, profile_manager)
-    return config_manager, led_controller, profile_manager, effect_runner
 
 
 def _handle_breathing(runner: EffectRunner, data: dict) -> None:
@@ -205,8 +185,12 @@ def create_app(
     # the firewall rules in deploy/ufw and never expose it to the internet.
     app = Flask(__name__, static_folder="static", static_url_path="")  # NOSONAR
 
-    _, led_controller, _, effect_runner = _resolve_dependencies(
-        config_manager, gpio_service, led_controller, profile_manager, effect_runner
+    _, led_controller, _, effect_runner = build_dependencies(
+        config_manager=config_manager,
+        gpio_service=gpio_service,
+        led_controller=led_controller,
+        profile_manager=profile_manager,
+        effect_runner=effect_runner,
     )
 
     active_effect = {"name": None}
