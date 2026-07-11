@@ -32,9 +32,8 @@ def main() -> None:
     # Execute the requested effect
     execute_effect(effect_runner, args)
 
-    # Main loop
+    # Main loop — poll the shutdown flag; stay quiet to avoid log spam.
     while not killer.kill_now:
-        logging.info("Running...")
         time.sleep(1)
 
     # Cleanup — stops any running sequence, turns off, and releases GPIO.
