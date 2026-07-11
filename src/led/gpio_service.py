@@ -14,12 +14,7 @@ class GPIOService:
     Uses the pigpio library via shell commands to set and get PWM values on GPIO pins.
     """
 
-    def __init__(
-        self,
-        red_pin: int | None = None,
-        green_pin: int | None = None,
-        blue_pin: int | None = None,
-    ) -> None:
+    def __init__(self, red_pin: int, green_pin: int, blue_pin: int) -> None:
         self.pi = pigpio.pi()
         if not self.pi.connected:
             raise OSError("Cannot connect to pigpio daemon")
