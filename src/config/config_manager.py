@@ -23,7 +23,6 @@ START_HOUR = "start_hour"
 R = "red"
 G = "green"
 B = "blue"
-COLOR_CHANNELS = (R, G, B)
 
 
 class ConfigManager:
@@ -113,19 +112,15 @@ class ConfigManager:
         Get GPIO pin number for a specific color channel.
 
         Args:
-            color: Color channel ('red', 'green', or 'blue')
+            color: Color channel ('red', 'green', or 'blue'). Callers pass the
+                R/G/B constants, so no channel-name validation is needed here.
 
         Returns:
             GPIO pin number
 
         Raises:
-            ValueError: If color is not valid or pin not configured
+            ValueError: If the pin is not configured or not a valid BCM number
         """
-        if color not in COLOR_CHANNELS:
-            raise ValueError(
-                f"Invalid color '{color}'. Must be one of: {COLOR_CHANNELS}"
-            )
-
         try:
             pin = self._config[PINS][color]
         except KeyError as e:
