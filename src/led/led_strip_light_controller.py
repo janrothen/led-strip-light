@@ -23,10 +23,13 @@ class LEDStripLightController:
     The interrupt flag is cooperative: effect functions must poll
     ``is_interrupted()`` in their loops and return early when it is set.
 
-    Thread safety: color writes and sequence lifecycle are guarded by an
-    ``RLock``; the interrupt flag is a ``threading.Event``. The lock is
-    released around ``Thread.join()`` so the worker's finally-block can
-    reacquire it to clear ``_sequence``.
+    Thread safety: color writes and shared state are guarded by ``_lock``
+    (an ``RLock``); the interrupt flag is a ``threading.Event``. Sequence
+    lifecycle transitions (stop → start) are additionally serialized by a
+    dedicated ``_lifecycle_lock`` held across ``run_sequence``, so concurrent
+    callers cannot start two effect threads. ``_lock`` is released around
+    ``Thread.join()`` so the worker's finally-block can reacquire it to clear
+    ``_sequence``.
     """
 
     def __init__(self, gpio_service: GPIOService) -> None:
@@ -35,6 +38,11 @@ class LEDStripLightController:
         self._sequence: Thread | None = None
         self._last_color: Color | None = None
         self._lock = RLock()
+        # Serializes sequence lifecycle transitions (stop → start). Separate
+        # from _lock because stop_current_sequence must release _lock across
+        # join(), which would otherwise open a stop/start race between two
+        # concurrent run_sequence() callers.
+        self._lifecycle_lock = RLock()
 
     def switch_on(self) -> None:
         """Turn the strip on, restoring the last known color (warm yellow if none)."""
@@ -137,13 +145,19 @@ class LEDStripLightController:
 
     # region Sequence control
     def run_sequence(self, func: Callable, *args: Any, **kwargs: Any) -> None:
-        """Stop any running sequence, then start a new one in a background thread."""
-        self.stop_current_sequence()
-        self.start_sequence(func, *args, **kwargs)
+        """Stop any running sequence, then start a new one in a background thread.
+
+        The stop→start transition is atomic: concurrent callers serialize on
+        the lifecycle lock, so two run_sequence() calls can never leave two
+        effect threads writing to the strip at the same time.
+        """
+        with self._lifecycle_lock:
+            self.stop_current_sequence()
+            self.start_sequence(func, *args, **kwargs)
 
     def start_sequence(self, func: Callable, *args: Any, **kwargs: Any) -> None:
         """Start ``func`` in a background thread without stopping the current sequence."""
-        with self._lock:
+        with self._lifecycle_lock, self._lock:
             logging.debug(f"Starting sequence: {func.__name__}")
             self._sequence = Thread(
                 target=self._run_sequence, args=(func, args, kwargs)
@@ -152,29 +166,31 @@ class LEDStripLightController:
             self._sequence.start()
 
     def stop_current_sequence(self, timeout: int = 5) -> None:
-        with self._lock:
-            sequence = self._sequence
-            if sequence is None or not sequence.is_alive():
-                self._sequence = None
-                logging.debug("No sequence to stop.")
-                return
-            logging.debug("Stopping sequence: %s", sequence.name)
-            self.interrupt()
+        with self._lifecycle_lock:
+            with self._lock:
+                sequence = self._sequence
+                if sequence is None or not sequence.is_alive():
+                    self._sequence = None
+                    logging.debug("No sequence to stop.")
+                    return
+                logging.debug("Stopping sequence: %s", sequence.name)
+                self.interrupt()
 
-        # Release the lock across join() so the worker's finally-block can
-        # reacquire it to clear _sequence without deadlocking.
-        sequence.join(timeout)
+            # Release _lock (but not the lifecycle lock) across join() so the
+            # worker's finally-block can reacquire it to clear _sequence
+            # without deadlocking.
+            sequence.join(timeout)
 
-        with self._lock:
-            if sequence.is_alive():
-                logging.warning(
-                    "Sequence %s did not stop within %ds timeout",
-                    sequence.name,
-                    timeout,
-                )
-                raise TimeoutError(f"Sequence did not stop within {timeout}s")
-            if self._sequence is sequence:
-                self._sequence = None
+            with self._lock:
+                if sequence.is_alive():
+                    logging.warning(
+                        "Sequence %s did not stop within %ds timeout",
+                        sequence.name,
+                        timeout,
+                    )
+                    raise TimeoutError(f"Sequence did not stop within {timeout}s")
+                if self._sequence is sequence:
+                    self._sequence = None
 
     def is_sequence_running(self) -> bool:
         """Return True if a sequence thread is currently alive."""
