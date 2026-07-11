@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import random
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from typing import Any, ClassVar
 
@@ -142,7 +143,7 @@ class Color:
     def __repr__(self) -> str:
         return f"Color({self.r}, {self.g}, {self.b})"
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[int]:
         """Allow unpacking: r, g, b = color"""
         return iter(self.rgb)
 
