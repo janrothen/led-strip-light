@@ -11,7 +11,7 @@ class GPIOService:
 
     This service provides an abstraction layer for hardware interactions,
     specifically for controlling LED brightness through PWM (Pulse Width Modulation).
-    Uses the pigpio library via shell commands to set and get PWM values on GPIO pins.
+    Uses the pigpio Python client to set and get PWM duty cycles on GPIO pins.
     """
 
     def __init__(self, red_pin: int, green_pin: int, blue_pin: int) -> None:
