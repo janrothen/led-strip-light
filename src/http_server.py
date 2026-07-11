@@ -195,9 +195,13 @@ def create_app(
     profile_manager: ProfileManager | None = None,
     effect_runner: EffectRunner | None = None,
 ) -> Flask:
-    # CSRF protection is not required: this API has no session cookies or
-    # authentication, and all mutation endpoints consume JSON (not form data),
-    # so cross-origin requests are blocked by browser CORS preflight.
+    # Security posture: this API has no authentication or session cookies, so
+    # classic credential-stealing CSRF does not apply. Note that CORS preflight
+    # does NOT protect the mutating endpoints: POSTs without a body (/on, /off,
+    # /color/<v>, /effects/<name>) are "simple" cross-origin requests, so any
+    # web page the operator visits could trigger them (it cannot read the
+    # response). The API is intended for a trusted LAN only — keep it behind
+    # the firewall rules in deploy/ufw and never expose it to the internet.
     app = Flask(__name__, static_folder="static", static_url_path="")  # NOSONAR
 
     _, led_controller, _, effect_runner = _resolve_dependencies(
