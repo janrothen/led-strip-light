@@ -525,3 +525,12 @@ def test_start_candle_effect_with_invalid_base_color_returns_400():
 
     assert response.status_code == 400
     assert "Unknown color" in response.get_json()["error"]
+
+
+def test_index_serves_web_ui():
+    client, _, _ = _build_client()
+
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert b"<html" in response.data.lower()

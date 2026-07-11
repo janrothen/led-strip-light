@@ -68,23 +68,12 @@ class TestEffects:
             # First call is the while loop check, then fade_effect calls
             return call_count > 6
 
-        # Mock both the property and method since breathing_effect uses _interrupt property
-        # but also calls is_interrupted() method
-        mock_strip._interrupt = False  # Start with False
         mock_strip.is_interrupted.side_effect = mock_interrupted
 
         # Import the module to patch the function in the right namespace
         from led import effects
 
         with patch.object(effects, "fade_effect") as mock_fade:
-            # After a few calls, set interrupt to True to break the loop
-            def side_effect_with_interrupt(*args, **kwargs):
-                nonlocal call_count
-                if call_count > 3:
-                    mock_strip._interrupt = True
-                return None
-
-            mock_fade.side_effect = side_effect_with_interrupt
             breathing_effect(mock_strip, Color.RED, duration=100)
 
         # Should call fade_effect for fade in and fade out

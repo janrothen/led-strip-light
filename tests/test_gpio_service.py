@@ -8,10 +8,19 @@ Tests GPIO pin control functionality with mocked system calls.
 
 import pytest
 
+from led.gpio_service import GPIOService
+
 from .conftest import TestColors
 
 
 class TestGPIOService:
+    def test_raises_when_pigpiod_unavailable(self, patch_pigpio):
+        """A down pigpio daemon must fail fast with an actionable OSError."""
+        patch_pigpio.connected = False
+
+        with pytest.raises(OSError, match="pigpio daemon"):
+            GPIOService(red_pin=18, green_pin=19, blue_pin=20)
+
     @pytest.mark.parametrize(
         "color",
         [
