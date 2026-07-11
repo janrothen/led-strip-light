@@ -18,6 +18,14 @@ def _positive_int(value):
     return v
 
 
+def _non_negative_int(value):
+    """argparse type: integer >= 0."""
+    v = int(value)
+    if v < 0:
+        raise argparse.ArgumentTypeError(f"{value} must be a non-negative integer")
+    return v
+
+
 def _unit_float(value):
     """argparse type: float in [0.0, 1.0]."""
     v = float(value)
@@ -103,7 +111,7 @@ Examples:
     )
     profile_parser.add_argument(
         "--duration",
-        type=int,
+        type=_positive_int,
         default=10000,
         help="Fade duration in milliseconds (default: 10000)",
     )
@@ -115,7 +123,7 @@ Examples:
     )
     breathing_parser.add_argument(
         "--duration",
-        type=int,
+        type=_positive_int,
         default=2000,
         help="Breathing cycle duration in milliseconds (default: 2000)",
     )
@@ -124,7 +132,7 @@ Examples:
     random_parser = subparsers.add_parser("random", help="Random color changes")
     random_parser.add_argument(
         "--interval",
-        type=int,
+        type=_positive_int,
         default=2000,
         help="Interval between color changes in milliseconds (default: 2000)",
     )
@@ -178,13 +186,13 @@ Examples:
     )
     heartbeat_parser.add_argument(
         "--gap-ms",
-        type=int,
+        type=_non_negative_int,
         default=120,
         help="Dark gap (ms) between the two beats (default: 120)",
     )
     heartbeat_parser.add_argument(
         "--rest-ms",
-        type=int,
+        type=_non_negative_int,
         default=600,
         help="Rest (ms) at black after the second beat (default: 600)",
     )
@@ -208,7 +216,7 @@ Examples:
     rainbow_parser.add_argument(
         "--duration",
         dest="duration_ms",
-        type=int,
+        type=_positive_int,
         default=None,
         help=_DURATION_HELP,
     )
@@ -253,13 +261,13 @@ Examples:
     )
     lightning_parser.add_argument(
         "--min-gap-ms",
-        type=int,
+        type=_non_negative_int,
         default=2000,
         help="Minimum delay between strikes in ms (default: 2000)",
     )
     lightning_parser.add_argument(
         "--max-gap-ms",
-        type=int,
+        type=_non_negative_int,
         default=8000,
         help="Maximum delay between strikes in ms (default: 8000)",
     )
@@ -289,14 +297,14 @@ Examples:
     )
     lightning_parser.add_argument(
         "--max-aftershocks",
-        type=int,
+        type=_non_negative_int,
         default=2,
         help="Maximum aftershocks per strike (default: 2)",
     )
     lightning_parser.add_argument(
         "--duration",
         dest="duration_ms",
-        type=int,
+        type=_positive_int,
         default=None,
         help=_DURATION_HELP,
     )
@@ -316,7 +324,7 @@ Examples:
     )
     cycle_parser.add_argument(
         "--duration",
-        type=int,
+        type=_positive_int,
         default=2000,
         help="Duration for each color in milliseconds (default: 2000)",
     )
@@ -337,7 +345,7 @@ Examples:
     )
     fade_parser.add_argument(
         "--duration",
-        type=int,
+        type=_positive_int,
         default=5000,
         help="Fade duration in milliseconds (default: 5000)",
     )
@@ -366,7 +374,7 @@ def _add_flame_arguments(
     subparser.add_argument(
         "--duration",
         dest="duration_ms",
-        type=int,
+        type=_positive_int,
         default=None,
         help=_DURATION_HELP,
     )
@@ -431,7 +439,7 @@ def _add_aurora_arguments(subparser: argparse.ArgumentParser) -> None:
     subparser.add_argument(
         "--duration",
         dest="duration_ms",
-        type=int,
+        type=_positive_int,
         default=None,
         help=_DURATION_HELP,
     )
