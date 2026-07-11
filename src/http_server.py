@@ -72,7 +72,7 @@ _LIGHTNING_COERCERS = {
 }
 
 
-def _is_led_active(led_controller) -> bool:
+def _is_led_active(led_controller: LEDStripLightController) -> bool:
     return led_controller.is_on() or led_controller.is_sequence_running()
 
 
