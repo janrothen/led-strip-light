@@ -626,3 +626,32 @@ class TestCLIHandler:
             _positive_float("0.0")
         with pytest.raises(argparse.ArgumentTypeError):
             _positive_float("-1.0")
+
+
+class TestDurationValidation:
+    """Durations and intervals must be rejected at parse time, not crash the effect thread."""
+
+    @pytest.mark.parametrize(
+        "argv",
+        [
+            ["breathing", "--duration", "-100"],
+            ["breathing", "--duration", "0"],
+            ["profile", "--duration", "-1"],
+            ["random", "--interval", "0"],
+            ["cycle", "--duration", "-5"],
+            ["fade", "--duration", "0"],
+            ["campfire", "--duration", "-1"],
+            ["heartbeat", "--gap-ms", "-1"],
+            ["lightning", "--min-gap-ms", "-1"],
+        ],
+    )
+    def test_non_positive_durations_rejected(self, argv):
+        parser = create_parser()
+        with pytest.raises(SystemExit):
+            parser.parse_args(argv)
+
+    def test_zero_gap_ms_accepted(self):
+        parser = create_parser()
+        args = parser.parse_args(["heartbeat", "--gap-ms", "0", "--rest-ms", "0"])
+        assert args.gap_ms == 0
+        assert args.rest_ms == 0
