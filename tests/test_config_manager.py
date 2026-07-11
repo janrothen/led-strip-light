@@ -126,7 +126,7 @@ blue = 1
         finally:
             os.unlink(config_path)
 
-    @pytest.mark.parametrize("pin", [0, 41, 100, -1])
+    @pytest.mark.parametrize("pin", [28, 41, 100, -1])
     def test_pin_out_of_range_raises(self, pin):
         config_content = f"""
 [pins]
