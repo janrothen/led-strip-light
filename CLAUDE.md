@@ -39,7 +39,7 @@ The application has two entry points that share the same core:
 - **`run.py`** — CLI entry point; parses args via `cli_handler` (module-level `create_parser` / `execute_effect`), runs one effect, then loops until SIGTERM
 - **`http_server.py`** — Flask REST API; uses a `create_app()` factory that accepts dependency injection for testing
 
-Both entry points wire the same dependency chain:
+Both entry points wire the same dependency chain via `bootstrap.build_dependencies()` (any part can be injected for testing):
 
 ```
 ConfigManager (reads config.toml)
@@ -90,6 +90,7 @@ led-strip-light/
 │   │   └── index.html           # Web UI
 │   ├── utils/
 │   │   └── graceful_shutdown.py
+│   ├── bootstrap.py             # Shared dependency wiring for both entry points
 │   ├── config.toml              # GPIO pins and color profiles
 │   ├── http_server.py           # Flask REST API entry point
 │   └── run.py                   # CLI entry point
@@ -107,6 +108,7 @@ led-strip-light/
 | `led/profile_manager.py` | Selects color profile by time of day |
 | `config/config_manager.py` | Reads `config.toml` via `tomllib` |
 | `cli/cli_handler.py` | argparse setup and effect dispatch |
+| `bootstrap.py` | `build_dependencies()` — shared wiring for CLI and HTTP entry points |
 | `utils/graceful_shutdown.py` | SIGTERM/SIGINT handler |
 | `tests/conftest.py` | Shared fixtures; `patch_pigpio` mocks hardware |
 

@@ -27,11 +27,11 @@ def m():
 
     with (
         patch("run.GracefulShutdown", return_value=mock_gs),
-        patch("run.ConfigManager", return_value=mock_config),
-        patch("run.GPIOService") as MockGPIOService,
-        patch("run.LEDStripLightController") as MockController,
-        patch("run.ProfileManager") as MockProfileManager,
-        patch("run.EffectRunner") as MockEffectRunner,
+        patch("bootstrap.ConfigManager", return_value=mock_config),
+        patch("bootstrap.GPIOService") as MockGPIOService,
+        patch("bootstrap.LEDStripLightController") as MockController,
+        patch("bootstrap.ProfileManager") as MockProfileManager,
+        patch("bootstrap.EffectRunner") as MockEffectRunner,
         patch("run.create_parser", return_value=mock_parser) as mock_create_parser,
         patch("run.execute_effect") as mock_execute_effect,
         patch("run.time.sleep"),
@@ -56,12 +56,14 @@ def m():
 
 def test_gpio_service_wired_with_pin_assignment(m):
     main()
-    m.MockGPIOService.assert_called_once_with(m.pin.red, m.pin.green, m.pin.blue)
+    m.MockGPIOService.assert_called_once_with(
+        red_pin=m.pin.red, green_pin=m.pin.green, blue_pin=m.pin.blue
+    )
 
 
 def test_led_controller_wired_with_gpio_service(m):
     main()
-    m.MockController.assert_called_once_with(m.gpio)
+    m.MockController.assert_called_once_with(gpio_service=m.gpio)
 
 
 def test_effect_runner_wired_with_controller_and_profile_manager(m):
