@@ -82,6 +82,12 @@ class TestColor:
         with pytest.raises(ValueError, match="Unknown color: "):
             Color.parse("")
 
+    def test_parse_non_string_raises_type_error(self):
+        with pytest.raises(TypeError, match="Color must be a string"):
+            Color.parse(123)
+        with pytest.raises(TypeError):
+            Color.parse(None)
+
     def test_parse_invalid_hex_raises(self):
         with pytest.raises(ValueError):
             Color.parse("#GGGGGG")

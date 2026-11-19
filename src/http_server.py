@@ -307,12 +307,14 @@ def create_app(
         Returns 503 {"error": ...} if the previous effect refuses to stop.
         """
         data = request.get_json(silent=True) or {}
+        if not isinstance(data, dict):
+            return jsonify({"error": "request body must be a JSON object"}), 400
         with state_lock:
             try:
                 _dispatch_effect(effect_name, data, effect_runner)
             except KeyError:
                 return jsonify({"error": f"unknown effect '{effect_name}'"}), 404
-            except (ValueError, TypeError) as e:
+            except (ValueError, TypeError, OverflowError) as e:
                 return jsonify({"error": str(e)}), 400
             except TimeoutError:
                 # The running effect did not stop in time; its interrupt flag
