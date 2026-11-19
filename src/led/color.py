@@ -93,6 +93,8 @@ class Color:
         Names are resolved case-insensitively against the predefined constants
         (e.g. "red", "warm_white"). Hex inputs are delegated to ``from_hex``.
         """
+        if not isinstance(value, str):
+            raise TypeError(f"Color must be a string, got {type(value).__name__}")
         lowered = value.lower()
         if lowered in _NAMED_COLORS:
             return _NAMED_COLORS[lowered]

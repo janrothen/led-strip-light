@@ -534,3 +534,35 @@ def test_index_serves_web_ui():
 
     assert response.status_code == 200
     assert b"<html" in response.data.lower()
+
+
+def test_start_effect_non_object_json_body_returns_400():
+    client, _, effect_runner = _build_client()
+
+    response = client.post("/effects/breathing", json=["FF0000"])
+
+    assert response.status_code == 400
+    assert "JSON object" in response.get_json()["error"]
+    effect_runner.run_breathing_effect.assert_not_called()
+
+
+def test_start_effect_non_string_color_returns_400():
+    client, _, effect_runner = _build_client()
+
+    response = client.post("/effects/breathing", json={"color": 123})
+
+    assert response.status_code == 400
+    effect_runner.run_breathing_effect.assert_not_called()
+
+
+def test_start_effect_infinite_number_returns_400():
+    client, _, effect_runner = _build_client()
+
+    response = client.post(
+        "/effects/breathing",
+        data='{"duration": 1e999}',
+        content_type="application/json",
+    )
+
+    assert response.status_code == 400
+    effect_runner.run_breathing_effect.assert_not_called()
