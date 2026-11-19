@@ -44,7 +44,7 @@ sudo ufw status verbose
 
 > **Note on port 5000:** `http_server.py` binds to `127.0.0.1` by default, so Flask is only reachable from localhost. Homebridge runs on the same Pi and works without exposing this port. Only add the port 5000 rule if you need direct external access (e.g. `http://192.168.x.x:5000/`). To force Flask to listen on all interfaces, set `FLASK_HOST=0.0.0.0` in the environment. Note that the shipped systemd unit (`deploy/systemd/ledstriplight-http-server.service`) sets `FLASK_HOST=0.0.0.0`, and the API has no authentication — keep it on a trusted LAN and never forward it to the internet.
 
-> **Note on port 8888:** the `pigpiod` daemon listens on TCP 8888 without authentication. Do **not** add a rule for it; run the daemon with `-l` so it only accepts localhost connections.
+> **Note on port 8888:** `pigpiod` serves unauthenticated GPIO control on TCP 8888. The stock Raspberry Pi OS service already runs it with `-l` (localhost only), so no rule is needed. Don't add one; you can confirm with `systemctl cat pigpiod | grep ExecStart`.
 
 ## Troubleshooting
 
