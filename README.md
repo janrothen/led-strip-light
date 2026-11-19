@@ -93,7 +93,7 @@ sudo systemctl enable pigpiod
 sudo systemctl start pigpiod
 ```
 
-> **Security:** by default `pigpiod` accepts unauthenticated connections on TCP port 8888 from any interface, which gives anyone on the network raw GPIO access. This app only connects via localhost, so restrict the daemon with `-l` (e.g. `sudo systemctl edit pigpiod` and override `ExecStart=` with `/usr/bin/pigpiod -l`), and never open port 8888 in the firewall.
+> **Note:** `pigpiod` serves unauthenticated GPIO control on TCP port 8888. The stock Raspberry Pi OS service already starts it with `-l` (localhost only), which is all this app needs. You can confirm with `systemctl cat pigpiod | grep ExecStart` (expect `/usr/bin/pigpiod -l`); keep it that way and don't open port 8888 in the firewall.
 
 ### Pi deployment
 
